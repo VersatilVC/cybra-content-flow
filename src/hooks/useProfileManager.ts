@@ -37,10 +37,15 @@ export function useProfileManager() {
 
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     try {
+      console.log('Checking cache for profile:', userId);
       // Check cache first
       const cached = getCachedProfile(userId);
-      if (cached) return cached;
+      if (cached) {
+        console.log('Profile found in cache:', cached);
+        return cached;
+      }
 
+      console.log('Fetching profile from database:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -49,7 +54,12 @@ export function useProfileManager() {
 
       if (error) {
         console.error('Profile fetch error:', error);
-        return null;
+        // If profile doesn't exist, that's okay - user might not have one yet
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, returning null');
+          return null;
+        }
+        throw error;
       }
 
       const profile: Profile = {
@@ -57,10 +67,12 @@ export function useProfileManager() {
         role: data.role as 'admin' | 'user'
       };
 
+      console.log('Profile fetched from database:', profile);
       setCachedProfile(userId, profile);
       return profile;
     } catch (error) {
       console.error('Unexpected error fetching profile:', error);
+      // Don't throw error - allow auth flow to continue without profile
       return null;
     }
   }, [getCachedProfile, setCachedProfile]);

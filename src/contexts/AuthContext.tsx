@@ -48,17 +48,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           payload: { user: session?.user ?? null, session }
         });
 
-        // Handle profile fetching for authenticated users
+        // Handle profile fetching for authenticated users with error recovery
         if (session?.user && event !== 'SIGNED_OUT') {
           try {
+            console.log('Fetching profile for user:', session.user.id);
             const profile = await fetchProfile(session.user.id);
             if (mounted) {
               dispatch({ type: 'SET_PROFILE', payload: profile });
+              console.log('Profile fetched successfully:', profile);
             }
           } catch (error) {
             console.error('Error fetching profile:', error);
             if (mounted) {
+              // Don't block auth flow if profile fetch fails
               dispatch({ type: 'SET_PROFILE', payload: null });
+              // Continue with auth flow even without profile
             }
           }
         } else {
@@ -71,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for existing session
     const initializeAuth = async () => {
       try {
+        console.log('Initializing auth...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -81,6 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (!mounted) return;
 
+        console.log('Initial session:', session?.user?.id || 'none');
         dispatch({
           type: 'SET_SESSION',
           payload: { user: session?.user ?? null, session }
@@ -88,13 +94,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (session?.user) {
           try {
+            console.log('Fetching initial profile for:', session.user.id);
             const profile = await fetchProfile(session.user.id);
             if (mounted) {
               dispatch({ type: 'SET_PROFILE', payload: profile });
+              console.log('Initial profile loaded:', profile);
             }
           } catch (error) {
             console.error('Error fetching initial profile:', error);
             if (mounted) {
+              // Don't block initial load if profile fetch fails
               dispatch({ type: 'SET_PROFILE', payload: null });
             }
           }
@@ -106,6 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } finally {
         if (mounted) {
+          console.log('Auth initialization complete');
           dispatch({ type: 'SET_LOADING', payload: false });
         }
       }
@@ -161,6 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'SET_LOADING', payload: true });
     dispatch({ type: 'SET_ERROR', payload: null });
 
+    console.log('Initiating Google OAuth...');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -169,6 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
+      console.error('Google OAuth error:', error);
       dispatch({ type: 'SET_ERROR', payload: error.message });
       dispatch({ type: 'SET_LOADING', payload: false });
       throw new Error(error.message);

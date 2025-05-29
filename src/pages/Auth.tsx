@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +13,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [authTimeout, setAuthTimeout] = useState<NodeJS.Timeout | null>(null);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({
     email: '',
@@ -27,12 +29,35 @@ const Auth = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // Handle successful authentication
+  // Enhanced OAuth detection
+  const isOAuthRedirect = () => {
+    const params = new URLSearchParams(location.search);
+    const hash = location.hash;
+    
+    return (
+      params.has('code') || 
+      params.has('access_token') || 
+      params.has('state') ||
+      hash.includes('access_token') ||
+      hash.includes('refresh_token') ||
+      params.has('error')
+    );
+  };
+
+  // Handle successful authentication with timeout protection
   useEffect(() => {
+    console.log('Auth effect triggered:', { user: !!user, loading, isOAuth: isOAuthRedirect() });
+    
     if (!loading && user) {
-      // Add delay for OAuth redirects to ensure session is fully established
-      const isOAuthRedirect = location.search.includes('code=') || location.hash.includes('access_token');
-      const delay = isOAuthRedirect ? 1000 : 100;
+      console.log('User authenticated, navigating to:', from);
+      
+      // Clear any existing timeout
+      if (authTimeout) {
+        clearTimeout(authTimeout);
+        setAuthTimeout(null);
+      }
+      
+      const delay = isOAuthRedirect() ? 500 : 100;
       
       const timer = setTimeout(() => {
         toast({
@@ -44,27 +69,63 @@ const Auth = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [user, loading, navigate, from, toast, location]);
+  }, [user, loading, navigate, from, toast, location, authTimeout]);
+
+  // Add timeout protection for OAuth flows
+  useEffect(() => {
+    if (loading && isOAuthRedirect()) {
+      console.log('OAuth redirect detected, setting timeout protection');
+      
+      const timeout = setTimeout(() => {
+        console.log('Auth timeout reached, showing error and clearing loading state');
+        toast({
+          title: 'Authentication Timeout',
+          description: 'Authentication is taking longer than expected. Please try again.',
+          variant: 'destructive',
+        });
+        // Force navigation to dashboard even if auth is incomplete
+        navigate('/dashboard', { replace: true });
+      }, 10000); // 10 second timeout
+      
+      setAuthTimeout(timeout);
+      
+      return () => {
+        clearTimeout(timeout);
+        setAuthTimeout(null);
+      };
+    }
+  }, [loading, toast, navigate]);
 
   // Handle auth errors
   useEffect(() => {
     if (error) {
+      console.log('Auth error detected:', error);
+      
+      // Clear any pending timeout
+      if (authTimeout) {
+        clearTimeout(authTimeout);
+        setAuthTimeout(null);
+      }
+      
       toast({
         title: 'Authentication Error',
         description: error,
         variant: 'destructive',
       });
       clearError();
+      setIsLoading(false);
     }
-  }, [error, toast, clearError]);
+  }, [error, toast, clearError, authTimeout]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
+      console.log('Starting email login');
       await signIn(loginData.email, loginData.password);
     } catch (error) {
+      console.error('Login error:', error);
       // Error is handled by context and useEffect
     } finally {
       setIsLoading(false);
@@ -76,6 +137,7 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
+      console.log('Starting email signup');
       await signUp(
         signupData.email,
         signupData.password,
@@ -87,6 +149,7 @@ const Auth = () => {
         description: 'Account created successfully! Please check your email for verification.',
       });
     } catch (error) {
+      console.error('Signup error:', error);
       // Error is handled by context and useEffect
     } finally {
       setIsLoading(false);
@@ -94,20 +157,28 @@ const Auth = () => {
   };
 
   const handleGoogleSignIn = async () => {
+    console.log('Starting Google OAuth');
     setIsLoading(true);
     try {
       await signInWithGoogle();
     } catch (error) {
+      console.error('Google sign-in error:', error);
       // Error is handled by context and useEffect
       setIsLoading(false);
     }
   };
 
-  // Show loading spinner while checking auth state
-  if (loading) {
+  // Show loading spinner while checking auth state or during OAuth
+  if (loading || (isLoading && isOAuthRedirect())) {
+    console.log('Showing loading screen:', { loading, isLoading, isOAuth: isOAuthRedirect() });
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-        <LoadingSpinner size="lg" />
+        <div className="text-center space-y-4">
+          <LoadingSpinner size="lg" />
+          <p className="text-white">
+            {isOAuthRedirect() ? 'Completing sign in...' : 'Loading...'}
+          </p>
+        </div>
       </div>
     );
   }
