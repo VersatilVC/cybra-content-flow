@@ -1,3 +1,4 @@
+
 import {
   Brain,
   Calendar,
@@ -25,6 +26,7 @@ import {
 import { useLocation, Link } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -81,7 +83,8 @@ const adminItems = [
 
 export function AppSidebar() {
   const location = useLocation();
-  const { profile, signOut } = useAuth();
+  const { signOut } = useAuth();
+  const { profile } = useProfile();
   const isAdmin = profile?.role === 'admin';
   const [logoError, setLogoError] = useState(false);
 
