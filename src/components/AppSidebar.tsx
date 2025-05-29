@@ -1,4 +1,3 @@
-
 import {
   Brain,
   Calendar,
@@ -24,6 +23,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useLocation, Link } from "react-router-dom";
+import { useState } from "react";
 
 const navigationItems = [
   {
@@ -79,17 +79,28 @@ const adminItems = [
 export function AppSidebar() {
   const location = useLocation();
   const isAdmin = true; // This will come from auth context
+  const [logoError, setLogoError] = useState(false);
+
+  const handleLogoError = () => {
+    console.log("Logo failed to load, switching to fallback");
+    setLogoError(true);
+  };
 
   return (
     <Sidebar className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border/50 px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 flex items-center justify-center">
-            <img 
-              src="/lovable-uploads/607623d7-42c4-44ee-90ab-1c793af8f206.png" 
-              alt="Cyabra Logo" 
-              className="w-10 h-10 object-contain"
-            />
+            {!logoError ? (
+              <img 
+                src="https://images.lovable.dev/607623d7-42c4-44ee-90ab-1c793af8f206.png"
+                alt="Cyabra Logo" 
+                className="w-10 h-10 object-contain"
+                onError={handleLogoError}
+              />
+            ) : (
+              <Brain className="w-8 h-8 text-white" />
+            )}
           </div>
           <div>
             <h2 className="font-semibold text-white text-lg">Cyabra CMS</h2>
