@@ -40,15 +40,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, retryCount = 0) => {
     try {
+      console.log('Fetching profile for user:', userId);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile fetch error:', error);
+        
+        // If profile doesn't exist and this is a retry, we might need to wait for the trigger
+        if (error.code === 'PGRST116' && retryCount < 3) {
+          console.log(`Profile not found, retrying in ${(retryCount + 1) * 1000}ms...`);
+          setTimeout(() => {
+            fetchProfile(userId, retryCount + 1);
+          }, (retryCount + 1) * 1000);
+          return;
+        }
+        
+        // For other errors or max retries reached, don't throw - just log and continue
+        console.warn('Could not fetch profile, continuing without profile data');
+        setProfile(null);
+        return;
+      }
       
       // Type cast the role to ensure it matches our Profile interface
       const profileData: Profile = {
@@ -56,24 +74,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: data.role as 'admin' | 'user'
       };
       
+      console.log('Profile fetched successfully:', profileData);
       setProfile(profileData);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Unexpected error fetching profile:', error);
+      // Don't throw the error - just set profile to null and continue
       setProfile(null);
     }
   };
 
   useEffect(() => {
+    console.log('Setting up auth state listener...');
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
+        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Use setTimeout to prevent blocking the auth state change
           setTimeout(() => {
             fetchProfile(session.user.id);
-          }, 0);
+          }, 100);
         } else {
           setProfile(null);
         }
@@ -84,6 +109,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id);
+      
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -94,7 +121,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('Cleaning up auth subscription');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -129,7 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}`,
+        redirectTo: `${window.location.origin}/dashboard`,
       }
     });
 
@@ -139,6 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    console.log('Signing out...');
     const { error } = await supabase.auth.signOut();
     if (error) {
       throw new Error(error.message);
