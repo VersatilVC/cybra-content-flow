@@ -59,7 +59,9 @@ export function useProfileManager() {
           console.log('Profile not found, returning null');
           return null;
         }
-        throw error;
+        // For other errors, still return null instead of throwing
+        console.log('Profile fetch failed, continuing without profile');
+        return null;
       }
 
       const profile: Profile = {
@@ -72,7 +74,7 @@ export function useProfileManager() {
       return profile;
     } catch (error) {
       console.error('Unexpected error fetching profile:', error);
-      // Don't throw error - allow auth flow to continue without profile
+      // Never throw error - allow auth flow to continue without profile
       return null;
     }
   }, [getCachedProfile, setCachedProfile]);
