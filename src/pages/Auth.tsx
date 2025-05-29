@@ -12,8 +12,7 @@ import { Brain } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Auth = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [authTimeout, setAuthTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [localLoading, setLocalLoading] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({
     email: '',
@@ -29,83 +28,60 @@ const Auth = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // Enhanced OAuth detection
+  // Enhanced OAuth detection with more comprehensive checks
   const isOAuthRedirect = () => {
     const params = new URLSearchParams(location.search);
     const hash = location.hash;
+    
+    console.log('Checking OAuth redirect:', { 
+      search: location.search, 
+      hash: location.hash,
+      pathname: location.pathname 
+    });
     
     return (
       params.has('code') || 
       params.has('access_token') || 
       params.has('state') ||
+      params.has('session_state') ||
       hash.includes('access_token') ||
       hash.includes('refresh_token') ||
-      params.has('error')
+      hash.includes('id_token') ||
+      params.has('error') ||
+      params.has('error_description')
     );
   };
 
-  // Handle successful authentication with timeout protection
+  // Handle successful authentication - simplified logic
   useEffect(() => {
-    console.log('Auth effect triggered:', { user: !!user, loading, isOAuth: isOAuthRedirect() });
+    console.log('Auth effect triggered:', { 
+      user: !!user, 
+      loading, 
+      isOAuth: isOAuthRedirect(),
+      pathname: location.pathname,
+      search: location.search 
+    });
     
     if (!loading && user) {
       console.log('User authenticated, navigating to:', from);
       
-      // Clear any existing timeout
-      if (authTimeout) {
-        clearTimeout(authTimeout);
-        setAuthTimeout(null);
-      }
-      
-      const delay = isOAuthRedirect() ? 500 : 100;
-      
+      // Small delay to ensure state is fully settled
       const timer = setTimeout(() => {
         toast({
           title: 'Success',
           description: 'Successfully signed in!',
         });
         navigate(from, { replace: true });
-      }, delay);
+      }, 100);
 
       return () => clearTimeout(timer);
     }
-  }, [user, loading, navigate, from, toast, location, authTimeout]);
-
-  // Add timeout protection for OAuth flows
-  useEffect(() => {
-    if (loading && isOAuthRedirect()) {
-      console.log('OAuth redirect detected, setting timeout protection');
-      
-      const timeout = setTimeout(() => {
-        console.log('Auth timeout reached, showing error and clearing loading state');
-        toast({
-          title: 'Authentication Timeout',
-          description: 'Authentication is taking longer than expected. Please try again.',
-          variant: 'destructive',
-        });
-        // Force navigation to dashboard even if auth is incomplete
-        navigate('/dashboard', { replace: true });
-      }, 10000); // 10 second timeout
-      
-      setAuthTimeout(timeout);
-      
-      return () => {
-        clearTimeout(timeout);
-        setAuthTimeout(null);
-      };
-    }
-  }, [loading, toast, navigate]);
+  }, [user, loading, navigate, from, toast, location]);
 
   // Handle auth errors
   useEffect(() => {
     if (error) {
       console.log('Auth error detected:', error);
-      
-      // Clear any pending timeout
-      if (authTimeout) {
-        clearTimeout(authTimeout);
-        setAuthTimeout(null);
-      }
       
       toast({
         title: 'Authentication Error',
@@ -113,13 +89,13 @@ const Auth = () => {
         variant: 'destructive',
       });
       clearError();
-      setIsLoading(false);
+      setLocalLoading(false);
     }
-  }, [error, toast, clearError, authTimeout]);
+  }, [error, toast, clearError]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLocalLoading(true);
 
     try {
       console.log('Starting email login');
@@ -128,13 +104,13 @@ const Auth = () => {
       console.error('Login error:', error);
       // Error is handled by context and useEffect
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLocalLoading(true);
 
     try {
       console.log('Starting email signup');
@@ -152,25 +128,33 @@ const Auth = () => {
       console.error('Signup error:', error);
       // Error is handled by context and useEffect
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
     console.log('Starting Google OAuth');
-    setIsLoading(true);
+    setLocalLoading(true);
     try {
       await signInWithGoogle();
+      // Don't reset loading here - let the redirect handle it
     } catch (error) {
       console.error('Google sign-in error:', error);
-      // Error is handled by context and useEffect
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   };
 
-  // Show loading spinner while checking auth state or during OAuth
-  if (loading || (isLoading && isOAuthRedirect())) {
-    console.log('Showing loading screen:', { loading, isLoading, isOAuth: isOAuthRedirect() });
+  // Show loading spinner during auth state loading or OAuth redirect processing
+  const shouldShowLoading = loading || (localLoading && !isOAuthRedirect());
+  
+  if (shouldShowLoading) {
+    console.log('Showing loading screen:', { 
+      loading, 
+      localLoading, 
+      isOAuth: isOAuthRedirect(),
+      shouldShowLoading 
+    });
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
         <div className="text-center space-y-4">
@@ -226,9 +210,9 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
-                  {isLoading ? 'Signing in...' : 'Sign In'}
+                <Button type="submit" className="w-full" disabled={localLoading}>
+                  {localLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
+                  {localLoading ? 'Signing in...' : 'Sign In'}
                 </Button>
               </form>
             </TabsContent>
@@ -279,9 +263,9 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
-                  {isLoading ? 'Creating account...' : 'Create Account'}
+                <Button type="submit" className="w-full" disabled={localLoading}>
+                  {localLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
+                  {localLoading ? 'Creating account...' : 'Create Account'}
                 </Button>
               </form>
             </TabsContent>
@@ -300,9 +284,9 @@ const Auth = () => {
               variant="outline"
               className="w-full mt-4"
               onClick={handleGoogleSignIn}
-              disabled={isLoading}
+              disabled={localLoading}
             >
-              {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
+              {localLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
               <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,23 +47,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           payload: { user: session?.user ?? null, session }
         });
 
-        // Handle profile fetching for authenticated users with error recovery
+        // Handle profile fetching for authenticated users
         if (session?.user && event !== 'SIGNED_OUT') {
-          try {
-            console.log('Fetching profile for user:', session.user.id);
-            const profile = await fetchProfile(session.user.id);
-            if (mounted) {
-              dispatch({ type: 'SET_PROFILE', payload: profile });
-              console.log('Profile fetched successfully:', profile);
+          console.log('Fetching profile for user:', session.user.id);
+          
+          // Use setTimeout to prevent blocking the auth state change
+          setTimeout(async () => {
+            if (!mounted) return;
+            
+            try {
+              const profile = await fetchProfile(session.user.id);
+              if (mounted) {
+                dispatch({ type: 'SET_PROFILE', payload: profile });
+                console.log('Profile fetched successfully:', profile);
+              }
+            } catch (error) {
+              console.error('Error fetching profile:', error);
+              if (mounted) {
+                // Don't block auth flow if profile fetch fails
+                dispatch({ type: 'SET_PROFILE', payload: null });
+              }
             }
-          } catch (error) {
-            console.error('Error fetching profile:', error);
-            if (mounted) {
-              // Don't block auth flow if profile fetch fails
-              dispatch({ type: 'SET_PROFILE', payload: null });
-              // Continue with auth flow even without profile
-            }
-          }
+          }, 0);
         } else {
           dispatch({ type: 'SET_PROFILE', payload: null });
           clearProfileCache();
@@ -93,20 +97,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         if (session?.user) {
-          try {
-            console.log('Fetching initial profile for:', session.user.id);
-            const profile = await fetchProfile(session.user.id);
-            if (mounted) {
-              dispatch({ type: 'SET_PROFILE', payload: profile });
-              console.log('Initial profile loaded:', profile);
+          console.log('Fetching initial profile for:', session.user.id);
+          
+          // Use setTimeout for initial profile fetch as well
+          setTimeout(async () => {
+            if (!mounted) return;
+            
+            try {
+              const profile = await fetchProfile(session.user.id);
+              if (mounted) {
+                dispatch({ type: 'SET_PROFILE', payload: profile });
+                console.log('Initial profile loaded:', profile);
+              }
+            } catch (error) {
+              console.error('Error fetching initial profile:', error);
+              if (mounted) {
+                dispatch({ type: 'SET_PROFILE', payload: null });
+              }
             }
-          } catch (error) {
-            console.error('Error fetching initial profile:', error);
-            if (mounted) {
-              // Don't block initial load if profile fetch fails
-              dispatch({ type: 'SET_PROFILE', payload: null });
-            }
-          }
+          }, 0);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
