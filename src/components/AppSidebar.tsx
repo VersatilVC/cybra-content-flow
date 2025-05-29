@@ -86,7 +86,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 flex items-center justify-center">
             <img 
-              src="/lovable-uploads/43c6f23e-2d35-4e54-8c16-27f1c87a1f0b.png" 
+              src="/lovable-uploads/a0a2b4d0-e845-461e-be6b-ef1bd13d6dcc.png" 
               alt="Cyabra Logo" 
               className="w-8 h-8 object-contain"
             />
