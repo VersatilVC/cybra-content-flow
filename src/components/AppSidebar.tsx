@@ -93,7 +93,7 @@ export function AppSidebar() {
           <div className="w-10 h-10 flex items-center justify-center">
             {!logoError ? (
               <img 
-                src="https://images.lovable.dev/607623d7-42c4-44ee-90ab-1c793af8f206.png"
+                src="/lovable-uploads/587a1505-0f54-4162-ba43-eff1c5c1287a.png"
                 alt="Cyabra Logo" 
                 className="w-10 h-10 object-contain"
                 onError={handleLogoError}
