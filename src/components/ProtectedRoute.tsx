@@ -2,6 +2,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,28 +13,22 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
   const { user, profile, loading } = useAuth();
   const location = useLocation();
 
-  console.log('ProtectedRoute check:', { user: !!user, profile: !!profile, loading, adminOnly, path: location.pathname });
-
-  // Give more time for auth state to settle, especially for OAuth redirects
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   if (!user) {
-    console.log('ProtectedRoute: No user, redirecting to auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   if (adminOnly && profile?.role !== 'admin') {
-    console.log('ProtectedRoute: Admin required but user is not admin, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 
-  console.log('ProtectedRoute: Access granted');
   return <>{children}</>;
 };
 

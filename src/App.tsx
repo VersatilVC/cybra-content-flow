@@ -4,10 +4,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { AppSidebar } from "@/components/AppSidebar";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Index from "./pages/Index";
 import KnowledgeBases from "./pages/KnowledgeBases";
@@ -25,176 +25,102 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/"
-              element={
+    <ErrorBoundary>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              
+              <Route path="/dashboard" element={
                 <ProtectedRoute>
-                  <Navigate to="/dashboard" replace />
+                  <AppLayout>
+                    <Dashboard />
+                  </AppLayout>
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
+              } />
+              
+              <Route path="/knowledge-bases" element={
                 <ProtectedRoute>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full">
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <Dashboard />
-                      </main>
-                    </div>
-                  </SidebarProvider>
+                  <AppLayout>
+                    <KnowledgeBases />
+                  </AppLayout>
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/knowledge-bases"
-              element={
+              } />
+              
+              <Route path="/chat" element={
                 <ProtectedRoute>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full">
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <KnowledgeBases />
-                      </main>
-                    </div>
-                  </SidebarProvider>
+                  <AppLayout>
+                    <Chat />
+                  </AppLayout>
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/chat"
-              element={
+              } />
+              
+              <Route path="/ideas" element={
                 <ProtectedRoute>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full">
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <Chat />
-                      </main>
-                    </div>
-                  </SidebarProvider>
+                  <AppLayout>
+                    <ContentIdeas />
+                  </AppLayout>
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/ideas"
-              element={
+              } />
+              
+              <Route path="/content" element={
                 <ProtectedRoute>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full">
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <ContentIdeas />
-                      </main>
-                    </div>
-                  </SidebarProvider>
+                  <AppLayout>
+                    <ContentItems />
+                  </AppLayout>
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/content"
-              element={
+              } />
+              
+              <Route path="/calendar" element={
                 <ProtectedRoute>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full">
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <ContentItems />
-                      </main>
-                    </div>
-                  </SidebarProvider>
+                  <AppLayout>
+                    <ContentCalendar />
+                  </AppLayout>
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/calendar"
-              element={
-                <ProtectedRoute>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full">
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <ContentCalendar />
-                      </main>
-                    </div>
-                  </SidebarProvider>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/users"
-              element={
+              } />
+              
+              <Route path="/admin/users" element={
                 <ProtectedRoute adminOnly>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full">
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <UserManagement />
-                      </main>
-                    </div>
-                  </SidebarProvider>
+                  <AppLayout>
+                    <UserManagement />
+                  </AppLayout>
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/webhooks"
-              element={
+              } />
+              
+              <Route path="/admin/webhooks" element={
                 <ProtectedRoute adminOnly>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full">
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <Webhooks />
-                      </main>
-                    </div>
-                  </SidebarProvider>
+                  <AppLayout>
+                    <Webhooks />
+                  </AppLayout>
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/settings"
-              element={
+              } />
+              
+              <Route path="/admin/settings" element={
                 <ProtectedRoute adminOnly>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full">
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <Settings />
-                      </main>
-                    </div>
-                  </SidebarProvider>
+                  <AppLayout>
+                    <Settings />
+                  </AppLayout>
                 </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/index"
-              element={
+              } />
+              
+              <Route path="/index" element={
                 <ProtectedRoute>
-                  <SidebarProvider>
-                    <div className="min-h-screen flex w-full">
-                      <AppSidebar />
-                      <main className="flex-1">
-                        <Index />
-                      </main>
-                    </div>
-                  </SidebarProvider>
+                  <AppLayout>
+                    <Index />
+                  </AppLayout>
                 </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+              } />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   </QueryClientProvider>
 );
 

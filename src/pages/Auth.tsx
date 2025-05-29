@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Brain } from 'lucide-react';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,30 +20,43 @@ const Auth = () => {
     lastName: '',
   });
 
-  const { signIn, signUp, signInWithGoogle, user, loading } = useAuth();
+  const { signIn, signUp, signInWithGoogle, user, loading, error, clearError } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // Handle OAuth redirect - if user is authenticated, redirect to dashboard
+  // Handle successful authentication
   useEffect(() => {
-    console.log('Auth page: checking user status', { user, loading });
-    
     if (!loading && user) {
-      console.log('Auth page: User is authenticated, redirecting to dashboard after delay');
+      // Add delay for OAuth redirects to ensure session is fully established
+      const isOAuthRedirect = location.search.includes('code=') || location.hash.includes('access_token');
+      const delay = isOAuthRedirect ? 1000 : 100;
       
-      // Add a small delay to ensure session is fully established
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         toast({
           title: 'Success',
           description: 'Successfully signed in!',
         });
         navigate(from, { replace: true });
-      }, 500);
+      }, delay);
+
+      return () => clearTimeout(timer);
     }
-  }, [user, loading, navigate, from, toast]);
+  }, [user, loading, navigate, from, toast, location]);
+
+  // Handle auth errors
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Authentication Error',
+        description: error,
+        variant: 'destructive',
+      });
+      clearError();
+    }
+  }, [error, toast, clearError]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,17 +64,8 @@ const Auth = () => {
 
     try {
       await signIn(loginData.email, loginData.password);
-      toast({
-        title: 'Success',
-        description: 'Successfully signed in!',
-      });
-      navigate(from, { replace: true });
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to sign in',
-        variant: 'destructive',
-      });
+      // Error is handled by context and useEffect
     } finally {
       setIsLoading(false);
     }
@@ -83,11 +87,7 @@ const Auth = () => {
         description: 'Account created successfully! Please check your email for verification.',
       });
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create account',
-        variant: 'destructive',
-      });
+      // Error is handled by context and useEffect
     } finally {
       setIsLoading(false);
     }
@@ -97,13 +97,8 @@ const Auth = () => {
     setIsLoading(true);
     try {
       await signInWithGoogle();
-      // Note: The redirect will be handled by OAuth, not here
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to sign in with Google',
-        variant: 'destructive',
-      });
+      // Error is handled by context and useEffect
       setIsLoading(false);
     }
   };
@@ -112,7 +107,7 @@ const Auth = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -161,6 +156,7 @@ const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
                   {isLoading ? 'Signing in...' : 'Sign In'}
                 </Button>
               </form>
@@ -213,6 +209,7 @@ const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
                   {isLoading ? 'Creating account...' : 'Create Account'}
                 </Button>
               </form>
@@ -234,6 +231,7 @@ const Auth = () => {
               onClick={handleGoogleSignIn}
               disabled={isLoading}
             >
+              {isLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
               <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
