@@ -23,7 +23,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 
 const navigationItems = [
   {
@@ -84,8 +84,12 @@ export function AppSidebar() {
     <Sidebar className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border/50 px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-white/20 to-white/10 rounded-lg flex items-center justify-center">
-            <Brain className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 flex items-center justify-center">
+            <img 
+              src="/lovable-uploads/43c6f23e-2d35-4e54-8c16-27f1c87a1f0b.png" 
+              alt="Cyabra Logo" 
+              className="w-8 h-8 object-contain"
+            />
           </div>
           <div>
             <h2 className="font-semibold text-white text-lg">Cyabra CMS</h2>
@@ -108,10 +112,10 @@ export function AppSidebar() {
                     isActive={location.pathname === item.url}
                     className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
                   >
-                    <a href={item.url} className="flex items-center gap-3 px-3 py-2">
+                    <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
                       <item.icon className="w-4 h-4" />
                       <span className="font-medium">{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -133,10 +137,10 @@ export function AppSidebar() {
                       isActive={location.pathname === item.url}
                       className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
                     >
-                      <a href={item.url} className="flex items-center gap-3 px-3 py-2">
+                      <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
                         <item.icon className="w-4 h-4" />
                         <span className="font-medium">{item.title}</span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}

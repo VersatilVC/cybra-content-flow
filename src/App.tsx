@@ -8,6 +8,14 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Dashboard from "./pages/Dashboard";
 import Index from "./pages/Index";
+import KnowledgeBases from "./pages/KnowledgeBases";
+import Chat from "./pages/Chat";
+import ContentIdeas from "./pages/ContentIdeas";
+import ContentItems from "./pages/ContentItems";
+import ContentCalendar from "./pages/ContentCalendar";
+import UserManagement from "./pages/UserManagement";
+import Webhooks from "./pages/Webhooks";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +33,14 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/knowledge-bases" element={<KnowledgeBases />} />
+                <Route path="/chat" element={<Chat />} />
+                <Route path="/ideas" element={<ContentIdeas />} />
+                <Route path="/content" element={<ContentItems />} />
+                <Route path="/calendar" element={<ContentCalendar />} />
+                <Route path="/admin/users" element={<UserManagement />} />
+                <Route path="/admin/webhooks" element={<Webhooks />} />
+                <Route path="/admin/settings" element={<Settings />} />
                 <Route path="/index" element={<Index />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
