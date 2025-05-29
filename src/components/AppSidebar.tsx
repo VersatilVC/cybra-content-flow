@@ -26,6 +26,7 @@ import { useLocation, Link } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const navigationItems = [
   {
