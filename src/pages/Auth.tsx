@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -20,12 +20,26 @@ const Auth = () => {
     lastName: '',
   });
 
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const { signIn, signUp, signInWithGoogle, user, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || '/dashboard';
+
+  // Handle OAuth redirect - if user is authenticated, redirect to dashboard
+  useEffect(() => {
+    console.log('Auth page: checking user status', { user, loading });
+    
+    if (!loading && user) {
+      console.log('Auth page: User is authenticated, redirecting to dashboard');
+      toast({
+        title: 'Success',
+        description: 'Successfully signed in!',
+      });
+      navigate(from, { replace: true });
+    }
+  }, [user, loading, navigate, from, toast]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +93,7 @@ const Auth = () => {
     setIsLoading(true);
     try {
       await signInWithGoogle();
+      // Note: The redirect will be handled by OAuth, not here
     } catch (error) {
       toast({
         title: 'Error',
@@ -88,6 +103,15 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
+
+  // Show loading spinner while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
