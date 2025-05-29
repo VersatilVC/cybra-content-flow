@@ -1,3 +1,4 @@
+
 import {
   Brain,
   Calendar,
@@ -97,6 +98,7 @@ export function AppSidebar() {
                 alt="Cyabra Logo" 
                 className="w-10 h-10 object-contain"
                 onError={handleLogoError}
+                onLoad={() => console.log("Logo loaded successfully")}
               />
             ) : (
               <Brain className="w-8 h-8 text-white" />
