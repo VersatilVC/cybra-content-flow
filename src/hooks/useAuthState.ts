@@ -11,6 +11,8 @@ const initialState: AuthState = {
 };
 
 function authReducer(state: AuthState, action: AuthAction): AuthState {
+  console.log('Auth reducer action:', action.type);
+  
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, loading: action.payload };

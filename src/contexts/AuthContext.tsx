@@ -36,45 +36,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener
+    // Set up auth state listener - NEVER use async here to avoid hooks violations
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!mounted) return;
 
         console.log('Auth state changed:', event, session?.user?.id);
         
-        // Always update session state immediately
+        // Always update session state immediately (synchronous)
         dispatch({
           type: 'SET_SESSION',
           payload: { user: session?.user ?? null, session }
         });
 
-        // Handle profile fetching for authenticated users
+        // Handle profile fetching for authenticated users with setTimeout to avoid hooks violations
         if (session?.user && event !== 'SIGNED_OUT') {
-          console.log('User authenticated, fetching profile for:', session.user.id);
+          console.log('User authenticated, scheduling profile fetch for:', session.user.id);
           
-          // For Google OAuth users, we need to be extra careful about profile handling
-          const isGoogleOAuth = session.user.app_metadata?.provider === 'google';
-          console.log('Is Google OAuth user:', isGoogleOAuth);
-          
-          // Use setTimeout to prevent blocking the auth state change
-          setTimeout(async () => {
+          // Use setTimeout to defer async operations and prevent hooks violations
+          setTimeout(() => {
             if (!mounted) return;
             
-            try {
-              const profile = await fetchProfile(session.user.id);
-              if (mounted) {
-                dispatch({ type: 'SET_PROFILE', payload: profile });
-                console.log('Profile set successfully:', profile);
-              }
-            } catch (error) {
-              console.error('Profile fetch error - but continuing gracefully:', error);
-              if (mounted) {
-                // For Google OAuth users, continue without profile rather than failing
-                dispatch({ type: 'SET_PROFILE', payload: null });
-              }
-            }
-          }, 100); // Slightly longer delay for Google OAuth to settle
+            fetchProfile(session.user.id)
+              .then(profile => {
+                if (mounted) {
+                  dispatch({ type: 'SET_PROFILE', payload: profile });
+                  console.log('Profile set successfully:', profile);
+                }
+              })
+              .catch(error => {
+                console.error('Profile fetch error - continuing gracefully:', error);
+                if (mounted) {
+                  // Continue without profile rather than failing auth
+                  dispatch({ type: 'SET_PROFILE', payload: null });
+                }
+              });
+          }, 0);
         } else {
           // User signed out or no user
           dispatch({ type: 'SET_PROFILE', payload: null });
@@ -86,58 +83,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // Check for existing session
-    const initializeAuth = async () => {
-      try {
-        console.log('Initializing auth...');
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Session initialization error:', error);
-          dispatch({ type: 'SET_ERROR', payload: error.message });
-          return;
-        }
-
-        if (!mounted) return;
-
-        console.log('Initial session:', session?.user?.id || 'none');
-        dispatch({
-          type: 'SET_SESSION',
-          payload: { user: session?.user ?? null, session }
-        });
-
-        if (session?.user) {
-          console.log('Fetching initial profile for:', session.user.id);
-          
-          // Use setTimeout for initial profile fetch as well
-          setTimeout(async () => {
-            if (!mounted) return;
-            
-            try {
-              const profile = await fetchProfile(session.user.id);
-              if (mounted) {
-                dispatch({ type: 'SET_PROFILE', payload: profile });
-                console.log('Initial profile loaded:', profile);
-              }
-            } catch (error) {
-              console.error('Initial profile fetch error - continuing gracefully:', error);
-              if (mounted) {
-                // Continue without profile rather than blocking auth
-                dispatch({ type: 'SET_PROFILE', payload: null });
-              }
+    const initializeAuth = () => {
+      console.log('Initializing auth...');
+      supabase.auth.getSession()
+        .then(({ data: { session }, error }) => {
+          if (error) {
+            console.error('Session initialization error:', error);
+            if (mounted) {
+              dispatch({ type: 'SET_ERROR', payload: error.message });
             }
-          }, 200); // Longer delay for initial load
-        }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        if (mounted) {
-          dispatch({ type: 'SET_ERROR', payload: 'Failed to initialize authentication' });
-        }
-      } finally {
-        if (mounted) {
-          console.log('Auth initialization complete');
-          dispatch({ type: 'SET_LOADING', payload: false });
-        }
-      }
+            return;
+          }
+
+          if (!mounted) return;
+
+          console.log('Initial session:', session?.user?.id || 'none');
+          dispatch({
+            type: 'SET_SESSION',
+            payload: { user: session?.user ?? null, session }
+          });
+
+          if (session?.user) {
+            console.log('Fetching initial profile for:', session.user.id);
+            
+            // Use setTimeout for initial profile fetch as well
+            setTimeout(() => {
+              if (!mounted) return;
+              
+              fetchProfile(session.user.id)
+                .then(profile => {
+                  if (mounted) {
+                    dispatch({ type: 'SET_PROFILE', payload: profile });
+                    console.log('Initial profile loaded:', profile);
+                  }
+                })
+                .catch(error => {
+                  console.error('Initial profile fetch error - continuing gracefully:', error);
+                  if (mounted) {
+                    // Continue without profile rather than blocking auth
+                    dispatch({ type: 'SET_PROFILE', payload: null });
+                  }
+                });
+            }, 100);
+          }
+        })
+        .catch(error => {
+          console.error('Auth initialization error:', error);
+          if (mounted) {
+            dispatch({ type: 'SET_ERROR', payload: 'Failed to initialize authentication' });
+          }
+        })
+        .finally(() => {
+          if (mounted) {
+            console.log('Auth initialization complete');
+            dispatch({ type: 'SET_LOADING', payload: false });
+          }
+        });
     };
 
     initializeAuth();
@@ -146,7 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchProfile, clearProfileCache]);
+  }, [fetchProfile, clearProfileCache, dispatch]);
 
   const signIn = async (email: string, password: string) => {
     dispatch({ type: 'SET_LOADING', payload: true });
