@@ -84,11 +84,11 @@ export function AppSidebar() {
     <Sidebar className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border/50 px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 flex items-center justify-center">
+          <div className="w-10 h-10 flex items-center justify-center">
             <img 
-              src="/lovable-uploads/a0a2b4d0-e845-461e-be6b-ef1bd13d6dcc.png" 
+              src="/lovable-uploads/607623d7-42c4-44ee-90ab-1c793af8f206.png" 
               alt="Cyabra Logo" 
-              className="w-8 h-8 object-contain"
+              className="w-10 h-10 object-contain"
             />
           </div>
           <div>
