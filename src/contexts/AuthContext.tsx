@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
+    let profileFetchInProgress = false;
 
     // Set up auth state listener - NEVER use async here to avoid hooks violations
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -50,14 +50,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         // Handle profile fetching for authenticated users with setTimeout to avoid hooks violations
-        if (session?.user && event !== 'SIGNED_OUT') {
+        if (session?.user && event !== 'SIGNED_OUT' && !profileFetchInProgress) {
           console.log('User authenticated, scheduling profile fetch for:', session.user.id);
+          profileFetchInProgress = true;
           
           // Use setTimeout to defer async operations and prevent hooks violations
           setTimeout(() => {
             if (!mounted) return;
             
-            fetchProfile(session.user.id)
+            // Pass user data directly to avoid recursive auth calls
+            fetchProfile(
+              session.user.id, 
+              session.user.email || '', 
+              session.user.user_metadata || {}
+            )
               .then(profile => {
                 if (mounted) {
                   dispatch({ type: 'SET_PROFILE', payload: profile });
@@ -70,6 +76,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   // Continue without profile rather than failing auth
                   dispatch({ type: 'SET_PROFILE', payload: null });
                 }
+              })
+              .finally(() => {
+                profileFetchInProgress = false;
               });
           }, 0);
         } else {
@@ -78,6 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (event === 'SIGNED_OUT') {
             clearProfileCache();
           }
+          profileFetchInProgress = false;
         }
       }
     );
@@ -103,14 +113,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             payload: { user: session?.user ?? null, session }
           });
 
-          if (session?.user) {
+          if (session?.user && !profileFetchInProgress) {
             console.log('Fetching initial profile for:', session.user.id);
+            profileFetchInProgress = true;
             
             // Use setTimeout for initial profile fetch as well
             setTimeout(() => {
               if (!mounted) return;
               
-              fetchProfile(session.user.id)
+              // Pass user data directly to avoid recursive auth calls
+              fetchProfile(
+                session.user.id, 
+                session.user.email || '', 
+                session.user.user_metadata || {}
+              )
                 .then(profile => {
                   if (mounted) {
                     dispatch({ type: 'SET_PROFILE', payload: profile });
@@ -123,6 +139,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // Continue without profile rather than blocking auth
                     dispatch({ type: 'SET_PROFILE', payload: null });
                   }
+                })
+                .finally(() => {
+                  profileFetchInProgress = false;
                 });
             }, 100);
           }

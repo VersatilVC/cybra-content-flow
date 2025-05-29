@@ -35,19 +35,15 @@ export function useProfileManager() {
     }
   }, []);
 
-  const createFallbackProfile = useCallback(async (userId: string, userEmail: string): Promise<Profile | null> => {
+  const createFallbackProfile = useCallback(async (userId: string, userEmail: string, userMetadata: any = {}): Promise<Profile | null> => {
     try {
       console.log('Creating fallback profile for user:', userId);
       
-      // Get user metadata to extract names
-      const { data: { user } } = await supabase.auth.getUser();
-      const metadata = user?.user_metadata || {};
-      
-      // Extract names from various possible metadata fields
-      const firstName = metadata.first_name || metadata.given_name || 
-                       (metadata.full_name ? metadata.full_name.split(' ')[0] : '') || '';
-      const lastName = metadata.last_name || metadata.family_name || 
-                      (metadata.full_name ? metadata.full_name.split(' ').slice(1).join(' ') : '') || '';
+      // Extract names from metadata - don't make additional auth calls
+      const firstName = userMetadata.first_name || userMetadata.given_name || 
+                       (userMetadata.full_name ? userMetadata.full_name.split(' ')[0] : '') || '';
+      const lastName = userMetadata.last_name || userMetadata.family_name || 
+                      (userMetadata.full_name ? userMetadata.full_name.split(' ').slice(1).join(' ') : '') || '';
 
       const { data, error } = await supabase
         .from('profiles')
@@ -98,7 +94,7 @@ export function useProfileManager() {
     }
   }, [setCachedProfile]);
 
-  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
+  const fetchProfile = useCallback(async (userId: string, userEmail?: string, userMetadata?: any): Promise<Profile | null> => {
     try {
       console.log('Checking cache for profile:', userId);
       // Check cache first
@@ -122,10 +118,8 @@ export function useProfileManager() {
         if (error.code === 'PGRST116') {
           console.log('Profile not found, creating fallback profile');
           
-          // Get user email for fallback profile creation
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user?.email) {
-            return await createFallbackProfile(userId, user.email);
+          if (userEmail) {
+            return await createFallbackProfile(userId, userEmail, userMetadata);
           }
         }
         
