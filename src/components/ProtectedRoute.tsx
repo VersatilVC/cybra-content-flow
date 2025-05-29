@@ -25,8 +25,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // If admin access is required but profile is null or not admin, redirect to dashboard
-  // This handles cases where profile fetch failed gracefully
+  // If admin access is required, check if user has admin role
+  // Since we removed the admin policy, we need to check this in the application
   if (adminOnly && (!profile || profile.role !== 'admin')) {
     return <Navigate to="/dashboard" replace />;
   }

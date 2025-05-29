@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,8 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } catch (error) {
               console.error('Error fetching profile:', error);
               if (mounted) {
-                // Don't block auth flow if profile fetch fails
-                // Just set profile to null and continue
+                // Continue gracefully without profile
                 dispatch({ type: 'SET_PROFILE', payload: null });
               }
             }
@@ -114,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } catch (error) {
               console.error('Error fetching initial profile:', error);
               if (mounted) {
-                // Continue without profile if fetch fails
+                // Continue gracefully without profile
                 dispatch({ type: 'SET_PROFILE', payload: null });
               }
             }
