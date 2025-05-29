@@ -103,7 +103,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfile(null);
         }
         
-        setLoading(false);
+        // For OAuth flows, give more time for session to stabilize
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(() => {
+            setLoading(false);
+          }, 300);
+        } else {
+          setLoading(false);
+        }
       }
     );
 

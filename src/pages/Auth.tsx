@@ -32,12 +32,16 @@ const Auth = () => {
     console.log('Auth page: checking user status', { user, loading });
     
     if (!loading && user) {
-      console.log('Auth page: User is authenticated, redirecting to dashboard');
-      toast({
-        title: 'Success',
-        description: 'Successfully signed in!',
-      });
-      navigate(from, { replace: true });
+      console.log('Auth page: User is authenticated, redirecting to dashboard after delay');
+      
+      // Add a small delay to ensure session is fully established
+      setTimeout(() => {
+        toast({
+          title: 'Success',
+          description: 'Successfully signed in!',
+        });
+        navigate(from, { replace: true });
+      }, 500);
     }
   }, [user, loading, navigate, from, toast]);
 

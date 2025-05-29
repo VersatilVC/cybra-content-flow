@@ -12,8 +12,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
   const { user, profile, loading } = useAuth();
   const location = useLocation();
 
-  console.log('ProtectedRoute check:', { user: !!user, profile: !!profile, loading, adminOnly });
+  console.log('ProtectedRoute check:', { user: !!user, profile: !!profile, loading, adminOnly, path: location.pathname });
 
+  // Give more time for auth state to settle, especially for OAuth redirects
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

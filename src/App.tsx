@@ -33,54 +33,164 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route
-              path="/*"
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Navigate to="/dashboard" replace />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <SidebarProvider>
                     <div className="min-h-screen flex w-full">
                       <AppSidebar />
                       <main className="flex-1">
-                        <Routes>
-                          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route path="/knowledge-bases" element={<KnowledgeBases />} />
-                          <Route path="/chat" element={<Chat />} />
-                          <Route path="/ideas" element={<ContentIdeas />} />
-                          <Route path="/content" element={<ContentItems />} />
-                          <Route path="/calendar" element={<ContentCalendar />} />
-                          <Route 
-                            path="/admin/users" 
-                            element={
-                              <ProtectedRoute adminOnly>
-                                <UserManagement />
-                              </ProtectedRoute>
-                            } 
-                          />
-                          <Route 
-                            path="/admin/webhooks" 
-                            element={
-                              <ProtectedRoute adminOnly>
-                                <Webhooks />
-                              </ProtectedRoute>
-                            } 
-                          />
-                          <Route 
-                            path="/admin/settings" 
-                            element={
-                              <ProtectedRoute adminOnly>
-                                <Settings />
-                              </ProtectedRoute>
-                            } 
-                          />
-                          <Route path="/index" element={<Index />} />
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
+                        <Dashboard />
                       </main>
                     </div>
                   </SidebarProvider>
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/knowledge-bases"
+              element={
+                <ProtectedRoute>
+                  <SidebarProvider>
+                    <div className="min-h-screen flex w-full">
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <KnowledgeBases />
+                      </main>
+                    </div>
+                  </SidebarProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute>
+                  <SidebarProvider>
+                    <div className="min-h-screen flex w-full">
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <Chat />
+                      </main>
+                    </div>
+                  </SidebarProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ideas"
+              element={
+                <ProtectedRoute>
+                  <SidebarProvider>
+                    <div className="min-h-screen flex w-full">
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <ContentIdeas />
+                      </main>
+                    </div>
+                  </SidebarProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/content"
+              element={
+                <ProtectedRoute>
+                  <SidebarProvider>
+                    <div className="min-h-screen flex w-full">
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <ContentItems />
+                      </main>
+                    </div>
+                  </SidebarProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <SidebarProvider>
+                    <div className="min-h-screen flex w-full">
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <ContentCalendar />
+                      </main>
+                    </div>
+                  </SidebarProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute adminOnly>
+                  <SidebarProvider>
+                    <div className="min-h-screen flex w-full">
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <UserManagement />
+                      </main>
+                    </div>
+                  </SidebarProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/webhooks"
+              element={
+                <ProtectedRoute adminOnly>
+                  <SidebarProvider>
+                    <div className="min-h-screen flex w-full">
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <Webhooks />
+                      </main>
+                    </div>
+                  </SidebarProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <ProtectedRoute adminOnly>
+                  <SidebarProvider>
+                    <div className="min-h-screen flex w-full">
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <Settings />
+                      </main>
+                    </div>
+                  </SidebarProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/index"
+              element={
+                <ProtectedRoute>
+                  <SidebarProvider>
+                    <div className="min-h-screen flex w-full">
+                      <AppSidebar />
+                      <main className="flex-1">
+                        <Index />
+                      </main>
+                    </div>
+                  </SidebarProvider>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
