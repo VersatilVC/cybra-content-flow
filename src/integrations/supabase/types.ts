@@ -9,6 +9,24 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      approved_domains: {
+        Row: {
+          created_at: string
+          domain: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          id?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           content: string | null
@@ -72,6 +90,36 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -112,6 +160,10 @@ export type Database = {
       hnswhandler: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      is_domain_approved: {
+        Args: { email_address: string }
+        Returns: boolean
       }
       ivfflat_bit_support: {
         Args: { "": unknown }
