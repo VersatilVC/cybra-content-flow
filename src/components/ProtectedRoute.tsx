@@ -2,6 +2,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface ProtectedRouteProps {
@@ -10,10 +11,11 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false }) => {
-  const { user, profile, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
   const location = useLocation();
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -25,10 +27,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // If admin access is required, check if user has admin role
-  // Allow access if profile is null (fallback for profile creation issues)
-  if (adminOnly && profile && profile.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
+  // For admin routes, wait for profile to load and check role
+  if (adminOnly) {
+    if (profileLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <LoadingSpinner size="lg" />
+        </div>
+      );
+    }
+    
+    if (!profile || profile.role !== 'admin') {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return <>{children}</>;

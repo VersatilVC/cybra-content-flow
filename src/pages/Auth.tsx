@@ -12,7 +12,7 @@ import { Brain } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Auth = () => {
-  const [localLoading, setLocalLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({
     email: '',
@@ -21,102 +21,59 @@ const Auth = () => {
     lastName: '',
   });
 
-  const { signIn, signUp, signInWithGoogle, user, loading, error, clearError } = useAuth();
+  const { signIn, signUp, signInWithGoogle, user, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // Enhanced OAuth detection with more comprehensive checks
-  const isOAuthRedirect = () => {
-    const params = new URLSearchParams(location.search);
-    const hash = location.hash;
-    
-    console.log('Checking OAuth redirect:', { 
-      search: location.search, 
-      hash: location.hash,
-      pathname: location.pathname 
-    });
-    
-    return (
-      params.has('code') || 
-      params.has('access_token') || 
-      params.has('state') ||
-      params.has('session_state') ||
-      hash.includes('access_token') ||
-      hash.includes('refresh_token') ||
-      hash.includes('id_token') ||
-      params.has('error') ||
-      params.has('error_description')
-    );
-  };
-
-  // Handle successful authentication with better Google OAuth support
+  // Redirect authenticated users
   useEffect(() => {
-    console.log('Auth effect triggered:', { 
-      user: !!user, 
-      loading, 
-      isOAuth: isOAuthRedirect(),
-      pathname: location.pathname,
-      search: location.search 
-    });
-    
     if (!loading && user) {
       console.log('User authenticated, navigating to:', from);
-      
-      // For Google OAuth users, give extra time for profile setup
-      const isGoogleUser = user.app_metadata?.provider === 'google';
-      const delay = isGoogleUser ? 500 : 100;
-      
-      const timer = setTimeout(() => {
-        toast({
-          title: 'Success',
-          description: 'Successfully signed in!',
-        });
-        navigate(from, { replace: true });
-      }, delay);
-
-      return () => clearTimeout(timer);
+      navigate(from, { replace: true });
     }
-  }, [user, loading, navigate, from, toast, location]);
+  }, [user, loading, navigate, from]);
 
-  // Handle auth errors
-  useEffect(() => {
-    if (error) {
-      console.log('Auth error detected:', error);
-      
-      toast({
-        title: 'Authentication Error',
-        description: error,
-        variant: 'destructive',
-      });
-      clearError();
-      setLocalLoading(false);
-    }
-  }, [error, toast, clearError]);
+  // Show loading for auth state or during Google OAuth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+        <div className="text-center space-y-4">
+          <LoadingSpinner size="lg" />
+          <p className="text-white">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLocalLoading(true);
+    setIsSubmitting(true);
 
     try {
-      console.log('Starting email login');
       await signIn(loginData.email, loginData.password);
+      toast({
+        title: 'Success',
+        description: 'Successfully signed in!',
+      });
     } catch (error) {
-      console.error('Login error:', error);
-      // Error is handled by context and useEffect
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to sign in',
+        variant: 'destructive',
+      });
     } finally {
-      setLocalLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLocalLoading(true);
+    setIsSubmitting(true);
 
     try {
-      console.log('Starting email signup');
       await signUp(
         signupData.email,
         signupData.password,
@@ -128,47 +85,27 @@ const Auth = () => {
         description: 'Account created successfully! Please check your email for verification.',
       });
     } catch (error) {
-      console.error('Signup error:', error);
-      // Error is handled by context and useEffect
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create account',
+        variant: 'destructive',
+      });
     } finally {
-      setLocalLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    console.log('Starting Google OAuth');
-    setLocalLoading(true);
     try {
       await signInWithGoogle();
-      // Don't reset loading here - let the redirect handle it
     } catch (error) {
-      console.error('Google sign-in error:', error);
-      setLocalLoading(false);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to sign in with Google',
+        variant: 'destructive',
+      });
     }
   };
-
-  // Show loading spinner during auth state loading or OAuth redirect processing
-  const shouldShowLoading = loading || (localLoading && !isOAuthRedirect());
-  
-  if (shouldShowLoading) {
-    console.log('Showing loading screen:', { 
-      loading, 
-      localLoading, 
-      isOAuth: isOAuthRedirect(),
-      shouldShowLoading 
-    });
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
-        <div className="text-center space-y-4">
-          <LoadingSpinner size="lg" />
-          <p className="text-white">
-            {isOAuthRedirect() ? 'Completing Google sign in...' : 'Loading...'}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
@@ -213,9 +150,9 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={localLoading}>
-                  {localLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
-                  {localLoading ? 'Signing in...' : 'Sign In'}
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? <LoadingSpinner size="sm" className="mr-2" /> : null}
+                  {isSubmitting ? 'Signing in...' : 'Sign In'}
                 </Button>
               </form>
             </TabsContent>
@@ -266,9 +203,9 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={localLoading}>
-                  {localLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
-                  {localLoading ? 'Creating account...' : 'Create Account'}
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? <LoadingSpinner size="sm" className="mr-2" /> : null}
+                  {isSubmitting ? 'Creating account...' : 'Create Account'}
                 </Button>
               </form>
             </TabsContent>
@@ -287,9 +224,8 @@ const Auth = () => {
               variant="outline"
               className="w-full mt-4"
               onClick={handleGoogleSignIn}
-              disabled={localLoading}
+              disabled={isSubmitting}
             >
-              {localLoading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
               <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
