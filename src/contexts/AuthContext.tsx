@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         console.log('Auth state changed:', event, session?.user?.id);
         
+        // Always update session state immediately
         dispatch({
           type: 'SET_SESSION',
           payload: { user: session?.user ?? null, session }
@@ -49,7 +51,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Handle profile fetching for authenticated users
         if (session?.user && event !== 'SIGNED_OUT') {
-          console.log('Fetching profile for user:', session.user.id);
+          console.log('User authenticated, fetching profile for:', session.user.id);
+          
+          // For Google OAuth users, we need to be extra careful about profile handling
+          const isGoogleOAuth = session.user.app_metadata?.provider === 'google';
+          console.log('Is Google OAuth user:', isGoogleOAuth);
           
           // Use setTimeout to prevent blocking the auth state change
           setTimeout(async () => {
@@ -59,19 +65,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const profile = await fetchProfile(session.user.id);
               if (mounted) {
                 dispatch({ type: 'SET_PROFILE', payload: profile });
-                console.log('Profile fetched successfully:', profile);
+                console.log('Profile set successfully:', profile);
               }
             } catch (error) {
-              console.error('Error fetching profile:', error);
+              console.error('Profile fetch error - but continuing gracefully:', error);
               if (mounted) {
-                // Continue gracefully without profile
+                // For Google OAuth users, continue without profile rather than failing
                 dispatch({ type: 'SET_PROFILE', payload: null });
               }
             }
-          }, 0);
+          }, 100); // Slightly longer delay for Google OAuth to settle
         } else {
+          // User signed out or no user
           dispatch({ type: 'SET_PROFILE', payload: null });
-          clearProfileCache();
+          if (event === 'SIGNED_OUT') {
+            clearProfileCache();
+          }
         }
       }
     );
@@ -83,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Session error:', error);
+          console.error('Session initialization error:', error);
           dispatch({ type: 'SET_ERROR', payload: error.message });
           return;
         }
@@ -110,13 +119,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 console.log('Initial profile loaded:', profile);
               }
             } catch (error) {
-              console.error('Error fetching initial profile:', error);
+              console.error('Initial profile fetch error - continuing gracefully:', error);
               if (mounted) {
-                // Continue gracefully without profile
+                // Continue without profile rather than blocking auth
                 dispatch({ type: 'SET_PROFILE', payload: null });
               }
             }
-          }, 0);
+          }, 200); // Longer delay for initial load
         }
       } catch (error) {
         console.error('Auth initialization error:', error);

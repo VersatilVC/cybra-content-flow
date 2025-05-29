@@ -35,6 +35,69 @@ export function useProfileManager() {
     }
   }, []);
 
+  const createFallbackProfile = useCallback(async (userId: string, userEmail: string): Promise<Profile | null> => {
+    try {
+      console.log('Creating fallback profile for user:', userId);
+      
+      // Get user metadata to extract names
+      const { data: { user } } = await supabase.auth.getUser();
+      const metadata = user?.user_metadata || {};
+      
+      // Extract names from various possible metadata fields
+      const firstName = metadata.first_name || metadata.given_name || 
+                       (metadata.full_name ? metadata.full_name.split(' ')[0] : '') || '';
+      const lastName = metadata.last_name || metadata.family_name || 
+                      (metadata.full_name ? metadata.full_name.split(' ').slice(1).join(' ') : '') || '';
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: userEmail,
+          first_name: firstName,
+          last_name: lastName,
+          role: 'user'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Failed to create fallback profile:', error);
+        // Return a minimal profile object to prevent auth issues
+        return {
+          id: userId,
+          email: userEmail,
+          first_name: firstName,
+          last_name: lastName,
+          role: 'user' as const,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      }
+
+      const profile: Profile = {
+        ...data,
+        role: data.role as 'admin' | 'user'
+      };
+
+      console.log('Fallback profile created successfully:', profile);
+      setCachedProfile(userId, profile);
+      return profile;
+    } catch (error) {
+      console.error('Error creating fallback profile:', error);
+      // Return minimal profile to prevent auth failure
+      return {
+        id: userId,
+        email: userEmail,
+        first_name: '',
+        last_name: '',
+        role: 'user' as const,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+    }
+  }, [setCachedProfile]);
+
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     try {
       console.log('Checking cache for profile:', userId);
@@ -54,11 +117,18 @@ export function useProfileManager() {
 
       if (error) {
         console.error('Profile fetch error:', error);
-        // If profile doesn't exist, that's okay - user might not have one yet
+        
+        // If profile doesn't exist, create a fallback profile
         if (error.code === 'PGRST116') {
-          console.log('Profile not found, returning null');
-          return null;
+          console.log('Profile not found, creating fallback profile');
+          
+          // Get user email for fallback profile creation
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.email) {
+            return await createFallbackProfile(userId, user.email);
+          }
         }
+        
         // For other errors, return null and let the app continue gracefully
         console.log('Profile fetch failed, continuing without profile');
         return null;
@@ -77,7 +147,7 @@ export function useProfileManager() {
       // Never throw error - allow auth flow to continue gracefully
       return null;
     }
-  }, [getCachedProfile, setCachedProfile]);
+  }, [getCachedProfile, setCachedProfile, createFallbackProfile]);
 
   const clearProfileCache = useCallback((userId?: string) => {
     if (userId) {

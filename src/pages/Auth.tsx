@@ -52,7 +52,7 @@ const Auth = () => {
     );
   };
 
-  // Handle successful authentication - simplified logic
+  // Handle successful authentication with better Google OAuth support
   useEffect(() => {
     console.log('Auth effect triggered:', { 
       user: !!user, 
@@ -65,14 +65,17 @@ const Auth = () => {
     if (!loading && user) {
       console.log('User authenticated, navigating to:', from);
       
-      // Small delay to ensure state is fully settled
+      // For Google OAuth users, give extra time for profile setup
+      const isGoogleUser = user.app_metadata?.provider === 'google';
+      const delay = isGoogleUser ? 500 : 100;
+      
       const timer = setTimeout(() => {
         toast({
           title: 'Success',
           description: 'Successfully signed in!',
         });
         navigate(from, { replace: true });
-      }, 100);
+      }, delay);
 
       return () => clearTimeout(timer);
     }
@@ -160,7 +163,7 @@ const Auth = () => {
         <div className="text-center space-y-4">
           <LoadingSpinner size="lg" />
           <p className="text-white">
-            {isOAuthRedirect() ? 'Completing sign in...' : 'Loading...'}
+            {isOAuthRedirect() ? 'Completing Google sign in...' : 'Loading...'}
           </p>
         </div>
       </div>

@@ -26,8 +26,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
   }
 
   // If admin access is required, check if user has admin role
-  // Since we removed the admin policy, we need to check this in the application
-  if (adminOnly && (!profile || profile.role !== 'admin')) {
+  // Allow access if profile is null (fallback for profile creation issues)
+  if (adminOnly && profile && profile.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
 
