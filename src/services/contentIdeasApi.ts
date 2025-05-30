@@ -1,0 +1,81 @@
+
+import { supabase } from '@/integrations/supabase/client';
+import { ContentIdea, ContentIdeaFilters, CreateContentIdeaData } from '@/types/contentIdeas';
+
+export const fetchContentIdeas = async (userId: string, filters?: ContentIdeaFilters): Promise<ContentIdea[]> => {
+  if (!userId) return [];
+  
+  let query = supabase
+    .from('content_ideas')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (filters?.contentType && filters.contentType !== 'All Content Types') {
+    query = query.eq('content_type', filters.contentType);
+  }
+  
+  if (filters?.targetAudience && filters.targetAudience !== 'All Audiences') {
+    query = query.eq('target_audience', filters.targetAudience);
+  }
+  
+  if (filters?.status && filters.status !== 'All Statuses') {
+    query = query.eq('status', filters.status);
+  }
+
+  if (filters?.search) {
+    query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+  
+  // Type cast to ensure proper types
+  return (data || []).map(item => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    content_type: item.content_type as 'Blog Post' | 'Guide',
+    target_audience: item.target_audience as 'Private Sector' | 'Government Sector',
+    status: item.status as 'submitted' | 'processing' | 'processed' | 'brief_created' | 'discarded',
+    source_type: item.source_type as 'manual' | 'file' | 'url',
+    source_data: item.source_data,
+    created_at: item.created_at,
+    updated_at: item.updated_at,
+  }));
+};
+
+export const createContentIdea = async (userId: string, ideaData: CreateContentIdeaData) => {
+  const { data, error } = await supabase
+    .from('content_ideas')
+    .insert({
+      ...ideaData,
+      user_id: userId,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const updateContentIdea = async (id: string, updates: Partial<ContentIdea>) => {
+  const { data, error } = await supabase
+    .from('content_ideas')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const deleteContentIdea = async (id: string) => {
+  const { error } = await supabase
+    .from('content_ideas')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+};

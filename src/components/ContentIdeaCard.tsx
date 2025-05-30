@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lightbulb, FileText, Link as LinkIcon, Edit, Trash2, Briefcase } from 'lucide-react';
-import { ContentIdea } from '@/hooks/useContentIdeas';
+import { ContentIdea } from '@/types/contentIdeas';
 
 interface ContentIdeaCardProps {
   idea: ContentIdea;
