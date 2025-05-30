@@ -4,11 +4,14 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bell, CheckCircle, XCircle, Info, AlertTriangle, Clock, MarkAsRead } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, Info, AlertTriangle, Clock, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { Database } from '@/integrations/supabase/types';
+
+type NotificationRow = Database['public']['Tables']['notifications']['Row'];
 
 interface Notification {
   id: string;
@@ -45,6 +48,18 @@ export function NotificationCenter() {
     }
   };
 
+  const mapNotificationRow = (row: NotificationRow): Notification => {
+    return {
+      id: row.id,
+      title: row.title,
+      message: row.message,
+      type: (row.type as 'info' | 'success' | 'warning' | 'error') || 'info',
+      is_read: row.is_read,
+      created_at: row.created_at,
+      related_submission_id: row.related_submission_id || undefined,
+    };
+  };
+
   const fetchNotifications = async () => {
     if (!user) return;
 
@@ -58,8 +73,9 @@ export function NotificationCenter() {
 
       if (error) throw error;
 
-      setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.is_read).length || 0);
+      const mappedNotifications = (data || []).map(mapNotificationRow);
+      setNotifications(mappedNotifications);
+      setUnreadCount(mappedNotifications.filter(n => !n.is_read).length);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -167,7 +183,7 @@ export function NotificationCenter() {
             </div>
             {unreadCount > 0 && (
               <Button variant="outline" size="sm" onClick={markAllAsRead}>
-                <MarkAsRead className="w-4 h-4 mr-1" />
+                <Check className="w-4 h-4 mr-1" />
                 Mark All Read
               </Button>
             )}
