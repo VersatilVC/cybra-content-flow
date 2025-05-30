@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Zap, Link, Database, AlertCircle } from 'lucide-react';
+import { Zap, Link, Database, AlertCircle, MessageSquare } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface AddWebhookModalProps {
@@ -29,17 +28,24 @@ const webhookTypes = [
     description: 'Processes uploaded files and URLs for knowledge base integration'
   },
   { 
+    value: 'ai_chat', 
+    label: 'AI Chat Assistant', 
+    icon: MessageSquare, 
+    color: 'text-blue-600',
+    description: 'Handles AI chat conversations and responses'
+  },
+  { 
     value: 'content_processing', 
     label: 'Content Processing', 
     icon: Zap, 
-    color: 'text-blue-600',
+    color: 'text-green-600',
     description: 'General content processing and transformation'
   },
   { 
     value: 'notification', 
     label: 'Notification Webhook', 
     icon: Link, 
-    color: 'text-green-600',
+    color: 'text-orange-600',
     description: 'Send notifications and alerts'
   },
 ];
@@ -55,11 +61,14 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Set defaults when knowledge base type is selected
+  // Set defaults when webhook types are selected
   React.useEffect(() => {
     if (webhookType === 'knowledge_base' && !name) {
       setName('Knowledge Base Processing Webhook');
       setDescription('Webhook for processing files and URLs uploaded to knowledge bases');
+    } else if (webhookType === 'ai_chat' && !name) {
+      setName('AI Chat Assistant Webhook');
+      setDescription('Webhook for handling AI chat conversations and generating responses');
     }
   }, [webhookType, name]);
 
@@ -161,17 +170,17 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
 
     try {
       // Check if there's already an active webhook of this type
-      if (webhookType === 'knowledge_base') {
+      if (webhookType === 'knowledge_base' || webhookType === 'ai_chat') {
         const { data: existingWebhooks } = await supabase
           .from('webhook_configurations')
           .select('id, is_active')
-          .eq('webhook_type', 'knowledge_base')
+          .eq('webhook_type', webhookType)
           .eq('is_active', true);
 
         if (existingWebhooks && existingWebhooks.length > 0) {
           toast({
             title: 'Webhook Already Exists',
-            description: 'There is already an active knowledge base webhook. Please disable it first or update the existing one.',
+            description: `There is already an active ${webhookType === 'ai_chat' ? 'AI chat' : 'knowledge base'} webhook. Please disable it first or update the existing one.`,
             variant: 'destructive',
           });
           setIsSubmitting(false);
@@ -240,7 +249,7 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
             <Label htmlFor="webhook-name">Name *</Label>
             <Input
               id="webhook-name"
-              placeholder="e.g., Knowledge Base Processing"
+              placeholder="e.g., AI Chat Assistant"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -285,6 +294,16 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
             </Alert>
           )}
 
+          {webhookType === 'ai_chat' && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Important:</strong> This webhook will be triggered when users send chat messages. 
+                Your N8N workflow should process the message and return a JSON response with 'response' and optional 'sources' fields.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="webhook-url">Webhook URL *</Label>
             <div className="flex gap-2">
@@ -309,7 +328,7 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
               </Button>
             </div>
             <p className="text-xs text-gray-500">
-              Copy your N8N webhook URL here. The webhook will receive POST requests with content data.
+              Copy your N8N webhook URL here. The webhook will receive POST requests with {webhookType === 'ai_chat' ? 'chat message' : 'content'} data.
             </p>
           </div>
 
