@@ -68,7 +68,7 @@ export function useChatMessages(sessionId: string | null) {
         throw new Error('No AI chat webhook configured. Please configure an AI chat webhook in the admin panel.');
       }
 
-      // Trigger webhook with message data
+      // Trigger webhook with message data including session ID
       const webhookPayload = {
         message_id: userMessage.id,
         session_id: targetSessionId,
