@@ -6,34 +6,62 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Zap, Link, Database } from 'lucide-react';
+import { Zap, Link, Database, AlertCircle } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface AddWebhookModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onWebhookAdded?: () => void;
+  preselectedType?: string;
 }
 
 const webhookTypes = [
-  { value: 'knowledge_base', label: 'Knowledge Base Processing', icon: Database },
-  { value: 'content_processing', label: 'Content Processing', icon: Zap },
-  { value: 'notification', label: 'Notification Webhook', icon: Link },
+  { 
+    value: 'knowledge_base', 
+    label: 'Knowledge Base Processing', 
+    icon: Database, 
+    color: 'text-purple-600',
+    description: 'Processes uploaded files and URLs for knowledge base integration'
+  },
+  { 
+    value: 'content_processing', 
+    label: 'Content Processing', 
+    icon: Zap, 
+    color: 'text-blue-600',
+    description: 'General content processing and transformation'
+  },
+  { 
+    value: 'notification', 
+    label: 'Notification Webhook', 
+    icon: Link, 
+    color: 'text-green-600',
+    description: 'Send notifications and alerts'
+  },
 ];
 
-export function AddWebhookModal({ open, onOpenChange, onWebhookAdded }: AddWebhookModalProps) {
+export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselectedType }: AddWebhookModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [webhookUrl, setWebhookUrl] = useState('');
-  const [webhookType, setWebhookType] = useState('');
+  const [webhookType, setWebhookType] = useState(preselectedType || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTestingWebhook, setIsTestingWebhook] = useState(false);
   
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Set defaults when knowledge base type is selected
+  React.useEffect(() => {
+    if (webhookType === 'knowledge_base' && !name) {
+      setName('Knowledge Base Processing Webhook');
+      setDescription('Webhook for processing files and URLs uploaded to knowledge bases');
+    }
+  }, [webhookType, name]);
 
   const validateUrl = (url: string) => {
     try {
@@ -132,6 +160,25 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded }: AddWebho
     setIsSubmitting(true);
 
     try {
+      // Check if there's already an active webhook of this type
+      if (webhookType === 'knowledge_base') {
+        const { data: existingWebhooks } = await supabase
+          .from('webhook_configurations')
+          .select('id, is_active')
+          .eq('webhook_type', 'knowledge_base')
+          .eq('is_active', true);
+
+        if (existingWebhooks && existingWebhooks.length > 0) {
+          toast({
+            title: 'Webhook Already Exists',
+            description: 'There is already an active knowledge base webhook. Please disable it first or update the existing one.',
+            variant: 'destructive',
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const { error } = await supabase
         .from('webhook_configurations')
         .insert({
@@ -154,7 +201,7 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded }: AddWebho
       setName('');
       setDescription('');
       setWebhookUrl('');
-      setWebhookType('');
+      setWebhookType(preselectedType || '');
       onOpenChange(false);
       
       if (onWebhookAdded) {
@@ -184,7 +231,7 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded }: AddWebho
             Add New Webhook
           </DialogTitle>
           <DialogDescription>
-            Configure a new webhook endpoint for N8N workflow integration.
+            Configure a new webhook endpoint for processing integration.
           </DialogDescription>
         </DialogHeader>
 
@@ -219,12 +266,23 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded }: AddWebho
           </div>
 
           {selectedType && (
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex items-center gap-2 text-blue-800">
-                <selectedType.icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{selectedType.label}</span>
-              </div>
-            </div>
+            <Alert>
+              <selectedType.icon className="h-4 w-4" />
+              <AlertDescription>
+                <strong>{selectedType.label}</strong><br />
+                {selectedType.description}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {webhookType === 'knowledge_base' && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Important:</strong> This webhook will be triggered when files or URLs are uploaded to knowledge bases. 
+                Make sure your N8N workflow is configured to handle the payload structure and respond with status updates.
+              </AlertDescription>
+            </Alert>
           )}
 
           <div className="space-y-2">
@@ -250,6 +308,9 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded }: AddWebho
                 )}
               </Button>
             </div>
+            <p className="text-xs text-gray-500">
+              Copy your N8N webhook URL here. The webhook will receive POST requests with content data.
+            </p>
           </div>
 
           <div className="space-y-2">

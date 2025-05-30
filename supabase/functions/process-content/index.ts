@@ -22,10 +22,25 @@ serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get('action');
 
+    console.log('Process content function called with action:', action);
+
     if (action === 'trigger') {
       // Handle content submission webhook trigger
-      const { submissionId } = await req.json();
+      let body;
+      try {
+        body = await req.json();
+        console.log('Request body:', body);
+      } catch (error) {
+        console.error('Error parsing request body:', error);
+        throw new Error('Invalid JSON in request body');
+      }
+
+      const { submissionId } = body;
       
+      if (!submissionId) {
+        throw new Error('Missing submissionId in request body');
+      }
+
       console.log('Processing content submission:', submissionId);
 
       // Get submission details
@@ -35,24 +50,39 @@ serve(async (req) => {
         .eq('id', submissionId)
         .single();
 
-      if (submissionError || !submission) {
+      if (submissionError) {
+        console.error('Error fetching submission:', submissionError);
+        throw new Error(`Submission not found: ${submissionError.message}`);
+      }
+
+      if (!submission) {
         throw new Error('Submission not found');
       }
 
-      // Get webhook configuration
-      const { data: webhook } = await supabase
+      console.log('Found submission:', submission);
+
+      // Get webhook configuration for knowledge base processing
+      const { data: webhook, error: webhookError } = await supabase
         .from('webhook_configurations')
         .select('webhook_url')
         .eq('webhook_type', 'knowledge_base')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
-      if (!webhook?.webhook_url) {
-        throw new Error('No active webhook configured');
+      if (webhookError) {
+        console.error('Error fetching webhook configuration:', webhookError);
+        throw new Error(`Webhook configuration error: ${webhookError.message}`);
       }
 
+      if (!webhook?.webhook_url) {
+        console.log('No active knowledge base webhook configured');
+        throw new Error('No active knowledge base webhook configured. Please set up a webhook in the Webhooks section.');
+      }
+
+      console.log('Using webhook URL:', webhook.webhook_url);
+
       // Update submission status to processing
-      await supabase
+      const { error: updateError } = await supabase
         .from('content_submissions')
         .update({ 
           processing_status: 'processing',
@@ -60,48 +90,93 @@ serve(async (req) => {
         })
         .eq('id', submissionId);
 
+      if (updateError) {
+        console.error('Error updating submission status:', updateError);
+        throw new Error(`Failed to update submission status: ${updateError.message}`);
+      }
+
       // Prepare webhook payload
       const payload = {
         submission_id: submission.id,
         user_id: submission.user_id,
         knowledge_base: submission.knowledge_base,
         content_type: submission.content_type,
-        file_url: submission.file_path ? `https://uejgjytmqpcilwfrlpai.supabase.co/storage/v1/object/public/knowledge-base-files/${submission.file_path}` : submission.file_url,
+        file_url: submission.file_path 
+          ? `https://uejgjytmqpcilwfrlpai.supabase.co/storage/v1/object/public/knowledge-base-files/${submission.file_path}` 
+          : submission.file_url,
         original_filename: submission.original_filename,
         file_size: submission.file_size,
         mime_type: submission.mime_type,
         timestamp: new Date().toISOString()
       };
 
-      console.log('Triggering webhook with payload:', payload);
+      console.log('Triggering webhook with payload:', JSON.stringify(payload, null, 2));
 
-      // Trigger the N8N webhook
-      const webhookResponse = await fetch(webhook.webhook_url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      // Trigger the webhook
+      try {
+        const webhookResponse = await fetch(webhook.webhook_url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
 
-      if (!webhookResponse.ok) {
-        throw new Error(`Webhook failed: ${webhookResponse.statusText}`);
+        console.log('Webhook response status:', webhookResponse.status);
+        
+        if (!webhookResponse.ok) {
+          const responseText = await webhookResponse.text();
+          console.error('Webhook response error:', responseText);
+          throw new Error(`Webhook failed with status ${webhookResponse.status}: ${responseText}`);
+        }
+
+        console.log('Webhook triggered successfully');
+      } catch (webhookError) {
+        console.error('Error calling webhook:', webhookError);
+        
+        // Update submission status to failed
+        await supabase
+          .from('content_submissions')
+          .update({ 
+            processing_status: 'failed',
+            error_message: `Webhook error: ${webhookError.message}`
+          })
+          .eq('id', submissionId);
+
+        throw new Error(`Failed to trigger webhook: ${webhookError.message}`);
       }
 
       return new Response(
-        JSON.stringify({ success: true, message: 'Webhook triggered successfully' }),
+        JSON.stringify({ 
+          success: true, 
+          message: 'Webhook triggered successfully',
+          submission_id: submissionId 
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
 
     } else if (action === 'callback') {
-      // Handle processing completion callback from N8N
-      const { submission_id, status, error_message } = await req.json();
+      // Handle processing completion callback
+      let body;
+      try {
+        body = await req.json();
+        console.log('Callback received:', body);
+      } catch (error) {
+        console.error('Error parsing callback body:', error);
+        throw new Error('Invalid JSON in callback body');
+      }
+
+      const { submission_id, status, error_message } = body;
       
-      console.log('Processing callback:', { submission_id, status, error_message });
+      if (!submission_id) {
+        throw new Error('Missing submission_id in callback');
+      }
+
+      console.log('Processing callback for submission:', submission_id, 'with status:', status);
 
       // Update submission status
       const updateData: any = {
-        processing_status: status,
+        processing_status: status || 'completed',
         updated_at: new Date().toISOString()
       };
 
@@ -119,7 +194,8 @@ serve(async (req) => {
         .eq('id', submission_id);
 
       if (updateError) {
-        throw updateError;
+        console.error('Error updating submission:', updateError);
+        throw new Error(`Failed to update submission: ${updateError.message}`);
       }
 
       // Get submission details for notification
@@ -127,7 +203,7 @@ serve(async (req) => {
         .from('content_submissions')
         .select('user_id, original_filename, knowledge_base')
         .eq('id', submission_id)
-        .single();
+        .maybeSingle();
 
       if (submission) {
         // Create notification
@@ -139,7 +215,7 @@ serve(async (req) => {
           ? `"${submission.original_filename}" has been successfully processed and added to the ${submission.knowledge_base} knowledge base.`
           : `Failed to process "${submission.original_filename}". ${error_message || 'Please try again.'}`;
 
-        await supabase
+        const { error: notificationError } = await supabase
           .from('notifications')
           .insert({
             user_id: submission.user_id,
@@ -148,23 +224,36 @@ serve(async (req) => {
             type: status === 'completed' ? 'success' : 'error',
             related_submission_id: submission_id
           });
+
+        if (notificationError) {
+          console.error('Error creating notification:', notificationError);
+        } else {
+          console.log('Notification created successfully');
+        }
       }
 
       return new Response(
-        JSON.stringify({ success: true, message: 'Callback processed successfully' }),
+        JSON.stringify({ 
+          success: true, 
+          message: 'Callback processed successfully',
+          submission_id 
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     return new Response(
-      JSON.stringify({ error: 'Invalid action' }),
+      JSON.stringify({ error: 'Invalid action parameter. Use ?action=trigger or ?action=callback' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Process content function error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'An unexpected error occurred',
+        details: error.stack 
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

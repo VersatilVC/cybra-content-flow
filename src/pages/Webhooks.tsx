@@ -1,7 +1,9 @@
 
-import { Zap, Plus, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Zap, Plus, CheckCircle, XCircle, Clock, Database, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AddWebhookModal } from "@/components/AddWebhookModal";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,34 +21,8 @@ const Webhooks = () => {
   const [isAddWebhookOpen, setIsAddWebhookOpen] = useState(false);
   const [webhooks, setWebhooks] = useState<WebhookConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [preselectedType, setPreselectedType] = useState<string>('');
   const { toast } = useToast();
-
-  const mockWebhooks = [
-    {
-      id: 1,
-      name: "AI Chat Response",
-      endpoint: "/webhook/chat",
-      status: "active",
-      lastTriggered: "5 minutes ago",
-      successRate: "99.2%"
-    },
-    {
-      id: 2,
-      name: "Content Generation",
-      endpoint: "/webhook/generate-content",
-      status: "inactive",
-      lastTriggered: "1 day ago",
-      successRate: "95.8%"
-    },
-    {
-      id: 3,
-      name: "WordPress Publishing",
-      endpoint: "/webhook/publish-wordpress",
-      status: "error",
-      lastTriggered: "3 hours ago",
-      successRate: "87.3%"
-    }
-  ];
 
   const fetchWebhooks = async () => {
     try {
@@ -96,6 +72,16 @@ const Webhooks = () => {
     }
   };
 
+  const handleAddKnowledgeBaseWebhook = () => {
+    setPreselectedType('knowledge_base');
+    setIsAddWebhookOpen(true);
+  };
+
+  const handleAddWebhook = () => {
+    setPreselectedType('');
+    setIsAddWebhookOpen(true);
+  };
+
   useEffect(() => {
     fetchWebhooks();
   }, []);
@@ -109,27 +95,19 @@ const Webhooks = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'inactive': return 'bg-yellow-100 text-yellow-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const activeWebhooks = webhooks.filter(w => w.is_active).length;
   const inactiveWebhooks = webhooks.filter(w => !w.is_active).length;
+  const knowledgeBaseWebhook = webhooks.find(w => w.webhook_type === 'knowledge_base' && w.is_active);
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Webhooks</h1>
-          <p className="text-gray-600">Manage N8N webhook integrations and monitor their status</p>
+          <p className="text-gray-600">Manage webhook integrations and monitor their status</p>
         </div>
         <button 
-          onClick={() => setIsAddWebhookOpen(true)}
+          onClick={handleAddWebhook}
           className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -137,6 +115,54 @@ const Webhooks = () => {
         </button>
       </div>
 
+      {/* Knowledge Base Webhook Setup */}
+      <div className="mb-8">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Database className="w-6 h-6 text-purple-600" />
+            <h2 className="text-xl font-semibold text-gray-900">Knowledge Base Processing</h2>
+          </div>
+          
+          {!knowledgeBaseWebhook ? (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <strong>No knowledge base webhook configured.</strong><br />
+                    To process uploaded files and URLs, you need to set up a webhook that connects to your processing pipeline.
+                  </div>
+                  <Button onClick={handleAddKnowledgeBaseWebhook} className="ml-4">
+                    <Database className="w-4 h-4 mr-2" />
+                    Setup Knowledge Base Webhook
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div>
+                  <p className="font-medium text-green-900">Knowledge base webhook is configured</p>
+                  <p className="text-sm text-green-700">{knowledgeBaseWebhook.name}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleWebhookStatus(knowledgeBaseWebhook.id, knowledgeBaseWebhook.is_active)}
+                >
+                  Disable
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg border border-gray-200">
           <div className="flex items-center gap-3 mb-2">
@@ -176,6 +202,7 @@ const Webhooks = () => {
         </div>
       </div>
 
+      {/* Webhooks Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -194,7 +221,11 @@ const Webhooks = () => {
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <Zap className="w-5 h-5 text-purple-600" />
+                        {webhook.webhook_type === 'knowledge_base' ? (
+                          <Database className="w-5 h-5 text-purple-600" />
+                        ) : (
+                          <Zap className="w-5 h-5 text-purple-600" />
+                        )}
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">{webhook.name}</div>
@@ -210,7 +241,11 @@ const Webhooks = () => {
                     </code>
                   </td>
                   <td className="py-4 px-6">
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      webhook.webhook_type === 'knowledge_base' 
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
                       {webhook.webhook_type.replace('_', ' ')}
                     </span>
                   </td>
@@ -235,12 +270,6 @@ const Webhooks = () => {
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="flex gap-2 justify-end">
-                      <button className="text-purple-600 hover:text-purple-700 text-sm font-medium">
-                        Test
-                      </button>
-                      <button className="text-gray-600 hover:text-gray-700 text-sm font-medium">
-                        Logs
-                      </button>
                       <button 
                         onClick={() => toggleWebhookStatus(webhook.id, webhook.is_active)}
                         className={`text-sm font-medium ${
@@ -256,48 +285,13 @@ const Webhooks = () => {
                 </tr>
               ))}
 
-              {/* Show mock webhooks for demonstration */}
-              {mockWebhooks.map((webhook) => (
-                <tr key={`mock-${webhook.id}`} className="hover:bg-gray-50">
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <Zap className="w-5 h-5 text-purple-600" />
-                      </div>
-                      <div className="font-medium text-gray-900">{webhook.name}</div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <code className="text-sm bg-gray-100 px-2 py-1 rounded">{webhook.endpoint}</code>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      legacy
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(webhook.status)}
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(webhook.status)}`}>
-                        {webhook.status}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <div className="flex gap-2 justify-end">
-                      <button className="text-purple-600 hover:text-purple-700 text-sm font-medium">
-                        Test
-                      </button>
-                      <button className="text-gray-600 hover:text-gray-700 text-sm font-medium">
-                        Logs
-                      </button>
-                      <button className="text-red-600 hover:text-red-700 text-sm font-medium">
-                        Disable
-                      </button>
-                    </div>
+              {webhooks.length === 0 && !isLoading && (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-gray-500">
+                    No webhooks configured yet. Add your first webhook to get started.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -307,6 +301,7 @@ const Webhooks = () => {
         open={isAddWebhookOpen}
         onOpenChange={setIsAddWebhookOpen}
         onWebhookAdded={fetchWebhooks}
+        preselectedType={preselectedType}
       />
     </div>
   );

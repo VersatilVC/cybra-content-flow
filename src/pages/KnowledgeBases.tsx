@@ -1,10 +1,16 @@
 
-import { Database, Plus, Search, Filter } from "lucide-react";
-import { useState } from "react";
+import { Database, Plus, Search, Filter, AlertCircle, CheckCircle } from "lucide-react";
+import { useState, useEffect } from "react";
 import { AddContentModal } from "@/components/AddContentModal";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 const KnowledgeBases = () => {
   const [isAddContentOpen, setIsAddContentOpen] = useState(false);
+  const [hasKnowledgeBaseWebhook, setHasKnowledgeBaseWebhook] = useState(false);
+  const [isCheckingWebhook, setIsCheckingWebhook] = useState(true);
 
   const knowledgeBases = [
     {
@@ -41,6 +47,32 @@ const KnowledgeBases = () => {
     }
   ];
 
+  const checkWebhookConfiguration = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('webhook_configurations')
+        .select('id')
+        .eq('webhook_type', 'knowledge_base')
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking webhook configuration:', error);
+        return;
+      }
+
+      setHasKnowledgeBaseWebhook(!!data);
+    } catch (error) {
+      console.error('Error checking webhook configuration:', error);
+    } finally {
+      setIsCheckingWebhook(false);
+    }
+  };
+
+  useEffect(() => {
+    checkWebhookConfiguration();
+  }, []);
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-8">
@@ -56,6 +88,37 @@ const KnowledgeBases = () => {
           Add Content
         </button>
       </div>
+
+      {/* Webhook Status Alert */}
+      {!isCheckingWebhook && (
+        <div className="mb-6">
+          {!hasKnowledgeBaseWebhook ? (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <strong>Webhook Configuration Required</strong><br />
+                    To process uploaded content, you need to configure a knowledge base webhook in the Webhooks section.
+                  </div>
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/admin/webhooks">
+                      Configure Webhook
+                    </Link>
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                <strong>Webhook Configured</strong> - Your knowledge base is ready to process uploaded content.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+      )}
 
       <div className="mb-6 flex gap-4">
         <div className="relative flex-1">
