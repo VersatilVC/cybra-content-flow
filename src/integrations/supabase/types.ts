@@ -27,6 +27,60 @@ export type Database = {
         }
         Relationships: []
       }
+      content_submissions: {
+        Row: {
+          completed_at: string | null
+          content_type: string
+          created_at: string
+          error_message: string | null
+          file_path: string | null
+          file_size: number | null
+          file_url: string | null
+          id: string
+          knowledge_base: string
+          mime_type: string | null
+          original_filename: string | null
+          processing_status: string
+          updated_at: string
+          user_id: string
+          webhook_triggered_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          content_type: string
+          created_at?: string
+          error_message?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          knowledge_base: string
+          mime_type?: string | null
+          original_filename?: string | null
+          processing_status?: string
+          updated_at?: string
+          user_id: string
+          webhook_triggered_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          content_type?: string
+          created_at?: string
+          error_message?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          knowledge_base?: string
+          mime_type?: string | null
+          original_filename?: string | null
+          processing_status?: string
+          updated_at?: string
+          user_id?: string
+          webhook_triggered_at?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           content: string | null
@@ -90,6 +144,50 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          related_submission_id: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          related_submission_id?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          related_submission_id?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_related_submission_id_fkey"
+            columns: ["related_submission_id"]
+            isOneToOne: false
+            referencedRelation: "content_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -117,6 +215,42 @@ export type Database = {
           last_name?: string | null
           role?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      webhook_configurations: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          webhook_type: string
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          webhook_type?: string
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          webhook_type?: string
+          webhook_url?: string
         }
         Relationships: []
       }

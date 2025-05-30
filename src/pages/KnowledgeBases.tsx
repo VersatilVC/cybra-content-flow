@@ -1,7 +1,11 @@
 
 import { Database, Plus, Search, Filter } from "lucide-react";
+import { useState } from "react";
+import { AddContentModal } from "@/components/AddContentModal";
 
 const KnowledgeBases = () => {
+  const [isAddContentOpen, setIsAddContentOpen] = useState(false);
+
   const knowledgeBases = [
     {
       id: 1,
@@ -44,7 +48,10 @@ const KnowledgeBases = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Knowledge Bases</h1>
           <p className="text-gray-600">Manage your content repositories and data sources</p>
         </div>
-        <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+        <button 
+          onClick={() => setIsAddContentOpen(true)}
+          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+        >
           <Plus className="w-4 h-4" />
           Add Content
         </button>
@@ -88,6 +95,11 @@ const KnowledgeBases = () => {
           </div>
         ))}
       </div>
+
+      <AddContentModal 
+        open={isAddContentOpen}
+        onOpenChange={setIsAddContentOpen}
+      />
     </div>
   );
 };
