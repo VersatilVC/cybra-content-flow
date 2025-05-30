@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -30,27 +29,22 @@ serve(async (req) => {
       // Handle content submission webhook trigger
       let body;
       
-      // Check if request has body content
-      const contentLength = req.headers.get('content-length');
-      console.log('Content-Length:', contentLength);
-      
-      if (!contentLength || contentLength === '0') {
-        throw new Error('No request body provided');
-      }
-
       try {
         const bodyText = await req.text();
         console.log('Raw request body:', bodyText);
+        console.log('Body text length:', bodyText.length);
         
         if (!bodyText || bodyText.trim() === '') {
-          throw new Error('Empty request body');
+          throw new Error('Request body is empty');
         }
         
         body = JSON.parse(bodyText);
         console.log('Parsed request body:', body);
       } catch (error) {
         console.error('Error parsing request body:', error);
-        console.error('Request body type:', typeof bodyText);
+        if (error.message === 'Request body is empty') {
+          throw new Error('No request body provided. Please ensure the request includes a valid JSON body with submissionId.');
+        }
         throw new Error(`Invalid JSON in request body: ${error.message}`);
       }
 
@@ -180,6 +174,11 @@ serve(async (req) => {
       try {
         const bodyText = await req.text();
         console.log('Callback raw body:', bodyText);
+        
+        if (!bodyText || bodyText.trim() === '') {
+          throw new Error('Callback body is empty');
+        }
+        
         body = JSON.parse(bodyText);
         console.log('Callback received:', body);
       } catch (error) {
