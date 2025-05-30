@@ -1,45 +1,50 @@
 
-import { Lightbulb, Plus, Filter, FileText, Link as LinkIcon } from "lucide-react";
+import React, { useState } from 'react';
+import { Plus, Search, Filter, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useContentIdeas, ContentIdeaFilters } from '@/hooks/useContentIdeas';
+import AddIdeaModal from '@/components/AddIdeaModal';
+import AutoGenerationControls from '@/components/AutoGenerationControls';
+import ContentIdeaCard from '@/components/ContentIdeaCard';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const ContentIdeas = () => {
-  const ideas = [
-    {
-      id: 1,
-      title: "The Future of AI in Cybersecurity",
-      description: "Exploring how artificial intelligence is revolutionizing threat detection and response",
-      contentType: "Blog Post",
-      targetAudience: "Private Sector",
-      status: "pending",
-      createdAt: "2 hours ago"
-    },
-    {
-      id: 2,
-      title: "Government Compliance Best Practices",
-      description: "A comprehensive guide to meeting regulatory requirements in government organizations",
-      contentType: "Guide",
-      targetAudience: "Government Sector",
-      status: "approved",
-      createdAt: "1 day ago"
-    },
-    {
-      id: 3,
-      title: "Social Media Threat Landscape 2024",
-      description: "Analysis of emerging threats on social media platforms and mitigation strategies",
-      contentType: "Blog Post",
-      targetAudience: "Private Sector",
-      status: "in_progress",
-      createdAt: "3 days ago"
-    }
-  ];
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAutoGenControls, setShowAutoGenControls] = useState(false);
+  const [filters, setFilters] = useState<ContentIdeaFilters>({
+    contentType: 'All Content Types',
+    targetAudience: 'All Audiences',
+    status: 'All Statuses',
+    search: '',
+  });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const { 
+    ideas, 
+    isLoading, 
+    deleteIdea, 
+    createBrief, 
+    isDeleting, 
+    isCreatingBrief 
+  } = useContentIdeas(filters);
+
+  const handleFilterChange = (key: keyof ContentIdeaFilters, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
   };
+
+  const handleEdit = (idea: any) => {
+    // TODO: Implement edit functionality
+    console.log('Edit idea:', idea);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -49,78 +54,121 @@ const ContentIdeas = () => {
           <p className="text-gray-600">Generate and manage content ideas for your marketing campaigns</p>
         </div>
         <div className="flex gap-3">
-          <button className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors">
-            <FileText className="w-4 h-4" />
-            Upload File
-          </button>
-          <button className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors">
-            <LinkIcon className="w-4 h-4" />
-            Add URL
-          </button>
-          <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+          <Button
+            onClick={() => setShowAutoGenControls(!showAutoGenControls)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Zap className="w-4 h-4" />
+            Auto Generate
+          </Button>
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2"
+          >
             <Plus className="w-4 h-4" />
             New Idea
-          </button>
+          </Button>
         </div>
       </div>
 
-      <div className="mb-6 flex gap-4">
-        <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-          <option>All Content Types</option>
-          <option>Blog Post</option>
-          <option>Guide</option>
-        </select>
-        <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-          <option>All Audiences</option>
-          <option>Private Sector</option>
-          <option>Government Sector</option>
-        </select>
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-          <Filter className="w-4 h-4" />
-          More Filters
-        </button>
+      {showAutoGenControls && (
+        <div className="mb-8">
+          <AutoGenerationControls />
+        </div>
+      )}
+
+      {/* Search and Filters */}
+      <div className="mb-6 space-y-4">
+        <div className="flex gap-4 items-center">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search ideas..."
+              value={filters.search || ''}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select 
+            value={filters.contentType} 
+            onValueChange={(value) => handleFilterChange('contentType', value)}
+          >
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Content Types">All Content Types</SelectItem>
+              <SelectItem value="Blog Post">Blog Post</SelectItem>
+              <SelectItem value="Guide">Guide</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select 
+            value={filters.targetAudience} 
+            onValueChange={(value) => handleFilterChange('targetAudience', value)}
+          >
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Audiences">All Audiences</SelectItem>
+              <SelectItem value="Private Sector">Private Sector</SelectItem>
+              <SelectItem value="Government Sector">Government Sector</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select 
+            value={filters.status} 
+            onValueChange={(value) => handleFilterChange('status', value)}
+          >
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Statuses">All Statuses</SelectItem>
+              <SelectItem value="submitted">Submitted</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="processed">Processed</SelectItem>
+              <SelectItem value="brief_created">Brief Created</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
+      {/* Ideas Grid */}
       <div className="space-y-4">
-        {ideas.map((idea) => (
-          <div key={idea.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Lightbulb className="w-5 h-5 text-purple-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{idea.title}</h3>
-                  <p className="text-gray-600 mb-3">{idea.description}</p>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span>Type: {idea.contentType}</span>
-                    <span>•</span>
-                    <span>Audience: {idea.targetAudience}</span>
-                    <span>•</span>
-                    <span>{idea.createdAt}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(idea.status)}`}>
-                  {idea.status.replace('_', ' ')}
-                </span>
-                <div className="flex gap-2">
-                  <button className="text-purple-600 hover:text-purple-700 text-sm font-medium">
-                    Create Brief
-                  </button>
-                  <button className="text-gray-600 hover:text-gray-700 text-sm font-medium">
-                    Edit
-                  </button>
-                  <button className="text-red-600 hover:text-red-700 text-sm font-medium">
-                    Discard
-                  </button>
-                </div>
-              </div>
+        {ideas.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Plus className="w-8 h-8 text-purple-600" />
             </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No content ideas yet</h3>
+            <p className="text-gray-600 mb-4">Start by submitting your first content idea or auto-generating some ideas.</p>
+            <Button
+              onClick={() => setShowAddModal(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Submit Your First Idea
+            </Button>
           </div>
-        ))}
+        ) : (
+          ideas.map((idea) => (
+            <ContentIdeaCard
+              key={idea.id}
+              idea={idea}
+              onEdit={handleEdit}
+              onDiscard={deleteIdea}
+              onCreateBrief={createBrief}
+              isCreatingBrief={isCreatingBrief}
+            />
+          ))
+        )}
       </div>
+
+      <AddIdeaModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+      />
     </div>
   );
 };

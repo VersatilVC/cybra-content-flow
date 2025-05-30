@@ -27,6 +27,36 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_generation_schedules: {
+        Row: {
+          created_at: string
+          frequency: string
+          id: string
+          is_active: boolean
+          next_run_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          frequency: string
+          id?: string
+          is_active?: boolean
+          next_run_at: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          next_run_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -80,6 +110,48 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      content_ideas: {
+        Row: {
+          content_type: string
+          created_at: string
+          description: string | null
+          id: string
+          source_data: Json | null
+          source_type: string
+          status: string
+          target_audience: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          source_data?: Json | null
+          source_type: string
+          status?: string
+          target_audience: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          source_data?: Json | null
+          source_type?: string
+          status?: string
+          target_audience?: string
           title?: string
           updated_at?: string
           user_id?: string
