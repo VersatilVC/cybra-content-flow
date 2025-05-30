@@ -212,6 +212,53 @@ export type Database = {
         }
         Relationships: []
       }
+      content_suggestions: {
+        Row: {
+          content_idea_id: string
+          content_type: string
+          created_at: string
+          description: string | null
+          id: string
+          relevance_score: number | null
+          source_title: string | null
+          source_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_idea_id: string
+          content_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          relevance_score?: number | null
+          source_title?: string | null
+          source_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_idea_id?: string
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          relevance_score?: number | null
+          source_title?: string | null
+          source_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_suggestions_content_idea_id_fkey"
+            columns: ["content_idea_id"]
+            isOneToOne: false
+            referencedRelation: "content_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           content: string | null

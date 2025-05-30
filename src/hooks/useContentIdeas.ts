@@ -26,14 +26,23 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
     mutationFn: async (ideaData: CreateContentIdeaData) => {
       if (!user?.id) throw new Error('User not authenticated');
 
+      console.log('Creating content idea:', ideaData);
       const data = await createContentIdea(user.id, ideaData);
       
       // Trigger webhook for idea engine
-      await triggerWebhook('idea_engine', {
-        type: 'idea_submission',
-        idea: data,
-        timestamp: new Date().toISOString(),
-      });
+      try {
+        console.log('Triggering idea_engine webhook');
+        await triggerWebhook('idea_engine', {
+          type: 'idea_submission',
+          idea: data,
+          user_id: user.id,
+          timestamp: new Date().toISOString(),
+        });
+        console.log('Webhook triggered successfully');
+      } catch (webhookError) {
+        console.error('Webhook trigger failed:', webhookError);
+        // Don't fail the whole operation if webhook fails
+      }
 
       return data;
     },
@@ -45,6 +54,7 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
       });
     },
     onError: (error) => {
+      console.error('Failed to create idea:', error);
       toast({
         title: 'Failed to submit idea',
         description: error instanceof Error ? error.message : 'Unknown error',
@@ -55,12 +65,18 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
 
   const updateIdeaMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<ContentIdea> }) => {
+      console.log('Updating content idea:', id, updates);
       return await updateContentIdea(id, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['content-ideas'] });
+      toast({
+        title: 'Idea updated successfully',
+        description: 'Your content idea has been updated.',
+      });
     },
     onError: (error) => {
+      console.error('Failed to update idea:', error);
       toast({
         title: 'Failed to update idea',
         description: error instanceof Error ? error.message : 'Unknown error',
@@ -100,6 +116,7 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
       await triggerWebhook('brief_creator', {
         type: 'brief_creation',
         idea: idea,
+        user_id: user?.id,
         timestamp: new Date().toISOString(),
       });
     },

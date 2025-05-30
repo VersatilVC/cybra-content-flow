@@ -37,7 +37,7 @@ export const fetchContentIdeas = async (userId: string, filters?: ContentIdeaFil
     description: item.description,
     content_type: item.content_type as 'Blog Post' | 'Guide',
     target_audience: item.target_audience as 'Private Sector' | 'Government Sector',
-    status: item.status as 'submitted' | 'processing' | 'processed' | 'brief_created' | 'discarded',
+    status: item.status as 'processing' | 'processed' | 'brief_created' | 'discarded',
     source_type: item.source_type as 'manual' | 'file' | 'url',
     source_data: item.source_data,
     created_at: item.created_at,
@@ -46,6 +46,7 @@ export const fetchContentIdeas = async (userId: string, filters?: ContentIdeaFil
 };
 
 export const createContentIdea = async (userId: string, ideaData: CreateContentIdeaData) => {
+  console.log('API: Creating content idea with data:', ideaData);
   const { data, error } = await supabase
     .from('content_ideas')
     .insert({
@@ -55,11 +56,16 @@ export const createContentIdea = async (userId: string, ideaData: CreateContentI
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('API: Error creating content idea:', error);
+    throw error;
+  }
+  console.log('API: Content idea created successfully:', data);
   return data;
 };
 
 export const updateContentIdea = async (id: string, updates: Partial<ContentIdea>) => {
+  console.log('API: Updating content idea:', id, updates);
   const { data, error } = await supabase
     .from('content_ideas')
     .update(updates)
@@ -67,7 +73,11 @@ export const updateContentIdea = async (id: string, updates: Partial<ContentIdea
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('API: Error updating content idea:', error);
+    throw error;
+  }
+  console.log('API: Content idea updated successfully:', data);
   return data;
 };
 

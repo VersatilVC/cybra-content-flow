@@ -48,11 +48,11 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
     }
 
     createIdea({
-      title: formData.idea.slice(0, 100) + (formData.idea.length > 100 ? '...' : ''), // Auto-generate title from idea
+      title: formData.idea.slice(0, 100) + (formData.idea.length > 100 ? '...' : ''),
       description: formData.idea,
       content_type: formData.content_type as any,
       target_audience: formData.target_audience as any,
-      status: 'submitted',
+      status: 'processing', // Changed from 'submitted' to 'processing'
       source_type: sourceType,
       source_data: sourceData,
     });

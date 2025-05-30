@@ -5,14 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContentIdeas } from '@/hooks/useContentIdeas';
-import { ContentIdeaFilters } from '@/types/contentIdeas';
+import { ContentIdeaFilters, ContentIdea } from '@/types/contentIdeas';
 import AddIdeaModal from '@/components/AddIdeaModal';
+import EditIdeaModal from '@/components/EditIdeaModal';
 import AutoGenerationControls from '@/components/AutoGenerationControls';
 import ContentIdeaCard from '@/components/ContentIdeaCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 const ContentIdeas = () => {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null);
   const [showAutoGenControls, setShowAutoGenControls] = useState(false);
   const [filters, setFilters] = useState<ContentIdeaFilters>({
     contentType: 'All Content Types',
@@ -34,9 +37,14 @@ const ContentIdeas = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleEdit = (idea: any) => {
-    // TODO: Implement edit functionality
-    console.log('Edit idea:', idea);
+  const handleEdit = (idea: ContentIdea) => {
+    setSelectedIdea(idea);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setSelectedIdea(null);
   };
 
   if (isLoading) {
@@ -126,7 +134,6 @@ const ContentIdeas = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All Statuses">All Statuses</SelectItem>
-              <SelectItem value="submitted">Submitted</SelectItem>
               <SelectItem value="processing">Processing</SelectItem>
               <SelectItem value="processed">Processed</SelectItem>
               <SelectItem value="brief_created">Brief Created</SelectItem>
@@ -169,6 +176,12 @@ const ContentIdeas = () => {
       <AddIdeaModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
+      />
+
+      <EditIdeaModal
+        isOpen={showEditModal}
+        onClose={handleCloseEditModal}
+        idea={selectedIdea}
       />
     </div>
   );
