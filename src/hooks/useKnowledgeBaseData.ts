@@ -32,7 +32,7 @@ export function useKnowledgeBaseData() {
   const knowledgeBaseConfig = [
     {
       name: "Cyabra Knowledge Base",
-      description: "Company-specific information and resources",
+      description: "Company-specific resources",
       color: "bg-purple-500",
       tableName: "documents",
       dbValue: "cyabra"
