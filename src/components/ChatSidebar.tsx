@@ -14,24 +14,23 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar({ selectedSessionId, onSessionSelect, onNewChat }: ChatSidebarProps) {
-  const { sessions, isLoading, createSession, deleteSession, isCreating } = useChatSessions();
+  const { sessions, isLoading, createSessionAsync, deleteSession, isCreating } = useChatSessions();
   const [searchTerm, setSearchTerm] = useState('');
-  const [newSessionTitle, setNewSessionTitle] = useState('');
-  const [showNewSessionInput, setShowNewSessionInput] = useState(false);
 
   const filteredSessions = sessions.filter(session =>
     session.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCreateSession = () => {
-    if (newSessionTitle.trim()) {
-      createSession(newSessionTitle.trim());
-      setNewSessionTitle('');
-      setShowNewSessionInput(false);
+  const handleNewChat = async () => {
+    try {
+      const newSession = await createSessionAsync('New Chat');
+      onSessionSelect(newSession.id);
+    } catch (error) {
+      console.error('Failed to create new session:', error);
     }
   };
 
-  const handleNewChat = () => {
+  const handleStartFirstChat = () => {
     onSessionSelect(null);
     onNewChat();
   };
@@ -48,9 +47,10 @@ export function ChatSidebar({ selectedSessionId, onSessionSelect, onNewChat }: C
           onClick={handleNewChat}
           className="w-full mb-3"
           variant="outline"
+          disabled={isCreating}
         >
           <Plus className="w-4 h-4 mr-2" />
-          New Chat
+          {isCreating ? 'Creating...' : 'New Chat'}
         </Button>
 
         <div className="relative">
@@ -66,38 +66,6 @@ export function ChatSidebar({ selectedSessionId, onSessionSelect, onNewChat }: C
 
       <ScrollArea className="flex-1">
         <div className="p-2">
-          {showNewSessionInput && (
-            <div className="p-3 border border-purple-200 rounded-lg mb-2 bg-white">
-              <Input
-                placeholder="Enter chat title..."
-                value={newSessionTitle}
-                onChange={(e) => setNewSessionTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleCreateSession();
-                  if (e.key === 'Escape') setShowNewSessionInput(false);
-                }}
-                className="mb-2"
-                autoFocus
-              />
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  onClick={handleCreateSession}
-                  disabled={!newSessionTitle.trim() || isCreating}
-                >
-                  Create
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => setShowNewSessionInput(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
-
           {isLoading ? (
             <div className="text-center text-gray-500 py-4">Loading...</div>
           ) : filteredSessions.length === 0 ? (
@@ -106,7 +74,7 @@ export function ChatSidebar({ selectedSessionId, onSessionSelect, onNewChat }: C
               {!searchTerm && (
                 <Button 
                   variant="link" 
-                  onClick={() => setShowNewSessionInput(true)}
+                  onClick={handleStartFirstChat}
                   className="text-purple-600 mt-2"
                 >
                   Start your first chat

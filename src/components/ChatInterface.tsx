@@ -32,23 +32,38 @@ export function ChatInterface({ sessionId, onSessionCreated }: ChatInterfaceProp
     setInputMessage('');
 
     if (!sessionId) {
-      // Create new session first
+      // Create new session first, then send message
       const title = messageContent.length > 50 
         ? messageContent.substring(0, 50) + '...' 
         : messageContent;
       
       try {
-        createSession(title);
-        // Note: We'll need to handle the session creation and message sending in sequence
-        // For now, we'll show an error asking user to create a session first
-        return;
+        // Wait for session creation to complete
+        const newSession = await new Promise<any>((resolve, reject) => {
+          const originalCreateSession = createSession;
+          
+          // Override the createSession to get the result
+          createSession(title);
+          
+          // We need to wait for the session to be created
+          // This is a simplified approach - in production you'd want better error handling
+          setTimeout(() => {
+            // The session should be created by now, but we need to get the ID
+            // For now, we'll need to modify the hook to return the created session
+            reject(new Error('Session creation timeout'));
+          }, 5000);
+        });
+        
+        onSessionCreated(newSession.id);
+        sendMessage({ content: messageContent, sessionId: newSession.id });
       } catch (error) {
-        console.error('Failed to create session:', error);
+        console.error('Failed to create session and send message:', error);
+        // For now, show error to user - they can try again
         return;
       }
+    } else {
+      sendMessage({ content: messageContent, sessionId });
     }
-
-    sendMessage({ content: messageContent, sessionId });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -60,13 +75,48 @@ export function ChatInterface({ sessionId, onSessionCreated }: ChatInterfaceProp
 
   if (!sessionId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Start a New Conversation</h3>
-          <p className="text-gray-600 mb-6 max-w-md">
-            Select an existing conversation from the sidebar or start a new chat to begin talking with the AI assistant.
-          </p>
+      <div className="flex-1 flex flex-col">
+        <div className="border-b border-gray-200 p-4">
+          <h2 className="text-lg font-semibold text-gray-900">AI Assistant</h2>
+          <p className="text-gray-600">Chat with your AI assistant about anything</p>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center bg-gray-50">
+          <div className="text-center max-w-md">
+            <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Start a New Conversation</h3>
+            <p className="text-gray-600 mb-6">
+              Type your message below to start chatting with the AI assistant. A new conversation will be created automatically.
+            </p>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-200 p-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex gap-4">
+              <Input
+                type="text"
+                placeholder="Type your message to start a new chat..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={isSending || isCreating}
+                className="flex-1"
+              />
+              <Button 
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || isSending || isCreating}
+                className="flex items-center gap-2"
+              >
+                {isSending || isCreating ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                Send
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );

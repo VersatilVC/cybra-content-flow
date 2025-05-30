@@ -49,8 +49,10 @@ export function useChatSessions() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (newSession) => {
       queryClient.invalidateQueries({ queryKey: ['chat-sessions'] });
+      // Return the new session for immediate use
+      return newSession;
     },
     onError: (error) => {
       toast({
@@ -83,10 +85,16 @@ export function useChatSessions() {
     },
   });
 
+  // Helper function to create session and return promise
+  const createSessionAsync = async (title: string): Promise<ChatSession> => {
+    return createSessionMutation.mutateAsync(title);
+  };
+
   return {
     sessions,
     isLoading,
     createSession: createSessionMutation.mutate,
+    createSessionAsync,
     deleteSession: deleteSessionMutation.mutate,
     isCreating: createSessionMutation.isPending,
     isDeleting: deleteSessionMutation.isPending,

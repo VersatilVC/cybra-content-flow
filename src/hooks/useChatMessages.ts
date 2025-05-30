@@ -91,14 +91,31 @@ export function useChatMessages(sessionId: string | null) {
 
       const result = await response.json();
       
+      // Handle N8N response format - the AI response is in the 'output' field
+      let aiResponse = 'I apologize, but I encountered an error processing your message.';
+      let sources: string[] = [];
+      
+      if (result.output) {
+        aiResponse = result.output;
+      } else if (result.response) {
+        aiResponse = result.response;
+      } else if (typeof result === 'string') {
+        aiResponse = result;
+      }
+      
+      // Handle sources if provided
+      if (result.sources && Array.isArray(result.sources)) {
+        sources = result.sources;
+      }
+      
       // Insert AI response message
       const { error: assistantError } = await supabase
         .from('chat_messages')
         .insert({
           session_id: targetSessionId,
           role: 'assistant',
-          content: result.response || 'I apologize, but I encountered an error processing your message.',
-          sources: result.sources || null,
+          content: aiResponse,
+          sources: sources.length > 0 ? sources : null,
         });
 
       if (assistantError) throw assistantError;
