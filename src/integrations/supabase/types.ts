@@ -122,6 +122,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          idea_research_summary: string | null
           source_data: Json | null
           source_type: string
           status: string
@@ -135,6 +136,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          idea_research_summary?: string | null
           source_data?: Json | null
           source_type: string
           status?: string
@@ -148,6 +150,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          idea_research_summary?: string | null
           source_data?: Json | null
           source_type?: string
           status?: string
