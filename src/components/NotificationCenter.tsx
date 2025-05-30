@@ -4,11 +4,12 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bell, CheckCircle, XCircle, Info, AlertTriangle, Clock, Check } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, Info, AlertTriangle, Clock, Check, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { Database } from '@/integrations/supabase/types';
 
 type NotificationRow = Database['public']['Tables']['notifications']['Row'];
@@ -29,6 +30,7 @@ export function NotificationCenter() {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -135,6 +137,16 @@ export function NotificationCenter() {
     }
   };
 
+  const handleViewSuggestions = (notification: Notification) => {
+    markAsRead(notification.id);
+    navigate('/ideas');
+  };
+
+  const isContentSuggestionNotification = (notification: Notification) => {
+    return notification.title.includes('Content Suggestions Ready') || 
+           notification.message.includes('content suggestions');
+  };
+
   useEffect(() => {
     if (user) {
       fetchNotifications();
@@ -236,6 +248,22 @@ export function NotificationCenter() {
                       }`}>
                         {notification.message}
                       </p>
+                      
+                      {isContentSuggestionNotification(notification) && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewSuggestions(notification);
+                          }}
+                          size="sm"
+                          variant="outline"
+                          className="mt-2 text-xs"
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          View Suggestions
+                        </Button>
+                      )}
+                      
                       <p className="text-xs text-gray-400 mt-2">
                         {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                       </p>
