@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,12 +11,14 @@ import EditIdeaModal from '@/components/EditIdeaModal';
 import AutoGenerationControls from '@/components/AutoGenerationControls';
 import ContentIdeaCard from '@/components/ContentIdeaCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useSearchParams } from 'react-router-dom';
 
 const ContentIdeas = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null);
   const [showAutoGenControls, setShowAutoGenControls] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<ContentIdeaFilters>({
     contentType: 'All Content Types',
     targetAudience: 'All Audiences',
@@ -33,6 +35,8 @@ const ContentIdeas = () => {
     isCreatingBrief 
   } = useContentIdeas(filters);
 
+  const expandIdeaId = searchParams.get('expand');
+
   const handleFilterChange = (key: keyof ContentIdeaFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
@@ -46,6 +50,20 @@ const ContentIdeas = () => {
     setShowEditModal(false);
     setSelectedIdea(null);
   };
+
+  // Clear expand parameter after component mounts
+  useEffect(() => {
+    if (expandIdeaId) {
+      const timer = setTimeout(() => {
+        setSearchParams(prev => {
+          const newParams = new URLSearchParams(prev);
+          newParams.delete('expand');
+          return newParams;
+        });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [expandIdeaId, setSearchParams]);
 
   if (isLoading) {
     return (
@@ -168,6 +186,7 @@ const ContentIdeas = () => {
               onDiscard={deleteIdea}
               onCreateBrief={createBrief}
               isCreatingBrief={isCreatingBrief}
+              autoExpand={expandIdeaId === idea.id}
             />
           ))
         )}

@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, FileText, Link as LinkIcon, Edit, Trash2, Briefcase, Eye } from 'lucide-react';
+import { Lightbulb, FileText, Link as LinkIcon, Edit, Trash2, Briefcase, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { ContentIdea } from '@/types/contentIdeas';
-import ViewSuggestionsModal from '@/components/ViewSuggestionsModal';
+import { useContentSuggestions } from '@/hooks/useContentSuggestions';
+import ContentSuggestionCard from '@/components/ContentSuggestionCard';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface ContentIdeaCardProps {
   idea: ContentIdea;
@@ -13,6 +15,7 @@ interface ContentIdeaCardProps {
   onDiscard: (id: string) => void;
   onCreateBrief: (id: string) => void;
   isCreatingBrief: boolean;
+  autoExpand?: boolean;
 }
 
 export default function ContentIdeaCard({ 
@@ -20,10 +23,15 @@ export default function ContentIdeaCard({
   onEdit, 
   onDiscard, 
   onCreateBrief, 
-  isCreatingBrief 
+  isCreatingBrief,
+  autoExpand = false
 }: ContentIdeaCardProps) {
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(autoExpand);
+  
+  const { data: suggestions, isLoading: loadingSuggestions } = useContentSuggestions(
+    showSuggestions ? idea.id : ''
+  );
   
   const MAX_DESCRIPTION_LENGTH = 150;
   const needsTruncation = idea.description && idea.description.length > MAX_DESCRIPTION_LENGTH;
@@ -61,8 +69,37 @@ export default function ContentIdeaCard({
     return `${Math.floor(diffInHours / 24)} days ago`;
   };
 
+  const handleToggleSuggestions = () => {
+    setShowSuggestions(!showSuggestions);
+  };
+
+  const handleSuggestionEdit = (suggestion: any) => {
+    // Convert suggestion to idea format for editing
+    const suggestionAsIdea: ContentIdea = {
+      id: suggestion.id,
+      title: suggestion.title,
+      description: suggestion.description,
+      content_type: suggestion.content_type as 'Blog Post' | 'Guide',
+      target_audience: idea.target_audience, // Use parent's target audience
+      status: 'processed' as const,
+      source_type: suggestion.source_url ? 'url' : 'file',
+      source_data: suggestion.source_url ? { url: suggestion.source_url } : {},
+      created_at: suggestion.created_at,
+      updated_at: suggestion.updated_at,
+    };
+    onEdit(suggestionAsIdea);
+  };
+
+  const handleSuggestionCreateBrief = (suggestion: any) => {
+    onCreateBrief(suggestion.id);
+  };
+
+  const handleSuggestionDiscard = (suggestion: any) => {
+    onDiscard(suggestion.id);
+  };
+
   return (
-    <>
+    <div className="space-y-2">
       <Card className="hover:shadow-md transition-shadow">
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">
@@ -111,57 +148,94 @@ export default function ContentIdeaCard({
             
             <div className="flex gap-2">
               {idea.status === 'processed' && (
+                <Button
+                  onClick={handleToggleSuggestions}
+                  size="sm"
+                  className="text-blue-600 hover:text-blue-700"
+                  variant="ghost"
+                >
+                  {showSuggestions ? (
+                    <>
+                      <ChevronUp className="w-4 h-4 mr-1" />
+                      Hide Suggestions
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-4 h-4 mr-1" />
+                      View Suggestions
+                    </>
+                  )}
+                </Button>
+              )}
+              {!showSuggestions && idea.status === 'processed' && (
+                <Button
+                  onClick={() => onCreateBrief(idea.id)}
+                  disabled={isCreatingBrief}
+                  size="sm"
+                  className="text-purple-600 hover:text-purple-700"
+                  variant="ghost"
+                >
+                  <Briefcase className="w-4 h-4 mr-1" />
+                  {isCreatingBrief ? 'Creating...' : 'Create Brief'}
+                </Button>
+              )}
+              {!showSuggestions && (
                 <>
                   <Button
-                    onClick={() => setShowSuggestions(true)}
+                    onClick={() => onEdit(idea)}
                     size="sm"
-                    className="text-blue-600 hover:text-blue-700"
                     variant="ghost"
+                    className="text-gray-600 hover:text-gray-700"
                   >
-                    <Eye className="w-4 h-4 mr-1" />
-                    View Suggestions
+                    <Edit className="w-4 h-4 mr-1" />
+                    Edit
                   </Button>
                   <Button
-                    onClick={() => onCreateBrief(idea.id)}
-                    disabled={isCreatingBrief}
+                    onClick={() => onDiscard(idea.id)}
                     size="sm"
-                    className="text-purple-600 hover:text-purple-700"
                     variant="ghost"
+                    className="text-red-600 hover:text-red-700"
                   >
-                    <Briefcase className="w-4 h-4 mr-1" />
-                    {isCreatingBrief ? 'Creating...' : 'Create Brief'}
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Discard
                   </Button>
                 </>
               )}
-              <Button
-                onClick={() => onEdit(idea)}
-                size="sm"
-                variant="ghost"
-                className="text-gray-600 hover:text-gray-700"
-              >
-                <Edit className="w-4 h-4 mr-1" />
-                Edit
-              </Button>
-              <Button
-                onClick={() => onDiscard(idea.id)}
-                size="sm"
-                variant="ghost"
-                className="text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Discard
-              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <ViewSuggestionsModal
-        isOpen={showSuggestions}
-        onClose={() => setShowSuggestions(false)}
-        ideaId={idea.id}
-        ideaTitle={idea.title}
-      />
-    </>
+      {/* Suggestions Section */}
+      {showSuggestions && (
+        <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
+          {loadingSuggestions ? (
+            <div className="ml-8 flex items-center justify-center py-8">
+              <LoadingSpinner />
+            </div>
+          ) : suggestions && suggestions.length > 0 ? (
+            <div className="space-y-2">
+              <div className="ml-8 text-sm font-medium text-gray-700 mb-2">
+                Content Suggestions ({suggestions.length})
+              </div>
+              {suggestions.map((suggestion) => (
+                <ContentSuggestionCard
+                  key={suggestion.id}
+                  suggestion={suggestion}
+                  onEdit={() => handleSuggestionEdit(suggestion)}
+                  onDiscard={() => handleSuggestionDiscard(suggestion)}
+                  onCreateBrief={() => handleSuggestionCreateBrief(suggestion)}
+                  isCreatingBrief={isCreatingBrief}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="ml-8 p-4 text-center text-gray-500 bg-gray-50 rounded-lg">
+              No suggestions available for this idea.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

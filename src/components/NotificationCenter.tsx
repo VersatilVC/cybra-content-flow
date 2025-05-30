@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Database } from '@/integrations/supabase/types';
 
 type NotificationRow = Database['public']['Tables']['notifications']['Row'];
@@ -31,6 +30,7 @@ export function NotificationCenter() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -137,9 +137,15 @@ export function NotificationCenter() {
     }
   };
 
-  const handleViewSuggestions = (notification: Notification) => {
+  const handleViewSuggestions = async (notification: Notification) => {
     markAsRead(notification.id);
-    navigate('/ideas');
+    
+    // Extract idea ID from related_submission_id or notification message
+    if (notification.related_submission_id) {
+      navigate(`/ideas?expand=${notification.related_submission_id}`);
+    } else {
+      navigate('/ideas');
+    }
   };
 
   const isContentSuggestionNotification = (notification: Notification) => {
