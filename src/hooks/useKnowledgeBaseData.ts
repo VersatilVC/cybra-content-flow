@@ -53,7 +53,7 @@ export function useKnowledgeBaseData() {
     },
     {
       name: "Competitor Knowledge Base",
-      description: "Competitive intelligence and analysis",
+      description: "Competitive intelligence",
       color: "bg-orange-500", 
       tableName: "documents_competitor",
       dbValue: "competitor"
