@@ -10,11 +10,15 @@ import { useAutoGeneration } from '@/hooks/useAutoGeneration';
 
 export default function AutoGenerationControls() {
   const { schedule, generateNow, updateSchedule, isGenerating, isUpdatingSchedule } = useAutoGeneration();
-  const [frequency, setFrequency] = useState(schedule?.frequency || 'weekly');
+  const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'quarterly'>(schedule?.frequency || 'weekly');
   const [isActive, setIsActive] = useState(schedule?.is_active || false);
 
   const handleScheduleUpdate = () => {
     updateSchedule({ frequency, is_active: isActive });
+  };
+
+  const handleFrequencyChange = (value: string) => {
+    setFrequency(value as 'daily' | 'weekly' | 'monthly' | 'quarterly');
   };
 
   return (
@@ -59,7 +63,7 @@ export default function AutoGenerationControls() {
 
             <div>
               <Label htmlFor="frequency">Generation Frequency</Label>
-              <Select value={frequency} onValueChange={setFrequency}>
+              <Select value={frequency} onValueChange={handleFrequencyChange}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

@@ -29,7 +29,17 @@ export function useAutoGeneration() {
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data || null;
+      if (!data) return null;
+
+      // Type cast to ensure proper types
+      return {
+        id: data.id,
+        frequency: data.frequency as 'daily' | 'weekly' | 'monthly' | 'quarterly',
+        is_active: data.is_active,
+        next_run_at: data.next_run_at,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+      };
     },
     enabled: !!user?.id,
   });
@@ -80,7 +90,7 @@ export function useAutoGeneration() {
   });
 
   const updateScheduleMutation = useMutation({
-    mutationFn: async (scheduleData: { frequency: string; is_active: boolean }) => {
+    mutationFn: async (scheduleData: { frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly'; is_active: boolean }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const nextRunAt = calculateNextRun(scheduleData.frequency);
@@ -89,7 +99,7 @@ export function useAutoGeneration() {
         .from('auto_generation_schedules')
         .upsert({
           user_id: user.id,
-          frequency: scheduleData.frequency as any,
+          frequency: scheduleData.frequency,
           is_active: scheduleData.is_active,
           next_run_at: nextRunAt,
         })
@@ -125,7 +135,7 @@ export function useAutoGeneration() {
   };
 }
 
-function calculateNextRun(frequency: string): string {
+function calculateNextRun(frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly'): string {
   const now = new Date();
   switch (frequency) {
     case 'daily':

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -58,7 +57,20 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data || [];
+      
+      // Type cast to ensure proper types
+      return (data || []).map(item => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        content_type: item.content_type as 'Blog Post' | 'Guide',
+        target_audience: item.target_audience as 'Private Sector' | 'Government Sector',
+        status: item.status as 'submitted' | 'processing' | 'processed' | 'brief_created' | 'discarded',
+        source_type: item.source_type as 'manual' | 'file' | 'url',
+        source_data: item.source_data,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+      }));
     },
     enabled: !!user?.id,
   });
