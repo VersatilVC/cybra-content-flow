@@ -29,7 +29,12 @@ export function useChatMessages(sessionId: string | null) {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      
+      // Type assertion to ensure role matches our interface
+      return (data || []).map(message => ({
+        ...message,
+        role: message.role as 'user' | 'assistant'
+      }));
     },
     enabled: !!sessionId && !!user?.id,
   });
