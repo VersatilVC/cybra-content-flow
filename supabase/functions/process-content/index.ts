@@ -23,16 +23,35 @@ serve(async (req) => {
     const action = url.searchParams.get('action') || 'trigger'; // Default to 'trigger' for POST requests
 
     console.log('Process content function called with action:', action);
+    console.log('Request method:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
 
     if (action === 'trigger') {
       // Handle content submission webhook trigger
       let body;
+      
+      // Check if request has body content
+      const contentLength = req.headers.get('content-length');
+      console.log('Content-Length:', contentLength);
+      
+      if (!contentLength || contentLength === '0') {
+        throw new Error('No request body provided');
+      }
+
       try {
-        body = await req.json();
-        console.log('Request body:', body);
+        const bodyText = await req.text();
+        console.log('Raw request body:', bodyText);
+        
+        if (!bodyText || bodyText.trim() === '') {
+          throw new Error('Empty request body');
+        }
+        
+        body = JSON.parse(bodyText);
+        console.log('Parsed request body:', body);
       } catch (error) {
         console.error('Error parsing request body:', error);
-        throw new Error('Invalid JSON in request body');
+        console.error('Request body type:', typeof bodyText);
+        throw new Error(`Invalid JSON in request body: ${error.message}`);
       }
 
       const { submissionId } = body;
@@ -159,7 +178,9 @@ serve(async (req) => {
       // Handle processing completion callback
       let body;
       try {
-        body = await req.json();
+        const bodyText = await req.text();
+        console.log('Callback raw body:', bodyText);
+        body = JSON.parse(bodyText);
         console.log('Callback received:', body);
       } catch (error) {
         console.error('Error parsing callback body:', error);
