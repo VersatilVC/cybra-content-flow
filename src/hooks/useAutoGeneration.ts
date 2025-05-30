@@ -50,7 +50,7 @@ export function useAutoGeneration() {
       const webhooks = await supabase
         .from('webhook_configurations')
         .select('*')
-        .eq('webhook_type', 'idea_engine')
+        .eq('webhook_type', 'idea_auto_generator')
         .eq('is_active', true);
 
       if (webhooks.data && webhooks.data.length > 0) {

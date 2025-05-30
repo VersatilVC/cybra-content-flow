@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Zap, Link, Database, AlertCircle, MessageSquare } from 'lucide-react';
+import { Zap, Link, Database, AlertCircle, MessageSquare, Lightbulb, FileText, Briefcase } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface AddWebhookModalProps {
@@ -35,9 +36,30 @@ const webhookTypes = [
     description: 'Handles AI chat conversations and responses'
   },
   { 
+    value: 'idea_engine', 
+    label: 'Idea Engine', 
+    icon: Lightbulb, 
+    color: 'text-yellow-600',
+    description: 'Processes general content idea submissions'
+  },
+  { 
+    value: 'idea_auto_generator', 
+    label: 'Idea Auto Generator', 
+    icon: Zap, 
+    color: 'text-green-600',
+    description: 'Automatically generates content ideas on schedule or demand'
+  },
+  { 
+    value: 'brief_creator', 
+    label: 'Brief Creator', 
+    icon: Briefcase, 
+    color: 'text-indigo-600',
+    description: 'Creates detailed content briefs from processed ideas'
+  },
+  { 
     value: 'content_processing', 
     label: 'Content Processing', 
-    icon: Zap, 
+    icon: FileText, 
     color: 'text-green-600',
     description: 'General content processing and transformation'
   },
@@ -69,6 +91,15 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
     } else if (webhookType === 'ai_chat' && !name) {
       setName('AI Chat Assistant Webhook');
       setDescription('Webhook for handling AI chat conversations and generating responses');
+    } else if (webhookType === 'idea_engine' && !name) {
+      setName('Idea Engine Webhook');
+      setDescription('Webhook for processing general content idea submissions');
+    } else if (webhookType === 'idea_auto_generator' && !name) {
+      setName('Idea Auto Generator Webhook');
+      setDescription('Webhook for automatically generating content ideas');
+    } else if (webhookType === 'brief_creator' && !name) {
+      setName('Brief Creator Webhook');
+      setDescription('Webhook for creating detailed content briefs from ideas');
     }
   }, [webhookType, name]);
 
@@ -169,8 +200,8 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
     setIsSubmitting(true);
 
     try {
-      // Check if there's already an active webhook of this type
-      if (webhookType === 'knowledge_base' || webhookType === 'ai_chat') {
+      // Check if there's already an active webhook of this type for certain types
+      if (['knowledge_base', 'ai_chat', 'idea_engine', 'idea_auto_generator', 'brief_creator'].includes(webhookType)) {
         const { data: existingWebhooks } = await supabase
           .from('webhook_configurations')
           .select('id, is_active')
@@ -178,9 +209,17 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
           .eq('is_active', true);
 
         if (existingWebhooks && existingWebhooks.length > 0) {
+          const typeLabels: Record<string, string> = {
+            'knowledge_base': 'knowledge base',
+            'ai_chat': 'AI chat',
+            'idea_engine': 'idea engine',
+            'idea_auto_generator': 'idea auto generator',
+            'brief_creator': 'brief creator'
+          };
+          
           toast({
             title: 'Webhook Already Exists',
-            description: `There is already an active ${webhookType === 'ai_chat' ? 'AI chat' : 'knowledge base'} webhook. Please disable it first or update the existing one.`,
+            description: `There is already an active ${typeLabels[webhookType]} webhook. Please disable it first or update the existing one.`,
             variant: 'destructive',
           });
           setIsSubmitting(false);
@@ -304,6 +343,16 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
             </Alert>
           )}
 
+          {(webhookType === 'idea_engine' || webhookType === 'idea_auto_generator' || webhookType === 'brief_creator') && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Important:</strong> This webhook will be triggered for content idea processing. 
+                Make sure your N8N workflow can handle the idea data structure and respond appropriately.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="webhook-url">Webhook URL *</Label>
             <div className="flex gap-2">
@@ -328,7 +377,7 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
               </Button>
             </div>
             <p className="text-xs text-gray-500">
-              Copy your N8N webhook URL here. The webhook will receive POST requests with {webhookType === 'ai_chat' ? 'chat message' : 'content'} data.
+              Copy your N8N webhook URL here. The webhook will receive POST requests with content data.
             </p>
           </div>
 

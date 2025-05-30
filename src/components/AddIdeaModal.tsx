@@ -18,8 +18,7 @@ interface AddIdeaModalProps {
 export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
   const [activeTab, setActiveTab] = useState('manual');
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
+    idea: '',
     content_type: '',
     target_audience: '',
     url: '',
@@ -31,7 +30,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.content_type || !formData.target_audience) return;
+    if (!formData.idea || !formData.content_type || !formData.target_audience) return;
 
     let sourceData = {};
     let sourceType: 'manual' | 'file' | 'url' = 'manual';
@@ -49,8 +48,8 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
     }
 
     createIdea({
-      title: formData.title,
-      description: formData.description || null,
+      title: formData.idea.slice(0, 100) + (formData.idea.length > 100 ? '...' : ''), // Auto-generate title from idea
+      description: formData.idea,
       content_type: formData.content_type as any,
       target_audience: formData.target_audience as any,
       status: 'submitted',
@@ -60,8 +59,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
 
     // Reset form
     setFormData({
-      title: '',
-      description: '',
+      idea: '',
       content_type: '',
       target_audience: '',
       url: '',
@@ -106,23 +104,14 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
 
             <TabsContent value="manual" className="space-y-4">
               <div>
-                <Label htmlFor="title">Idea Title *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Enter your content idea title"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="idea">Content Idea *</Label>
                 <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe your content idea in detail"
+                  id="idea"
+                  value={formData.idea}
+                  onChange={(e) => setFormData(prev => ({ ...prev, idea: e.target.value }))}
+                  placeholder="Describe your content idea in detail..."
                   rows={4}
+                  required
                 />
               </div>
             </TabsContent>
@@ -140,12 +129,13 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                 />
               </div>
               <div>
-                <Label htmlFor="url-title">Idea Title *</Label>
-                <Input
-                  id="url-title"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Title for this content idea"
+                <Label htmlFor="url-idea">Content Idea *</Label>
+                <Textarea
+                  id="url-idea"
+                  value={formData.idea}
+                  onChange={(e) => setFormData(prev => ({ ...prev, idea: e.target.value }))}
+                  placeholder="Describe what content idea this URL inspired..."
+                  rows={4}
                   required
                 />
               </div>
@@ -174,12 +164,13 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                 </div>
               </div>
               <div>
-                <Label htmlFor="file-title">Idea Title *</Label>
-                <Input
-                  id="file-title"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Title for this content idea"
+                <Label htmlFor="file-idea">Content Idea *</Label>
+                <Textarea
+                  id="file-idea"
+                  value={formData.idea}
+                  onChange={(e) => setFormData(prev => ({ ...prev, idea: e.target.value }))}
+                  placeholder="Describe what content idea this file inspired..."
+                  rows={4}
                   required
                 />
               </div>
