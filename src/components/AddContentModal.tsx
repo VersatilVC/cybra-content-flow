@@ -166,6 +166,7 @@ export function AddContentModal({ open, onOpenChange }: AddContentModalProps) {
     console.log('Triggering webhook for submission:', submissionId);
     
     const { data, error } = await supabase.functions.invoke('process-content', {
+      method: 'POST',
       body: { submissionId },
       headers: { 'Content-Type': 'application/json' }
     });
@@ -414,7 +415,7 @@ export function AddContentModal({ open, onOpenChange }: AddContentModalProps) {
 
               <Button
                 onClick={handleFileSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !selectedKnowledgeBase}
                 className="w-full"
               >
                 {isSubmitting ? (
@@ -449,7 +450,7 @@ export function AddContentModal({ open, onOpenChange }: AddContentModalProps) {
 
               <Button
                 onClick={handleUrlSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !selectedKnowledgeBase}
                 className="w-full"
               >
                 {isSubmitting ? (

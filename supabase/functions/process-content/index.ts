@@ -20,7 +20,7 @@ serve(async (req) => {
     );
 
     const url = new URL(req.url);
-    const action = url.searchParams.get('action');
+    const action = url.searchParams.get('action') || 'trigger'; // Default to 'trigger' for POST requests
 
     console.log('Process content function called with action:', action);
 
