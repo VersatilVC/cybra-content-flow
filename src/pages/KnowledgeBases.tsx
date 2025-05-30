@@ -1,5 +1,5 @@
 
-import { Database, Plus, AlertCircle, CheckCircle, Clock, TrendingUp } from "lucide-react";
+import { Database, Plus, CheckCircle, Clock, TrendingUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AddContentModal } from "@/components/AddContentModal";
 import { RecentContentItem } from "@/components/RecentContentItem";
@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
 
 const KnowledgeBases = () => {
   const [isAddContentOpen, setIsAddContentOpen] = useState(false);
@@ -42,12 +43,9 @@ const KnowledgeBases = () => {
     checkWebhookConfiguration();
   }, []);
 
-  const getKnowledgeBaseStatus = (itemCount: number, lastUpdated: string) => {
+  const getKnowledgeBaseStatus = (itemCount: number) => {
     if (itemCount === 0) {
       return { icon: Clock, color: "text-yellow-500", status: "Empty" };
-    }
-    if (lastUpdated === 'No data') {
-      return { icon: AlertCircle, color: "text-orange-500", status: "Needs attention" };
     }
     return { icon: CheckCircle, color: "text-green-500", status: "Active" };
   };
@@ -118,7 +116,7 @@ const KnowledgeBases = () => {
           ))
         ) : (
           knowledgeBases.map((kb, index) => {
-            const status = getKnowledgeBaseStatus(kb.itemCount, kb.lastUpdated);
+            const status = getKnowledgeBaseStatus(kb.itemCount);
             const StatusIcon = status.icon;
             
             return (

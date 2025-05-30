@@ -9,6 +9,7 @@ interface KnowledgeBaseStats {
   lastUpdated: string;
   color: string;
   tableName: string;
+  dbValue: string;
 }
 
 interface ContentSubmission {
@@ -33,25 +34,29 @@ export function useKnowledgeBaseData() {
       name: "Cyabra Knowledge Base",
       description: "Company-specific information and resources",
       color: "bg-purple-500",
-      tableName: "documents"
+      tableName: "documents",
+      dbValue: "cyabra"
     },
     {
       name: "Industry Knowledge Base", 
       description: "Industry trends and insights",
       color: "bg-blue-500",
-      tableName: "documents_industry"
+      tableName: "documents_industry",
+      dbValue: "industry"
     },
     {
       name: "News Knowledge Base",
       description: "Current news and updates", 
       color: "bg-green-500",
-      tableName: "documents_news"
+      tableName: "documents_news",
+      dbValue: "news"
     },
     {
       name: "Competitor Knowledge Base",
       description: "Competitive intelligence and analysis",
       color: "bg-orange-500", 
-      tableName: "documents_competitor"
+      tableName: "documents_competitor",
+      dbValue: "competitor"
     }
   ];
 
@@ -64,11 +69,11 @@ export function useKnowledgeBaseData() {
             .from(kb.tableName as any)
             .select('*', { count: 'exact', head: true });
 
-          // For last updated, we'll use content_submissions data since documents tables don't have timestamps
+          // For last updated, we'll use content_submissions data with the correct dbValue
           const { data: latestSubmission } = await supabase
             .from('content_submissions')
             .select('created_at')
-            .eq('knowledge_base', kb.name)
+            .eq('knowledge_base', kb.dbValue)
             .eq('processing_status', 'completed')
             .order('created_at', { ascending: false })
             .limit(1)
