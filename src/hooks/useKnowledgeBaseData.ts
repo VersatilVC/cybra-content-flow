@@ -58,28 +58,25 @@ export function useKnowledgeBaseData() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch counts and last updated for each knowledge base
+        // Fetch counts for each knowledge base
         const kbPromises = knowledgeBaseConfig.map(async (kb) => {
           const { count } = await supabase
-            .from(kb.tableName)
+            .from(kb.tableName as any)
             .select('*', { count: 'exact', head: true });
 
-          const { data: latestItem } = await supabase
-            .from(kb.tableName)
-            .select('metadata')
-            .order('id', { ascending: false })
+          // For last updated, we'll use content_submissions data since documents tables don't have timestamps
+          const { data: latestSubmission } = await supabase
+            .from('content_submissions')
+            .select('created_at')
+            .eq('knowledge_base', kb.name)
+            .eq('processing_status', 'completed')
+            .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
 
-          // Extract date from metadata or use a default
           let lastUpdated = 'No data';
-          if (latestItem?.metadata && typeof latestItem.metadata === 'object') {
-            const metadata = latestItem.metadata as any;
-            if (metadata.created_at) {
-              lastUpdated = new Date(metadata.created_at).toLocaleDateString();
-            } else if (metadata.timestamp) {
-              lastUpdated = new Date(metadata.timestamp).toLocaleDateString();
-            }
+          if (latestSubmission?.created_at) {
+            lastUpdated = new Date(latestSubmission.created_at).toLocaleDateString();
           }
 
           return {

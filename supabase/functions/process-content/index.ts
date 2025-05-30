@@ -221,19 +221,21 @@ serve(async (req) => {
       // Get submission details for notification
       const { data: submission } = await supabase
         .from('content_submissions')
-        .select('user_id, original_filename, knowledge_base')
+        .select('user_id, original_filename, file_url, knowledge_base')
         .eq('id', submission_id)
         .maybeSingle();
 
       if (submission) {
-        // Create notification
+        // Create notification with proper handling of URLs vs files
+        const contentName = submission.original_filename || submission.file_url || 'Content';
+        
         const notificationTitle = status === 'completed' 
           ? 'Content Processing Complete'
           : 'Content Processing Failed';
         
         const notificationMessage = status === 'completed'
-          ? `"${submission.original_filename}" has been successfully processed and added to the ${submission.knowledge_base} knowledge base.`
-          : `Failed to process "${submission.original_filename}". ${error_message || 'Please try again.'}`;
+          ? `"${contentName}" has been successfully processed and added to the ${submission.knowledge_base} knowledge base.`
+          : `Failed to process "${contentName}". ${error_message || 'Please try again.'}`;
 
         const { error: notificationError } = await supabase
           .from('notifications')
