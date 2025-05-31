@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +9,7 @@ import {
   deleteContentIdea 
 } from '@/services/contentIdeasApi';
 import { triggerWebhook } from '@/services/webhookService';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useContentIdeas(filters?: ContentIdeaFilters) {
   const { user } = useAuth();
@@ -29,15 +29,38 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
       console.log('Creating content idea:', ideaData);
       const data = await createContentIdea(user.id, ideaData);
       
+      // Prepare webhook payload
+      let webhookPayload = {
+        type: 'idea_submission',
+        idea: data,
+        user_id: user.id,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Add file download URL for file submissions
+      if (data.source_type === 'file' && data.source_data?.filename) {
+        try {
+          const { data: signedUrlData } = await supabase.storage
+            .from('content-files')
+            .createSignedUrl(`${user.id}/${data.source_data.filename}`, 3600); // 1 hour expiry
+          
+          if (signedUrlData?.signedUrl) {
+            webhookPayload = {
+              ...webhookPayload,
+              file_download_url: signedUrlData.signedUrl
+            };
+            console.log('Added file download URL to webhook payload');
+          }
+        } catch (error) {
+          console.error('Failed to generate file download URL:', error);
+          // Continue without the URL rather than failing the whole operation
+        }
+      }
+      
       // Trigger webhook for idea engine
       try {
         console.log('Triggering idea_engine webhook');
-        await triggerWebhook('idea_engine', {
-          type: 'idea_submission',
-          idea: data,
-          user_id: user.id,
-          timestamp: new Date().toISOString(),
-        });
+        await triggerWebhook('idea_engine', webhookPayload);
         console.log('Webhook triggered successfully');
       } catch (webhookError) {
         console.error('Webhook trigger failed:', webhookError);
