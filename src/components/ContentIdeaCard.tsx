@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, FileText, Link as LinkIcon, Edit, Trash2, Briefcase, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { Lightbulb, FileText, Link as LinkIcon, Trash2, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { ContentIdea } from '@/types/contentIdeas';
 import { useContentSuggestions } from '@/hooks/useContentSuggestions';
 import ContentSuggestionCard from '@/components/ContentSuggestionCard';
@@ -167,40 +167,15 @@ export default function ContentIdeaCard({
                   )}
                 </Button>
               )}
-              {!showSuggestions && idea.status === 'processed' && (
-                <Button
-                  onClick={() => onCreateBrief(idea.id)}
-                  disabled={isCreatingBrief}
-                  size="sm"
-                  className="text-purple-600 hover:text-purple-700"
-                  variant="ghost"
-                >
-                  <Briefcase className="w-4 h-4 mr-1" />
-                  {isCreatingBrief ? 'Creating...' : 'Create Brief'}
-                </Button>
-              )}
-              {!showSuggestions && (
-                <>
-                  <Button
-                    onClick={() => onEdit(idea)}
-                    size="sm"
-                    variant="ghost"
-                    className="text-gray-600 hover:text-gray-700"
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => onDiscard(idea.id)}
-                    size="sm"
-                    variant="ghost"
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Discard
-                  </Button>
-                </>
-              )}
+              <Button
+                onClick={() => onDiscard(idea.id)}
+                size="sm"
+                variant="ghost"
+                className="text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                Discard
+              </Button>
             </div>
           </div>
         </CardContent>
