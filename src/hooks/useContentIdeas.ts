@@ -29,8 +29,8 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
       console.log('Creating content idea:', ideaData);
       const data = await createContentIdea(user.id, ideaData);
       
-      // Prepare webhook payload
-      let webhookPayload = {
+      // Prepare webhook payload with flexible typing
+      let webhookPayload: Record<string, any> = {
         type: 'idea_submission',
         idea: data,
         user_id: user.id,
@@ -38,22 +38,22 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
       };
 
       // Add file download URL for file submissions
-      if (data.source_type === 'file' && data.source_data?.filename) {
-        try {
-          const { data: signedUrlData } = await supabase.storage
-            .from('content-files')
-            .createSignedUrl(`${user.id}/${data.source_data.filename}`, 3600); // 1 hour expiry
-          
-          if (signedUrlData?.signedUrl) {
-            webhookPayload = {
-              ...webhookPayload,
-              file_download_url: signedUrlData.signedUrl
-            };
-            console.log('Added file download URL to webhook payload');
+      if (data.source_type === 'file' && data.source_data && typeof data.source_data === 'object' && data.source_data !== null) {
+        const sourceData = data.source_data as Record<string, any>;
+        if (sourceData.filename && typeof sourceData.filename === 'string') {
+          try {
+            const { data: signedUrlData } = await supabase.storage
+              .from('content-files')
+              .createSignedUrl(`${user.id}/${sourceData.filename}`, 3600); // 1 hour expiry
+            
+            if (signedUrlData?.signedUrl) {
+              webhookPayload.file_download_url = signedUrlData.signedUrl;
+              console.log('Added file download URL to webhook payload');
+            }
+          } catch (error) {
+            console.error('Failed to generate file download URL:', error);
+            // Continue without the URL rather than failing the whole operation
           }
-        } catch (error) {
-          console.error('Failed to generate file download URL:', error);
-          // Continue without the URL rather than failing the whole operation
         }
       }
       
