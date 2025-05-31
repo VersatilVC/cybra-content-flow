@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,14 @@ export default function ContentSuggestionCard({
   onCreateBrief, 
   isCreatingBrief 
 }: ContentSuggestionCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const MAX_DESCRIPTION_LENGTH = 120;
+  const needsTruncation = suggestion.description && suggestion.description.length > MAX_DESCRIPTION_LENGTH;
+  const displayDescription = needsTruncation && !isExpanded 
+    ? suggestion.description?.substring(0, MAX_DESCRIPTION_LENGTH) + '...'
+    : suggestion.description;
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -52,9 +60,17 @@ export default function ContentSuggestionCard({
                 {suggestion.title}
               </h4>
               {suggestion.description && (
-                <p className="text-sm text-gray-600 mb-2 line-clamp-3">
-                  {suggestion.description}
-                </p>
+                <div className="mb-2">
+                  <p className="text-sm text-gray-600">{displayDescription}</p>
+                  {needsTruncation && (
+                    <button
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className="text-purple-600 hover:text-purple-700 text-sm font-medium mt-1"
+                    >
+                      {isExpanded ? 'Read less' : 'Read more'}
+                    </button>
+                  )}
+                </div>
               )}
               <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
                 <span>Type: {suggestion.content_type}</span>
