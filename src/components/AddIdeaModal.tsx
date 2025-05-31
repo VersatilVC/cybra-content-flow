@@ -40,22 +40,26 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
       sourceData = { url: formData.url };
     } else if (activeTab === 'file' && formData.file) {
       sourceType = 'file';
+      // sourceData will be populated after file upload in the hook
       sourceData = { 
-        filename: formData.file.name,
+        originalName: formData.file.name,
         size: formData.file.size,
         type: formData.file.type
       };
     }
 
-    createIdea({
+    const ideaPayload = {
       title: formData.idea.slice(0, 100) + (formData.idea.length > 100 ? '...' : ''),
       description: formData.idea,
       content_type: formData.content_type as any,
       target_audience: formData.target_audience as any,
-      status: 'processing', // Changed from 'submitted' to 'processing'
+      status: 'processing' as const,
       source_type: sourceType,
       source_data: sourceData,
-    });
+      ...(formData.file && { file: formData.file })
+    };
+
+    createIdea(ideaPayload);
 
     // Reset form
     setFormData({

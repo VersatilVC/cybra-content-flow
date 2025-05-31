@@ -23,11 +23,41 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
   });
 
   const createIdeaMutation = useMutation({
-    mutationFn: async (ideaData: CreateContentIdeaData) => {
+    mutationFn: async (ideaData: CreateContentIdeaData & { file?: File }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
       console.log('Creating content idea:', ideaData);
-      const data = await createContentIdea(user.id, ideaData);
+      
+      // Handle file upload if present
+      let finalIdeaData = { ...ideaData };
+      delete finalIdeaData.file; // Remove file from idea data before saving to database
+      
+      if (ideaData.file && ideaData.source_type === 'file') {
+        const fileName = `${Date.now()}-${ideaData.file.name}`;
+        const filePath = `${user.id}/${fileName}`;
+        
+        console.log('Uploading file to storage:', filePath);
+        const { error: uploadError } = await supabase.storage
+          .from('content-files')
+          .upload(filePath, ideaData.file);
+          
+        if (uploadError) {
+          console.error('File upload failed:', uploadError);
+          throw new Error(`Failed to upload file: ${uploadError.message}`);
+        }
+        
+        // Update source_data with the actual uploaded filename
+        finalIdeaData.source_data = {
+          filename: fileName,
+          originalName: ideaData.file.name,
+          size: ideaData.file.size,
+          type: ideaData.file.type
+        };
+        
+        console.log('File uploaded successfully, updated source_data:', finalIdeaData.source_data);
+      }
+      
+      const data = await createContentIdea(user.id, finalIdeaData);
       
       // Prepare webhook payload with flexible typing
       let webhookPayload: Record<string, any> = {
