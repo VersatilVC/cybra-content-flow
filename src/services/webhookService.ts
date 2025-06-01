@@ -37,8 +37,8 @@ export const getIdeaCallbackUrl = () => {
   return `${supabaseUrl}/functions/v1/process-idea-callback`;
 };
 
-// Trigger content routing webhook when creating content items
-export const triggerContentRoutingWebhook = async (briefId: string, userId: string) => {
+// Trigger content processing webhook when creating content items
+export const triggerContentProcessingWebhook = async (briefId: string, userId: string) => {
   const payload = {
     type: 'content_creation',
     brief_id: briefId,
@@ -47,11 +47,11 @@ export const triggerContentRoutingWebhook = async (briefId: string, userId: stri
   };
 
   try {
-    console.log('Triggering content_routing webhook');
-    await triggerWebhook('content_routing', payload);
-    console.log('Content routing webhook triggered successfully');
+    console.log('Triggering content_processing webhook');
+    await triggerWebhook('content_processing', payload);
+    console.log('Content processing webhook triggered successfully');
   } catch (error) {
-    console.error('Content routing webhook failed:', error);
+    console.error('Content processing webhook failed:', error);
     throw error;
   }
 };

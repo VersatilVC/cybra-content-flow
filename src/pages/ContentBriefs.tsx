@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, Filter, Briefcase, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { useContentBriefs } from '@/hooks/useContentBriefs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ContentBriefFilters, ContentBrief } from '@/types/contentBriefs';
-import { triggerContentRoutingWebhook } from '@/services/webhookService';
+import { triggerContentProcessingWebhook } from '@/services/webhookService';
 import ContentBriefCard from '@/components/ContentBriefCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ViewBriefModal from '@/components/ViewBriefModal';
@@ -82,8 +83,8 @@ const ContentBriefs = () => {
     try {
       console.log('Creating content item for brief:', briefId);
       
-      // Trigger the content routing webhook
-      await triggerContentRoutingWebhook(briefId, user.id);
+      // Trigger the content processing webhook
+      await triggerContentProcessingWebhook(briefId, user.id);
       
       // Show fun confirmation message
       toast({

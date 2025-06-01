@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react';
 import { ContentBrief } from '@/types/contentBriefs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { triggerContentRoutingWebhook } from '@/services/webhookService';
+import { triggerContentProcessingWebhook } from '@/services/webhookService';
 
 interface CreateContentCTAProps {
   brief: ContentBrief;
@@ -32,8 +32,8 @@ export default function CreateContentCTA({ brief, onCreateContentItem }: CreateC
     try {
       console.log('Creating content item for brief:', brief.id);
       
-      // Trigger the content routing webhook
-      await triggerContentRoutingWebhook(brief.id, user.id);
+      // Trigger the content processing webhook
+      await triggerContentProcessingWebhook(brief.id, user.id);
       
       // Show fun confirmation message
       toast({
