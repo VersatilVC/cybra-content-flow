@@ -35,7 +35,7 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 const navigationItems = [
   {
     title: "Dashboard",
-    url: "/",
+    url: "/dashboard",
     icon: Home,
   },
   {
@@ -50,22 +50,22 @@ const navigationItems = [
   },
   {
     title: "Content Ideas",
-    url: "/ideas",
+    url: "/content-ideas",
     icon: Lightbulb,
   },
   {
     title: "Content Briefs",
-    url: "/briefs",
+    url: "/content-briefs",
     icon: Briefcase,
   },
   {
     title: "Content Items",
-    url: "/content",
+    url: "/content-items",
     icon: FileText,
   },
   {
     title: "Content Calendar",
-    url: "/calendar",
+    url: "/content-calendar",
     icon: Calendar,
   },
 ];
@@ -73,17 +73,17 @@ const navigationItems = [
 const adminItems = [
   {
     title: "User Management",
-    url: "/admin/users",
+    url: "/user-management",
     icon: Users,
   },
   {
     title: "Webhooks",
-    url: "/admin/webhooks",
+    url: "/webhooks",
     icon: Zap,
   },
   {
     title: "Settings",
-    url: "/admin/settings",
+    url: "/settings",
     icon: Settings,
   },
 ];
