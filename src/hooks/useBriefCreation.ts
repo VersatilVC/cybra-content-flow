@@ -6,6 +6,7 @@ import { ContentIdea, ContentSuggestion } from '@/types/contentIdeas';
 import { updateContentIdea } from '@/services/contentIdeasApi';
 import { supabase } from '@/integrations/supabase/client';
 import { triggerWebhook } from '@/services/webhookService';
+import { useState } from 'react';
 
 interface BriefCreationParams {
   id: string;
@@ -17,10 +18,12 @@ export function useBriefCreation(ideas: ContentIdea[]) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [creatingBriefId, setCreatingBriefId] = useState<string | null>(null);
 
   const createBriefMutation = useMutation({
     mutationFn: async ({ id, type, ideaId }: BriefCreationParams) => {
       console.log('Creating brief for:', { id, type, ideaId });
+      setCreatingBriefId(id);
       
       if (type === 'idea') {
         // Update idea status
@@ -69,6 +72,7 @@ export function useBriefCreation(ideas: ContentIdea[]) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['content-ideas'] });
       queryClient.invalidateQueries({ queryKey: ['content-suggestions'] });
+      setCreatingBriefId(null);
       toast({
         title: 'Brief creation started',
         description: 'The content brief is being created.',
@@ -76,6 +80,7 @@ export function useBriefCreation(ideas: ContentIdea[]) {
     },
     onError: (error) => {
       console.error('Brief creation error:', error);
+      setCreatingBriefId(null);
       toast({
         title: 'Failed to create brief',
         description: error instanceof Error ? error.message : 'Unknown error',
@@ -87,6 +92,6 @@ export function useBriefCreation(ideas: ContentIdea[]) {
   return {
     createBrief: (id: string, type: 'idea' | 'suggestion' = 'idea', ideaId?: string) => 
       createBriefMutation.mutate({ id, type, ideaId }),
-    isCreatingBrief: createBriefMutation.isPending,
+    isCreatingBrief: (id: string) => creatingBriefId === id,
   };
 }

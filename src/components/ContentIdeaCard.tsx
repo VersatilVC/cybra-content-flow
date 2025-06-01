@@ -12,7 +12,7 @@ interface ContentIdeaCardProps {
   onEdit: (idea: ContentIdea) => void;
   onDiscard: (id: string) => void;
   onCreateBrief: (id: string, type?: 'idea' | 'suggestion', ideaId?: string) => void;
-  isCreatingBrief: boolean;
+  isCreatingBrief: (id: string) => boolean;
   autoExpand?: boolean;
 }
 
