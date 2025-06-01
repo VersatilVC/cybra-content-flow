@@ -116,6 +116,51 @@ export type Database = {
         }
         Relationships: []
       }
+      content_briefs: {
+        Row: {
+          brief_type: string
+          content: string | null
+          created_at: string
+          description: string | null
+          id: string
+          source_id: string
+          source_type: string
+          status: string
+          target_audience: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brief_type: string
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          source_id: string
+          source_type: string
+          status?: string
+          target_audience: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brief_type?: string
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          source_id?: string
+          source_type?: string
+          status?: string
+          target_audience?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       content_ideas: {
         Row: {
           content_type: string

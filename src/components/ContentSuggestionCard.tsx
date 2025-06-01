@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, LinkIcon, Edit, Trash2, Briefcase } from 'lucide-react';
+import { FileText, LinkIcon, Edit, Trash2, Briefcase, Eye, Loader2 } from 'lucide-react';
 import { ContentSuggestion } from '@/types/contentIdeas';
+import { useBriefBySource } from '@/hooks/useContentBriefs';
 
 interface ContentSuggestionCardProps {
   suggestion: ContentSuggestion;
@@ -22,6 +23,7 @@ export default function ContentSuggestionCard({
   isCreatingBrief 
 }: ContentSuggestionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { data: existingBrief } = useBriefBySource(suggestion.id, 'suggestion');
   
   const MAX_DESCRIPTION_LENGTH = 120;
   const needsTruncation = suggestion.description && suggestion.description.length > MAX_DESCRIPTION_LENGTH;
@@ -45,6 +47,55 @@ export default function ContentSuggestionCard({
     if (score >= 0.8) return 'bg-green-100 text-green-800';
     if (score >= 0.6) return 'bg-yellow-100 text-yellow-800';
     return 'bg-red-100 text-red-800';
+  };
+
+  const handleViewBrief = () => {
+    if (existingBrief) {
+      // Navigate to brief details - for now we'll just show a toast
+      console.log('Navigate to brief:', existingBrief.id);
+    }
+  };
+
+  const getBriefButton = () => {
+    if (isCreatingBrief) {
+      return (
+        <Button
+          disabled
+          size="sm"
+          className="text-purple-600"
+          variant="ghost"
+        >
+          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+          Creating...
+        </Button>
+      );
+    }
+
+    if (existingBrief) {
+      return (
+        <Button
+          onClick={handleViewBrief}
+          size="sm"
+          className="text-purple-600 hover:text-purple-700"
+          variant="ghost"
+        >
+          <Eye className="w-3 h-3 mr-1" />
+          View Brief
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        onClick={onCreateBrief}
+        size="sm"
+        className="text-purple-600 hover:text-purple-700"
+        variant="ghost"
+      >
+        <Briefcase className="w-3 h-3 mr-1" />
+        Create Brief
+      </Button>
+    );
   };
 
   return (
@@ -98,19 +149,18 @@ export default function ContentSuggestionCard({
           <div className="flex items-center gap-2 text-xs text-gray-500">
             {suggestion.source_url ? <LinkIcon className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
             <span>{suggestion.source_url ? 'Web source' : 'Document source'}</span>
+            {existingBrief && (
+              <>
+                <span>•</span>
+                <Badge variant="outline" className="text-xs">
+                  Brief {existingBrief.status}
+                </Badge>
+              </>
+            )}
           </div>
           
           <div className="flex gap-2">
-            <Button
-              onClick={onCreateBrief}
-              disabled={isCreatingBrief}
-              size="sm"
-              className="text-purple-600 hover:text-purple-700"
-              variant="ghost"
-            >
-              <Briefcase className="w-3 h-3 mr-1" />
-              {isCreatingBrief ? 'Creating...' : 'Create Brief'}
-            </Button>
+            {getBriefButton()}
             <Button
               onClick={onEdit}
               size="sm"

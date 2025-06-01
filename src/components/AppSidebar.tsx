@@ -1,3 +1,4 @@
+
 import {
   Brain,
   Calendar,
@@ -9,6 +10,7 @@ import {
   Settings,
   Users,
   Zap,
+  Briefcase,
 } from "lucide-react";
 import {
   Sidebar,
@@ -50,6 +52,11 @@ const navigationItems = [
     title: "Content Ideas",
     url: "/ideas",
     icon: Lightbulb,
+  },
+  {
+    title: "Content Briefs",
+    url: "/briefs",
+    icon: Briefcase,
   },
   {
     title: "Content Items",

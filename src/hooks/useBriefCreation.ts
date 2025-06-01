@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ContentIdea, ContentSuggestion } from '@/types/contentIdeas';
 import { updateContentIdea } from '@/services/contentIdeasApi';
+import { createContentBrief } from '@/services/contentBriefsApi';
 import { supabase } from '@/integrations/supabase/client';
 import { triggerWebhook } from '@/services/webhookService';
 import { useState } from 'react';
@@ -29,8 +30,23 @@ export function useBriefCreation(ideas: ContentIdea[]) {
         // Update idea status
         await updateContentIdea(id, { status: 'brief_created' });
 
-        // Trigger webhook for brief creator
+        // Create brief record in database
         const idea = ideas.find(i => i.id === id);
+        if (idea && user?.id) {
+          await createContentBrief({
+            title: idea.title,
+            description: idea.description,
+            content: null,
+            status: 'draft',
+            source_type: 'idea',
+            source_id: id,
+            brief_type: idea.content_type,
+            target_audience: idea.target_audience,
+            user_id: user.id,
+          });
+        }
+
+        // Trigger webhook for brief creator
         await triggerWebhook('brief_creator', {
           type: 'brief_creation',
           idea: idea,
@@ -59,6 +75,21 @@ export function useBriefCreation(ideas: ContentIdea[]) {
           parentIdea = ideas.find(i => i.id === (ideaId || suggestion.content_idea_id));
         }
 
+        // Create brief record in database
+        if (user?.id) {
+          await createContentBrief({
+            title: suggestion.title,
+            description: suggestion.description,
+            content: null,
+            status: 'draft',
+            source_type: 'suggestion',
+            source_id: id,
+            brief_type: suggestion.content_type as 'Blog Post' | 'Guide',
+            target_audience: parentIdea?.target_audience || 'Private Sector',
+            user_id: user.id,
+          });
+        }
+
         // Trigger webhook for brief creator with suggestion data
         await triggerWebhook('brief_creator', {
           type: 'brief_creation',
@@ -72,6 +103,8 @@ export function useBriefCreation(ideas: ContentIdea[]) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['content-ideas'] });
       queryClient.invalidateQueries({ queryKey: ['content-suggestions'] });
+      queryClient.invalidateQueries({ queryKey: ['content-briefs'] });
+      queryClient.invalidateQueries({ queryKey: ['content-brief'] });
       setCreatingBriefId(null);
       toast({
         title: 'Brief creation started',

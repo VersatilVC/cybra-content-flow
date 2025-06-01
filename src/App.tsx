@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +19,7 @@ import Webhooks from "./pages/Webhooks";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import ContentBriefs from "./pages/ContentBriefs";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +63,14 @@ const App = () => (
                 <ProtectedRoute>
                   <AppLayout>
                     <ContentIdeas />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/briefs" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <ContentBriefs />
                   </AppLayout>
                 </ProtectedRoute>
               } />
