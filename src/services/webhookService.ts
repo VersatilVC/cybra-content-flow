@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const triggerWebhook = async (webhookType: string, payload: any) => {
@@ -98,6 +97,14 @@ export const triggerContentProcessingWebhook = async (briefId: string, userId: s
         brief_type: brief.brief_type,
         target_audience: brief.target_audience,
         timestamp: new Date().toISOString(),
+        // Add callback information for N8N
+        callback_url: `${getIdeaCallbackUrl()}`,
+        callback_data: {
+          type: 'content_item_completion',
+          submission_id: submission.id,
+          user_id: userId,
+          title: brief.title
+        }
       };
 
       console.log('Triggering N8N webhook with payload:', payload);

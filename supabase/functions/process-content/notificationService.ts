@@ -45,3 +45,49 @@ export async function createNotification(
     console.log('Notification created successfully');
   }
 }
+
+export async function createProgressNotification(
+  supabase: SupabaseClient,
+  userId: string,
+  submissionId: string,
+  message: string
+) {
+  const { error: notificationError } = await supabase
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      title: 'Processing Update',
+      message: message,
+      type: 'info',
+      related_submission_id: submissionId
+    });
+
+  if (notificationError) {
+    console.error('Error creating progress notification:', notificationError);
+  } else {
+    console.log('Progress notification created successfully');
+  }
+}
+
+export async function createBatchNotification(
+  supabase: SupabaseClient,
+  userId: string,
+  title: string,
+  message: string,
+  type: 'success' | 'error' | 'info' = 'info'
+) {
+  const { error: notificationError } = await supabase
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      title: title,
+      message: message,
+      type: type
+    });
+
+  if (notificationError) {
+    console.error('Error creating batch notification:', notificationError);
+  } else {
+    console.log('Batch notification created successfully');
+  }
+}
