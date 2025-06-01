@@ -165,7 +165,7 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
               )}
 
               {/* Content Sections */}
-              {briefContent.contentSections && briefContent.contentSections.length > 0 && (
+              {briefContent.contentSections && Array.isArray(briefContent.contentSections) && briefContent.contentSections.length > 0 && (
                 <div>
                   <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
                     <FileText className="w-5 h-5 text-green-600" />
@@ -177,11 +177,13 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
                         <h4 className="font-semibold text-green-900 mb-2">
                           {index + 1}. {section.title}
                         </h4>
-                        <ul className="list-disc list-inside space-y-1 text-green-800">
-                          {section.bulletPoints.map((point, pointIndex) => (
-                            <li key={pointIndex}>{point}</li>
-                          ))}
-                        </ul>
+                        {Array.isArray(section.bulletPoints) && section.bulletPoints.length > 0 && (
+                          <ul className="list-disc list-inside space-y-1 text-green-800">
+                            {section.bulletPoints.map((point, pointIndex) => (
+                              <li key={pointIndex}>{point}</li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -189,7 +191,7 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
               )}
 
               {/* Supporting Research */}
-              {briefContent.supportingResearch && briefContent.supportingResearch.length > 0 && (
+              {briefContent.supportingResearch && Array.isArray(briefContent.supportingResearch) && briefContent.supportingResearch.length > 0 && (
                 <div>
                   <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
                     <BookOpen className="w-5 h-5 text-purple-600" />
