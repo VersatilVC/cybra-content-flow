@@ -31,7 +31,21 @@ export function useIdeaMutations() {
         finalIdeaData.source_data = uploadResult;
       }
       
-      const data = await createContentIdea(user.id, finalIdeaData);
+      const rawData = await createContentIdea(user.id, finalIdeaData);
+      
+      // Type cast the response to ensure proper types for webhook
+      const data: ContentIdea = {
+        id: rawData.id,
+        title: rawData.title,
+        description: rawData.description,
+        content_type: rawData.content_type as 'Blog Post' | 'Guide',
+        target_audience: rawData.target_audience as 'Private Sector' | 'Government Sector',
+        status: rawData.status as 'processing' | 'processed' | 'brief_created' | 'discarded',
+        source_type: rawData.source_type as 'manual' | 'file' | 'url',
+        source_data: rawData.source_data,
+        created_at: rawData.created_at,
+        updated_at: rawData.updated_at,
+      };
       
       // Trigger webhooks
       await triggerIdeaWebhooks(data, user.id);
