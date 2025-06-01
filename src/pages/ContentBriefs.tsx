@@ -53,6 +53,7 @@ const ContentBriefs = () => {
   const handleEdit = (brief: ContentBrief) => {
     setSelectedBrief(brief);
     setEditModalOpen(true);
+    setViewModalOpen(false); // Close view modal if open
   };
 
   const handleView = (brief: ContentBrief) => {
@@ -238,6 +239,7 @@ const ContentBriefs = () => {
           setViewModalOpen(false);
           setSelectedBrief(null);
         }}
+        onEdit={handleEdit}
         onCreateContentItem={handleCreateContentItem}
       />
       

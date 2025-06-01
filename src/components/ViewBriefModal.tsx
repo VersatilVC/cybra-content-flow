@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { ContentBrief } from '@/types/contentBriefs';
-import { FileText } from 'lucide-react';
+import { FileText, Edit } from 'lucide-react';
 import BriefHeader from './brief/BriefHeader';
 import BriefMetadata from './brief/BriefMetadata';
 import BriefContent from './brief/BriefContent';
@@ -12,6 +13,7 @@ interface ViewBriefModalProps {
   brief: ContentBrief | null;
   open: boolean;
   onClose: () => void;
+  onEdit?: (brief: ContentBrief) => void;
   onCreateContentItem?: (briefId: string) => void;
 }
 
@@ -36,7 +38,7 @@ interface BriefContent {
   }>;
 }
 
-export default function ViewBriefModal({ brief, open, onClose, onCreateContentItem }: ViewBriefModalProps) {
+export default function ViewBriefModal({ brief, open, onClose, onEdit, onCreateContentItem }: ViewBriefModalProps) {
   if (!brief) return null;
 
   const parseBriefContent = (content: string | null): BriefContent | null => {
@@ -68,10 +70,23 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-purple-600" />
-            Content Brief Details
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-purple-600" />
+              Content Brief Details
+            </DialogTitle>
+            {onEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(brief)}
+                className="text-blue-600 hover:text-blue-700"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Brief
+              </Button>
+            )}
+          </div>
         </DialogHeader>
         
         <div className="space-y-6">
