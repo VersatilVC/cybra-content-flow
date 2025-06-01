@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -202,7 +201,7 @@ serve(async (req) => {
         throw new Error('Invalid JSON in callback body');
       }
 
-      const { submission_id, status, error_message, content_data } = body;
+      const { submission_id, status, error_message, content_data, brief_id } = body;
       
       if (!submission_id) {
         throw new Error('Missing submission_id in callback');
@@ -250,18 +249,30 @@ serve(async (req) => {
         console.log('Creating content item from callback data:', content_data);
         
         try {
-          // Extract brief ID from the submission creation context
-          const { data: recentBriefs } = await supabase
-            .from('content_briefs')
-            .select('id, status')
-            .eq('user_id', submission.user_id)
-            .in('status', ['ready', 'approved'])
-            .order('created_at', { ascending: false })
-            .limit(5);
-
+          // Use the brief_id from the callback if provided, otherwise fall back to previous logic
           let briefToUpdate = null;
-          if (recentBriefs && recentBriefs.length > 0) {
-            briefToUpdate = recentBriefs.find(brief => brief.status !== 'content_created') || recentBriefs[0];
+          if (brief_id) {
+            console.log('Using brief ID from callback:', brief_id);
+            const { data: brief } = await supabase
+              .from('content_briefs')
+              .select('id, status')
+              .eq('id', brief_id)
+              .single();
+            briefToUpdate = brief;
+          } else {
+            // Fallback to previous logic if brief_id not provided
+            console.log('No brief ID in callback, using fallback logic');
+            const { data: recentBriefs } = await supabase
+              .from('content_briefs')
+              .select('id, status')
+              .eq('user_id', submission.user_id)
+              .in('status', ['ready', 'approved'])
+              .order('created_at', { ascending: false })
+              .limit(5);
+
+            if (recentBriefs && recentBriefs.length > 0) {
+              briefToUpdate = recentBriefs.find(brief => brief.status !== 'content_created') || recentBriefs[0];
+            }
           }
 
           // Create the content item
@@ -276,7 +287,7 @@ serve(async (req) => {
             resources: content_data.resources || null,
             multimedia_suggestions: content_data.multimedia_suggestions || null,
             content_type: content_data.content_type || submission.content_type,
-            status: 'draft',
+            status: 'ready_for_review',
             word_count: content_data.word_count || null,
           };
 

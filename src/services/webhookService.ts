@@ -92,7 +92,7 @@ export const triggerContentProcessingWebhook = async (briefId: string, userId: s
       const payload = {
         submission_id: submission.id,
         type: 'content_creation',
-        brief_id: briefId,
+        brief_id: briefId, // Include brief ID in payload
         user_id: userId,
         brief_title: brief.title,
         brief_type: brief.brief_type,
@@ -126,7 +126,7 @@ export const triggerContentProcessingWebhook = async (briefId: string, userId: s
       const payload = {
         submissionId: submission.id,
         type: 'content_creation',
-        brief_id: briefId,
+        brief_id: briefId, // Include brief ID in payload
         user_id: userId,
         brief_title: brief.title,
         brief_type: brief.brief_type,
