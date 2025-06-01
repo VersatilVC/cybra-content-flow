@@ -36,3 +36,22 @@ export const getIdeaCallbackUrl = () => {
   const supabaseUrl = 'https://uejgjytmqpcilwfrlpai.supabase.co';
   return `${supabaseUrl}/functions/v1/process-idea-callback`;
 };
+
+// Trigger content routing webhook when creating content items
+export const triggerContentRoutingWebhook = async (briefId: string, userId: string) => {
+  const payload = {
+    type: 'content_creation',
+    brief_id: briefId,
+    user_id: userId,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    console.log('Triggering content_routing webhook');
+    await triggerWebhook('content_routing', payload);
+    console.log('Content routing webhook triggered successfully');
+  } catch (error) {
+    console.error('Content routing webhook failed:', error);
+    throw error;
+  }
+};

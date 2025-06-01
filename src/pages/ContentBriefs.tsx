@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, Briefcase, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useContentBriefs } from '@/hooks/useContentBriefs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { ContentBriefFilters, ContentBrief } from '@/types/contentBriefs';
+import { triggerContentRoutingWebhook } from '@/services/webhookService';
 import ContentBriefCard from '@/components/ContentBriefCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ViewBriefModal from '@/components/ViewBriefModal';
@@ -15,6 +16,7 @@ import EditBriefModal from '@/components/EditBriefModal';
 
 const ContentBriefs = () => {
   const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
   const [filters, setFilters] = useState<ContentBriefFilters>({
     briefType: 'All Brief Types',
     targetAudience: 'All Audiences',
@@ -67,9 +69,35 @@ const ContentBriefs = () => {
     setSelectedBrief(null);
   };
 
-  const handleCreateContentItem = (briefId: string) => {
-    console.log('Create content item for brief:', briefId);
-    // TODO: Implement content item creation
+  const handleCreateContentItem = async (briefId: string) => {
+    if (!user?.id) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please log in to create content items.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      console.log('Creating content item for brief:', briefId);
+      
+      // Trigger the content routing webhook
+      await triggerContentRoutingWebhook(briefId, user.id);
+      
+      // Show fun confirmation message
+      toast({
+        title: '🎉 Content magic is happening!',
+        description: '✨ Your content item is being crafted by our digital elves. You\'ll be notified when it\'s ready to shine! 🚀',
+      });
+    } catch (error) {
+      console.error('Failed to create content item:', error);
+      toast({
+        title: 'Oops! Something went wrong',
+        description: 'Failed to start content creation. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleRetry = () => {
