@@ -161,6 +161,59 @@ export type Database = {
         }
         Relationships: []
       }
+      content_derivatives: {
+        Row: {
+          category: string
+          content: string
+          content_item_id: string
+          created_at: string
+          derivative_type: string
+          id: string
+          metadata: Json | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          word_count: number | null
+        }
+        Insert: {
+          category: string
+          content: string
+          content_item_id: string
+          created_at?: string
+          derivative_type: string
+          id?: string
+          metadata?: Json | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          word_count?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          content_item_id?: string
+          created_at?: string
+          derivative_type?: string
+          id?: string
+          metadata?: Json | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_derivatives_content_item_id_fkey"
+            columns: ["content_item_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_ideas: {
         Row: {
           content_type: string
