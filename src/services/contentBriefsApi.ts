@@ -3,6 +3,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { ContentBrief, ContentBriefFilters, CreateContentBriefData } from '@/types/contentBriefs';
 
 export async function fetchContentBriefs(userId: string, filters?: ContentBriefFilters): Promise<ContentBrief[]> {
+  console.log('fetchContentBriefs called with:', { userId, filters });
+  
+  // Check if we have a valid session
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  console.log('Current session:', { 
+    hasSession: !!session, 
+    userId: session?.user?.id,
+    sessionError: sessionError?.message 
+  });
+  
+  if (!session) {
+    throw new Error('No active session found. Please log in again.');
+  }
+  
+  if (session.user.id !== userId) {
+    throw new Error('Session user ID does not match requested user ID');
+  }
+
   let query = supabase
     .from('content_briefs')
     .select('*')
@@ -25,12 +43,15 @@ export async function fetchContentBriefs(userId: string, filters?: ContentBriefF
     query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
   }
 
+  console.log('Executing query...');
   const { data, error } = await query;
 
   if (error) {
+    console.error('Query error:', error);
     throw new Error(`Failed to fetch content briefs: ${error.message}`);
   }
 
+  console.log('Query successful, returned', data?.length || 0, 'briefs');
   return (data || []) as ContentBrief[];
 }
 

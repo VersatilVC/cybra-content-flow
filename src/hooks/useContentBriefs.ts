@@ -12,14 +12,40 @@ import {
 } from '@/services/contentBriefsApi';
 
 export function useContentBriefs(filters?: ContentBriefFilters) {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  console.log('useContentBriefs Debug:', {
+    userId: user?.id,
+    hasSession: !!session,
+    sessionExpiry: session?.expires_at,
+    filters
+  });
+
   const { data: briefs = [], isLoading, error } = useQuery({
     queryKey: ['content-briefs', user?.id, filters],
-    queryFn: () => fetchContentBriefs(user?.id || '', filters),
-    enabled: !!user?.id,
+    queryFn: async () => {
+      console.log('Fetching content briefs...');
+      try {
+        const result = await fetchContentBriefs(user?.id || '', filters);
+        console.log('Content briefs fetched successfully:', result.length);
+        return result;
+      } catch (err) {
+        console.error('Error fetching content briefs:', err);
+        throw err;
+      }
+    },
+    enabled: !!user?.id && !!session,
+    retry: (failureCount, error) => {
+      console.log('Query retry attempt:', failureCount, error);
+      // Retry up to 2 times for network errors, but not for auth errors
+      if (failureCount < 2 && !error.message.includes('auth') && !error.message.includes('JWT')) {
+        return true;
+      }
+      return false;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   const createMutation = useMutation({
@@ -32,6 +58,7 @@ export function useContentBriefs(filters?: ContentBriefFilters) {
       });
     },
     onError: (error: Error) => {
+      console.error('Create brief error:', error);
       toast({
         title: 'Failed to create brief',
         description: error.message,
@@ -50,6 +77,7 @@ export function useContentBriefs(filters?: ContentBriefFilters) {
       });
     },
     onError: (error: Error) => {
+      console.error('Update brief error:', error);
       toast({
         title: 'Failed to update brief',
         description: error.message,
@@ -68,6 +96,7 @@ export function useContentBriefs(filters?: ContentBriefFilters) {
       });
     },
     onError: (error: Error) => {
+      console.error('Delete brief error:', error);
       toast({
         title: 'Failed to delete brief',
         description: error.message,
@@ -90,9 +119,18 @@ export function useContentBriefs(filters?: ContentBriefFilters) {
 }
 
 export function useBriefBySource(sourceId: string, sourceType: 'idea' | 'suggestion') {
+  const { user, session } = useAuth();
+  
   return useQuery({
     queryKey: ['content-brief', sourceId, sourceType],
     queryFn: () => getBriefBySourceId(sourceId, sourceType),
-    enabled: !!sourceId,
+    enabled: !!sourceId && !!user?.id && !!session,
+    retry: (failureCount, error) => {
+      // Retry up to 2 times for network errors, but not for auth errors
+      if (failureCount < 2 && !error.message.includes('auth') && !error.message.includes('JWT')) {
+        return true;
+      }
+      return false;
+    },
   });
 }

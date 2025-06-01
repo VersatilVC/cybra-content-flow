@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
-import { Search, Filter, Briefcase } from 'lucide-react';
+import { Search, Filter, Briefcase, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useContentBriefs } from '@/hooks/useContentBriefs';
+import { useAuth } from '@/contexts/AuthContext';
 import { ContentBriefFilters, ContentBrief } from '@/types/contentBriefs';
 import ContentBriefCard from '@/components/ContentBriefCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -12,6 +14,7 @@ import ViewBriefModal from '@/components/ViewBriefModal';
 import EditBriefModal from '@/components/EditBriefModal';
 
 const ContentBriefs = () => {
+  const { user, loading: authLoading } = useAuth();
   const [filters, setFilters] = useState<ContentBriefFilters>({
     briefType: 'All Brief Types',
     targetAudience: 'All Audiences',
@@ -22,14 +25,26 @@ const ContentBriefs = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedBrief, setSelectedBrief] = useState<ContentBrief | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const { 
     briefs, 
     isLoading, 
+    error,
     deleteBrief,
     updateBrief,
     isUpdating 
   } = useContentBriefs(filters);
+
+  console.log('ContentBriefs Debug:', {
+    user: !!user,
+    userId: user?.id,
+    authLoading,
+    isLoading,
+    error: error?.message,
+    briefsCount: briefs.length,
+    retryCount
+  });
 
   const handleFilterChange = (key: keyof ContentBriefFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -56,10 +71,65 @@ const ContentBriefs = () => {
     // TODO: Implement content item creation
   };
 
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    window.location.reload();
+  };
+
+  // Show loading while auth is still loading
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner size="lg" />
+        <span className="ml-2 text-gray-600">Loading authentication...</span>
+      </div>
+    );
+  }
+
+  // Show auth error if user is not authenticated
+  if (!user) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <Alert className="mb-6">
+          <AlertDescription>
+            You need to be logged in to view content briefs. Please log in and try again.
+          </AlertDescription>
+        </Alert>
+        <Button onClick={() => window.location.href = '/auth'}>
+          Go to Login
+        </Button>
+      </div>
+    );
+  }
+
+  // Show error state with retry option
+  if (error) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>
+            Failed to load content briefs: {error.message}
+          </AlertDescription>
+        </Alert>
+        <div className="flex gap-2">
+          <Button onClick={handleRetry} variant="outline">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+          <Button onClick={() => window.location.href = '/dashboard'} variant="outline">
+            Go to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while data is being fetched
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <LoadingSpinner />
+        <LoadingSpinner size="lg" />
+        <span className="ml-2 text-gray-600">Loading content briefs...</span>
       </div>
     );
   }
