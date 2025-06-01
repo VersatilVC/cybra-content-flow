@@ -11,7 +11,7 @@ interface ContentIdeaCardProps {
   idea: ContentIdea;
   onEdit: (idea: ContentIdea) => void;
   onDiscard: (id: string) => void;
-  onCreateBrief: (id: string) => void;
+  onCreateBrief: (id: string, type?: 'idea' | 'suggestion', ideaId?: string) => void;
   isCreatingBrief: boolean;
   autoExpand?: boolean;
 }

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ContentIdea } from '@/types/contentIdeas';
 import { useContentSuggestions } from '@/hooks/useContentSuggestions';
@@ -10,7 +9,7 @@ interface IdeaSuggestionsSectionProps {
   showSuggestions: boolean;
   onEdit: (idea: ContentIdea) => void;
   onDiscard: (id: string) => void;
-  onCreateBrief: (id: string) => void;
+  onCreateBrief: (id: string, type?: 'idea' | 'suggestion', ideaId?: string) => void;
   isCreatingBrief: boolean;
 }
 
@@ -44,7 +43,7 @@ export default function IdeaSuggestionsSection({
   };
 
   const handleSuggestionCreateBrief = (suggestion: any) => {
-    onCreateBrief(suggestion.id);
+    onCreateBrief(suggestion.id, 'suggestion', idea.id);
   };
 
   const handleSuggestionDiscard = (suggestion: any) => {
