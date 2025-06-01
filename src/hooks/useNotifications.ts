@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -107,7 +106,18 @@ export function useNotifications() {
 
   const handleViewContentItem = async (notification: Notification) => {
     markAsRead(notification.id);
-    navigate('/content-items');
+    
+    // Extract content item ID from the notification message
+    // The message should contain the content item ID in a format like "content item {id}"
+    const contentItemIdMatch = notification.message.match(/content item ([a-f0-9-]+)/i);
+    
+    if (contentItemIdMatch && contentItemIdMatch[1]) {
+      const contentItemId = contentItemIdMatch[1];
+      navigate(`/content-items/${contentItemId}`);
+    } else {
+      // Fallback to content items list if we can't extract the ID
+      navigate('/content-items');
+    }
   };
 
   useEffect(() => {
