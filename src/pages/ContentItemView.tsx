@@ -290,7 +290,6 @@ const ContentItemView = () => {
                 <div className="prose prose-gray max-w-none bg-white border rounded-lg p-6">
                   {contentItem.content ? (
                     <ReactMarkdown 
-                      className="markdown-content"
                       components={{
                         h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4" {...props} />,
                         h2: ({node, ...props}) => <h2 className="text-xl font-semibold mb-3" {...props} />,
