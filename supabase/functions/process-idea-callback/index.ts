@@ -176,6 +176,15 @@ serve(async (req) => {
         // Handle failed brief creation
         console.error('Brief creation failed:', callbackData);
         
+        // Update idea status back to processed if brief creation failed
+        await supabase
+          .from('content_ideas')
+          .update({ 
+            status: 'processed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', ideaId);
+        
         if (user_id) {
           try {
             await supabase

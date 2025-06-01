@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ContentIdea, ContentSuggestion } from '@/types/contentIdeas';
 import { updateContentIdea } from '@/services/contentIdeasApi';
-import { createContentBrief } from '@/services/contentBriefsApi';
 import { supabase } from '@/integrations/supabase/client';
 import { triggerWebhook } from '@/services/webhookService';
 import { useState } from 'react';
@@ -27,26 +26,13 @@ export function useBriefCreation(ideas: ContentIdea[]) {
       setCreatingBriefId(id);
       
       if (type === 'idea') {
-        // Update idea status
-        await updateContentIdea(id, { status: 'brief_created' });
+        // Update idea status to show it's being processed
+        await updateContentIdea(id, { status: 'processing' });
 
-        // Create brief record in database
+        // Get idea data for webhook
         const idea = ideas.find(i => i.id === id);
-        if (idea && user?.id) {
-          await createContentBrief({
-            title: idea.title,
-            description: idea.description,
-            content: null,
-            status: 'draft',
-            source_type: 'idea',
-            source_id: id,
-            brief_type: idea.content_type,
-            target_audience: idea.target_audience,
-            user_id: user.id,
-          });
-        }
-
-        // Trigger webhook for brief creator
+        
+        // Trigger webhook for brief creator - N8N will handle brief creation
         await triggerWebhook('brief_creator', {
           type: 'brief_creation',
           idea: idea,
@@ -54,7 +40,7 @@ export function useBriefCreation(ideas: ContentIdea[]) {
           timestamp: new Date().toISOString(),
         });
       } else if (type === 'suggestion') {
-        // For suggestions, we update the suggestion status and use the suggestion data
+        // For suggestions, get the suggestion data
         const { data: suggestion, error } = await supabase
           .from('content_suggestions')
           .select('*')
@@ -63,7 +49,7 @@ export function useBriefCreation(ideas: ContentIdea[]) {
 
         if (error) throw error;
 
-        // Update suggestion status (if there's a status field)
+        // Update suggestion timestamp to show activity
         await supabase
           .from('content_suggestions')
           .update({ updated_at: new Date().toISOString() })
@@ -75,22 +61,7 @@ export function useBriefCreation(ideas: ContentIdea[]) {
           parentIdea = ideas.find(i => i.id === (ideaId || suggestion.content_idea_id));
         }
 
-        // Create brief record in database
-        if (user?.id) {
-          await createContentBrief({
-            title: suggestion.title,
-            description: suggestion.description,
-            content: null,
-            status: 'draft',
-            source_type: 'suggestion',
-            source_id: id,
-            brief_type: suggestion.content_type as 'Blog Post' | 'Guide',
-            target_audience: parentIdea?.target_audience || 'Private Sector',
-            user_id: user.id,
-          });
-        }
-
-        // Trigger webhook for brief creator with suggestion data
+        // Trigger webhook for brief creator with suggestion data - N8N will handle brief creation
         await triggerWebhook('brief_creator', {
           type: 'brief_creation',
           suggestion: suggestion,
@@ -108,14 +79,14 @@ export function useBriefCreation(ideas: ContentIdea[]) {
       setCreatingBriefId(null);
       toast({
         title: 'Brief creation started',
-        description: 'The content brief is being created.',
+        description: 'The content brief is being created by our AI workflow.',
       });
     },
     onError: (error) => {
       console.error('Brief creation error:', error);
       setCreatingBriefId(null);
       toast({
-        title: 'Failed to create brief',
+        title: 'Failed to start brief creation',
         description: error instanceof Error ? error.message : 'Unknown error',
         variant: 'destructive',
       });
