@@ -11,6 +11,7 @@ interface NotificationListProps {
   onMarkAsRead: (id: string) => void;
   onViewSuggestions: (notification: Notification) => void;
   onViewBrief: (notification: Notification) => void;
+  onViewContentItem: (notification: Notification) => void;
 }
 
 export function NotificationList({ 
@@ -18,7 +19,8 @@ export function NotificationList({
   isLoading, 
   onMarkAsRead, 
   onViewSuggestions, 
-  onViewBrief 
+  onViewBrief,
+  onViewContentItem
 }: NotificationListProps) {
   return (
     <ScrollArea className="h-[calc(100vh-120px)] mt-6">
@@ -41,6 +43,7 @@ export function NotificationList({
               onMarkAsRead={onMarkAsRead}
               onViewSuggestions={onViewSuggestions}
               onViewBrief={onViewBrief}
+              onViewContentItem={onViewContentItem}
             />
           ))}
         </div>

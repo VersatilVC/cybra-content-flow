@@ -105,6 +105,11 @@ export function useNotifications() {
     navigate('/briefs');
   };
 
+  const handleViewContentItem = async (notification: Notification) => {
+    markAsRead(notification.id);
+    navigate('/content-items');
+  };
+
   useEffect(() => {
     if (user) {
       fetchNotifications();
@@ -139,5 +144,6 @@ export function useNotifications() {
     markAllAsRead,
     handleViewSuggestions,
     handleViewBrief,
+    handleViewContentItem,
   };
 }

@@ -16,6 +16,7 @@ export function NotificationCenter() {
     markAllAsRead,
     handleViewSuggestions,
     handleViewBrief,
+    handleViewContentItem,
   } = useNotifications();
 
   return (
@@ -55,6 +56,7 @@ export function NotificationCenter() {
           onMarkAsRead={markAsRead}
           onViewSuggestions={handleViewSuggestions}
           onViewBrief={handleViewBrief}
+          onViewContentItem={handleViewContentItem}
         />
       </SheetContent>
     </Sheet>

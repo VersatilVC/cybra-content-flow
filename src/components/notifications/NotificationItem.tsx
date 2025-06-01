@@ -8,7 +8,8 @@ import {
   getNotificationIcon, 
   getNotificationColor,
   isContentSuggestionNotification,
-  isContentBriefNotification 
+  isContentBriefNotification,
+  isContentItemNotification
 } from '@/utils/notificationHelpers';
 
 interface NotificationItemProps {
@@ -16,13 +17,15 @@ interface NotificationItemProps {
   onMarkAsRead: (id: string) => void;
   onViewSuggestions: (notification: Notification) => void;
   onViewBrief: (notification: Notification) => void;
+  onViewContentItem: (notification: Notification) => void;
 }
 
 export function NotificationItem({ 
   notification, 
   onMarkAsRead, 
   onViewSuggestions, 
-  onViewBrief 
+  onViewBrief,
+  onViewContentItem
 }: NotificationItemProps) {
   const IconComponent = getNotificationIcon(notification.type);
 
@@ -83,6 +86,21 @@ export function NotificationItem({
             >
               <Eye className="w-3 h-3 mr-1" />
               View Brief
+            </Button>
+          )}
+
+          {isContentItemNotification(notification) && (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewContentItem(notification);
+              }}
+              size="sm"
+              variant="outline"
+              className="mt-2 text-xs"
+            >
+              <Eye className="w-3 h-3 mr-1" />
+              View Content Item
             </Button>
           )}
           
