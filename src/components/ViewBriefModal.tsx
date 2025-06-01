@@ -19,8 +19,10 @@ interface BriefContent {
     goal?: string;
   };
   contentSections?: Array<{
-    title: string;
+    title?: string;
+    sectionTitle?: string;
     bulletPoints?: string[] | string;
+    sectionPoints?: string[];
     content?: string;
     points?: string[];
     items?: string[];
@@ -77,7 +79,12 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
   const getSectionBulletPoints = (section: any): string[] => {
     console.log('Processing section:', section);
     
-    // Check different possible property names for bullet points
+    // Check for sectionPoints first (the actual property being used)
+    if (section.sectionPoints && Array.isArray(section.sectionPoints)) {
+      return section.sectionPoints;
+    }
+    
+    // Check other possible property names for bullet points
     if (section.bulletPoints) {
       if (Array.isArray(section.bulletPoints)) {
         return section.bulletPoints;
@@ -225,7 +232,7 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
                       return (
                         <div key={index} className="p-4 bg-green-50 border border-green-200 rounded-lg">
                           <h4 className="font-semibold text-green-900 mb-2">
-                            {index + 1}. {section.title || `Section ${index + 1}`}
+                            {index + 1}. {section.sectionTitle || section.title || `Section ${index + 1}`}
                           </h4>
                           {bulletPoints.length > 0 ? (
                             <ul className="list-disc list-inside space-y-1 text-green-800">
