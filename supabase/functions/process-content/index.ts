@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -268,11 +269,19 @@ serve(async (req) => {
         ? 'Content Processing Complete'
         : 'Content Processing Failed';
       
-      const notificationMessage = status === 'completed'
-        ? submission.knowledge_base === 'content_creation'
-          ? `Your content item "${contentName}" has been successfully generated and is ready for review.`
-          : `"${contentName}" has been successfully processed and added to the ${submission.knowledge_base} knowledge base.`
-        : `Failed to process "${contentName}". ${error_message || 'Please try again.'}`;
+      let notificationMessage;
+      if (status === 'completed') {
+        if (submission.knowledge_base === 'content_creation' && content_item_id) {
+          // Include content item ID in the message for direct linking
+          notificationMessage = `Your content item "${contentName}" has been successfully generated (content item ${content_item_id}) and is ready for review.`;
+        } else if (submission.knowledge_base === 'content_creation') {
+          notificationMessage = `Your content item "${contentName}" has been successfully generated and is ready for review.`;
+        } else {
+          notificationMessage = `"${contentName}" has been successfully processed and added to the ${submission.knowledge_base} knowledge base.`;
+        }
+      } else {
+        notificationMessage = `Failed to process "${contentName}". ${error_message || 'Please try again.'}`;
+      }
 
       const { error: notificationError } = await supabase
         .from('notifications')
