@@ -8,6 +8,8 @@ import { useContentBriefs } from '@/hooks/useContentBriefs';
 import { ContentBriefFilters, ContentBrief } from '@/types/contentBriefs';
 import ContentBriefCard from '@/components/ContentBriefCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ViewBriefModal from '@/components/ViewBriefModal';
+import EditBriefModal from '@/components/EditBriefModal';
 
 const ContentBriefs = () => {
   const [filters, setFilters] = useState<ContentBriefFilters>({
@@ -17,10 +19,16 @@ const ContentBriefs = () => {
     search: '',
   });
 
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedBrief, setSelectedBrief] = useState<ContentBrief | null>(null);
+
   const { 
     briefs, 
     isLoading, 
-    deleteBrief 
+    deleteBrief,
+    updateBrief,
+    isUpdating 
   } = useContentBriefs(filters);
 
   const handleFilterChange = (key: keyof ContentBriefFilters, value: string) => {
@@ -28,13 +36,19 @@ const ContentBriefs = () => {
   };
 
   const handleEdit = (brief: ContentBrief) => {
-    console.log('Edit brief:', brief);
-    // TODO: Implement edit modal
+    setSelectedBrief(brief);
+    setEditModalOpen(true);
   };
 
   const handleView = (brief: ContentBrief) => {
-    console.log('View brief:', brief);
-    // TODO: Implement view modal or navigation
+    setSelectedBrief(brief);
+    setViewModalOpen(true);
+  };
+
+  const handleSaveBrief = (id: string, updates: Partial<ContentBrief>) => {
+    updateBrief({ id, updates });
+    setEditModalOpen(false);
+    setSelectedBrief(null);
   };
 
   const handleCreateContentItem = (briefId: string) => {
@@ -145,6 +159,27 @@ const ContentBriefs = () => {
           ))
         )}
       </div>
+
+      {/* Modals */}
+      <ViewBriefModal
+        brief={selectedBrief}
+        open={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setSelectedBrief(null);
+        }}
+      />
+      
+      <EditBriefModal
+        brief={selectedBrief}
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedBrief(null);
+        }}
+        onSave={handleSaveBrief}
+        isUpdating={isUpdating}
+      />
     </div>
   );
 };
