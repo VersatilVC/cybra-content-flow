@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +25,7 @@ import { useContentItems } from '@/hooks/useContentItems';
 import { supabase } from '@/integrations/supabase/client';
 import { ContentItem } from '@/services/contentItemsApi';
 import ContentDerivativesSection from '@/components/content-item/ContentDerivativesSection';
+import ReactMarkdown from 'react-markdown';
 
 const ContentItemView = () => {
   const { id } = useParams<{ id: string }>();
@@ -287,9 +287,28 @@ const ContentItemView = () => {
               
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Full Content</h4>
-                <div className="prose max-w-none bg-white border rounded-lg p-6">
+                <div className="prose prose-gray max-w-none bg-white border rounded-lg p-6">
                   {contentItem.content ? (
-                    <div className="whitespace-pre-wrap">{contentItem.content}</div>
+                    <ReactMarkdown 
+                      className="markdown-content"
+                      components={{
+                        h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="text-xl font-semibold mb-3" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="text-lg font-medium mb-2" {...props} />,
+                        p: ({node, ...props}) => <p className="mb-4 leading-relaxed" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4" {...props} />,
+                        ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-4" {...props} />,
+                        li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                        blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4" {...props} />,
+                        code: ({node, ...props}) => <code className="bg-gray-100 px-1 py-0.5 rounded text-sm" {...props} />,
+                        pre: ({node, ...props}) => <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4" {...props} />,
+                        strong: ({node, ...props}) => <strong className="font-semibold" {...props} />,
+                        em: ({node, ...props}) => <em className="italic" {...props} />,
+                        a: ({node, ...props}) => <a className="text-blue-600 hover:text-blue-800 underline" {...props} />,
+                      }}
+                    >
+                      {contentItem.content}
+                    </ReactMarkdown>
                   ) : (
                     <p className="text-gray-500 italic">No content available</p>
                   )}
