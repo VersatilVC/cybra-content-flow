@@ -168,6 +168,7 @@ const ContentBriefs = () => {
           setViewModalOpen(false);
           setSelectedBrief(null);
         }}
+        onCreateContentItem={handleCreateContentItem}
       />
       
       <EditBriefModal

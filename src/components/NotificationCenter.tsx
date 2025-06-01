@@ -148,9 +148,19 @@ export function NotificationCenter() {
     }
   };
 
+  const handleViewBrief = async (notification: Notification) => {
+    markAsRead(notification.id);
+    navigate('/briefs');
+  };
+
   const isContentSuggestionNotification = (notification: Notification) => {
     return notification.title.includes('Content Suggestions Ready') || 
            notification.message.includes('content suggestions');
+  };
+
+  const isContentBriefNotification = (notification: Notification) => {
+    return notification.title.includes('Content Brief Ready') || 
+           notification.message.includes('content brief');
   };
 
   useEffect(() => {
@@ -267,6 +277,21 @@ export function NotificationCenter() {
                         >
                           <Eye className="w-3 h-3 mr-1" />
                           View Suggestions
+                        </Button>
+                      )}
+
+                      {isContentBriefNotification(notification) && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewBrief(notification);
+                          }}
+                          size="sm"
+                          variant="outline"
+                          className="mt-2 text-xs"
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          View Brief
                         </Button>
                       )}
                       

@@ -2,16 +2,34 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ContentBrief } from '@/types/contentBriefs';
-import { FileText, User, Calendar, Tag } from 'lucide-react';
+import { FileText, User, Calendar, Tag, Target, BookOpen, ExternalLink, Plus } from 'lucide-react';
 
 interface ViewBriefModalProps {
   brief: ContentBrief | null;
   open: boolean;
   onClose: () => void;
+  onCreateContentItem?: (briefId: string) => void;
 }
 
-export default function ViewBriefModal({ brief, open, onClose }: ViewBriefModalProps) {
+interface BriefContent {
+  whatAndWhy?: {
+    targetAudience?: string;
+    goal?: string;
+  };
+  contentSections?: Array<{
+    title: string;
+    bulletPoints: string[];
+  }>;
+  supportingResearch?: Array<{
+    title: string;
+    url?: string;
+    description: string;
+  }>;
+}
+
+export default function ViewBriefModal({ brief, open, onClose, onCreateContentItem }: ViewBriefModalProps) {
   if (!brief) return null;
 
   const formatDate = (dateString: string) => {
@@ -38,6 +56,20 @@ export default function ViewBriefModal({ brief, open, onClose }: ViewBriefModalP
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const parseBriefContent = (content: string | null): BriefContent | null => {
+    if (!content) return null;
+    
+    try {
+      return JSON.parse(content) as BriefContent;
+    } catch (error) {
+      console.error('Failed to parse brief content:', error);
+      return null;
+    }
+  };
+
+  const briefContent = parseBriefContent(brief.content);
+  const canCreateContent = brief.status === 'ready' || brief.status === 'approved';
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -105,14 +137,119 @@ export default function ViewBriefModal({ brief, open, onClose }: ViewBriefModalP
             </div>
           )}
 
-          {/* Content */}
-          {brief.content && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Content</h3>
-              <div className="p-4 bg-white border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
-                <p className="text-gray-700 whitespace-pre-wrap">{brief.content}</p>
-              </div>
+          {/* Structured Content */}
+          {briefContent ? (
+            <div className="space-y-6">
+              {/* What & Why Section */}
+              {briefContent.whatAndWhy && (
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
+                    <Target className="w-5 h-5 text-blue-600" />
+                    What & Why
+                  </h3>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+                    {briefContent.whatAndWhy.targetAudience && (
+                      <div>
+                        <h4 className="font-medium text-blue-900">Target Audience</h4>
+                        <p className="text-blue-800">{briefContent.whatAndWhy.targetAudience}</p>
+                      </div>
+                    )}
+                    {briefContent.whatAndWhy.goal && (
+                      <div>
+                        <h4 className="font-medium text-blue-900">Goal</h4>
+                        <p className="text-blue-800">{briefContent.whatAndWhy.goal}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Content Sections */}
+              {briefContent.contentSections && briefContent.contentSections.length > 0 && (
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
+                    <FileText className="w-5 h-5 text-green-600" />
+                    Content Sections
+                  </h3>
+                  <div className="space-y-4">
+                    {briefContent.contentSections.map((section, index) => (
+                      <div key={index} className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <h4 className="font-semibold text-green-900 mb-2">
+                          {index + 1}. {section.title}
+                        </h4>
+                        <ul className="list-disc list-inside space-y-1 text-green-800">
+                          {section.bulletPoints.map((point, pointIndex) => (
+                            <li key={pointIndex}>{point}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Supporting Research */}
+              {briefContent.supportingResearch && briefContent.supportingResearch.length > 0 && (
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
+                    <BookOpen className="w-5 h-5 text-purple-600" />
+                    Supporting Research
+                  </h3>
+                  <div className="space-y-3">
+                    {briefContent.supportingResearch.map((research, index) => (
+                      <div key={index} className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-purple-900 mb-1">{research.title}</h4>
+                            <p className="text-purple-800 text-sm">{research.description}</p>
+                          </div>
+                          {research.url && (
+                            <a
+                              href={research.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-purple-600 hover:text-purple-800 text-sm ml-3"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              View
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Create Content Item CTA */}
+              {canCreateContent && (
+                <div className="p-6 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Create Content?</h3>
+                    <p className="text-gray-600 mb-4">
+                      Transform this brief into a content item and start writing your {brief.brief_type.toLowerCase()}.
+                    </p>
+                    <Button
+                      onClick={() => onCreateContentItem?.(brief.id)}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Content Item
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
+          ) : (
+            /* Fallback for non-JSON content */
+            brief.content && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Content</h3>
+                <div className="p-4 bg-white border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
+                  <p className="text-gray-700 whitespace-pre-wrap">{brief.content}</p>
+                </div>
+              </div>
+            )
           )}
         </div>
       </DialogContent>
