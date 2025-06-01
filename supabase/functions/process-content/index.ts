@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -186,13 +187,24 @@ serve(async (req) => {
         throw new Error('Invalid JSON in callback body');
       }
 
-      const { submission_id, status, error_message } = body;
+      const { submission_id, status, error_message, content_data } = body;
       
       if (!submission_id) {
         throw new Error('Missing submission_id in callback');
       }
 
       console.log('Processing callback for submission:', submission_id, 'with status:', status);
+
+      // Get submission details
+      const { data: submission, error: submissionError } = await supabase
+        .from('content_submissions')
+        .select('*')
+        .eq('id', submission_id)
+        .single();
+
+      if (submissionError || !submission) {
+        throw new Error(`Submission not found: ${submissionError?.message}`);
+      }
 
       // Update submission status
       const updateData: any = {
@@ -218,40 +230,90 @@ serve(async (req) => {
         throw new Error(`Failed to update submission: ${updateError.message}`);
       }
 
-      // Get submission details for notification
-      const { data: submission } = await supabase
-        .from('content_submissions')
-        .select('user_id, original_filename, file_url, knowledge_base')
-        .eq('id', submission_id)
-        .maybeSingle();
-
-      if (submission) {
-        // Create notification with proper handling of URLs vs files
-        const contentName = submission.original_filename || submission.file_url || 'Content';
+      // If this is a content creation submission and it's completed, create the content item
+      if (status === 'completed' && submission.knowledge_base === 'content_creation' && content_data) {
+        console.log('Creating content item from callback data:', content_data);
         
-        const notificationTitle = status === 'completed' 
-          ? 'Content Processing Complete'
-          : 'Content Processing Failed';
-        
-        const notificationMessage = status === 'completed'
-          ? `"${contentName}" has been successfully processed and added to the ${submission.knowledge_base} knowledge base.`
-          : `Failed to process "${contentName}". ${error_message || 'Please try again.'}`;
+        try {
+          // Find the associated content brief (if any)
+          const { data: brief } = await supabase
+            .from('content_briefs')
+            .select('id')
+            .eq('user_id', submission.user_id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
-        const { error: notificationError } = await supabase
-          .from('notifications')
-          .insert({
+          // Create the content item
+          const contentItemData = {
             user_id: submission.user_id,
-            title: notificationTitle,
-            message: notificationMessage,
-            type: status === 'completed' ? 'success' : 'error',
-            related_submission_id: submission_id
-          });
+            content_brief_id: brief?.id || null,
+            submission_id: submission_id,
+            title: content_data.title || submission.original_filename || 'Generated Content',
+            content: content_data.content || null,
+            summary: content_data.summary || null,
+            tags: content_data.tags || null,
+            resources: content_data.resources || null,
+            multimedia_suggestions: content_data.multimedia_suggestions || null,
+            content_type: content_data.content_type || submission.content_type,
+            status: 'draft',
+            word_count: content_data.word_count || null,
+          };
 
-        if (notificationError) {
-          console.error('Error creating notification:', notificationError);
-        } else {
-          console.log('Notification created successfully');
+          const { data: contentItem, error: contentError } = await supabase
+            .from('content_items')
+            .insert(contentItemData)
+            .select()
+            .single();
+
+          if (contentError) {
+            console.error('Error creating content item:', contentError);
+            throw new Error(`Failed to create content item: ${contentError.message}`);
+          }
+
+          console.log('Content item created successfully:', contentItem.id);
+
+          // Update the associated brief status if we found one
+          if (brief?.id) {
+            await supabase
+              .from('content_briefs')
+              .update({ status: 'content_created' })
+              .eq('id', brief.id);
+          }
+
+        } catch (contentError) {
+          console.error('Error creating content item:', contentError);
+          // Don't fail the callback if content item creation fails
         }
+      }
+
+      // Create notification with proper handling
+      const contentName = submission.original_filename || submission.file_url || 'Content';
+      
+      const notificationTitle = status === 'completed' 
+        ? 'Content Processing Complete'
+        : 'Content Processing Failed';
+      
+      const notificationMessage = status === 'completed'
+        ? submission.knowledge_base === 'content_creation'
+          ? `Your content item "${contentName}" has been successfully generated and is ready for review.`
+          : `"${contentName}" has been successfully processed and added to the ${submission.knowledge_base} knowledge base.`
+        : `Failed to process "${contentName}". ${error_message || 'Please try again.'}`;
+
+      const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: submission.user_id,
+          title: notificationTitle,
+          message: notificationMessage,
+          type: status === 'completed' ? 'success' : 'error',
+          related_submission_id: submission_id
+        });
+
+      if (notificationError) {
+        console.error('Error creating notification:', notificationError);
+      } else {
+        console.log('Notification created successfully');
       }
 
       return new Response(

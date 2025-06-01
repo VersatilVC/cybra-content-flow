@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, Briefcase, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -223,6 +222,7 @@ const ContentBriefs = () => {
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="ready">Ready</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="content_created">Content Created</SelectItem>
               <SelectItem value="discarded">Discarded</SelectItem>
             </SelectContent>
           </Select>

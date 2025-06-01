@@ -206,6 +206,75 @@ export type Database = {
         }
         Relationships: []
       }
+      content_items: {
+        Row: {
+          content: string | null
+          content_brief_id: string | null
+          content_type: string
+          created_at: string
+          id: string
+          multimedia_suggestions: string | null
+          resources: string[] | null
+          status: string
+          submission_id: string | null
+          summary: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          word_count: number | null
+        }
+        Insert: {
+          content?: string | null
+          content_brief_id?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          multimedia_suggestions?: string | null
+          resources?: string[] | null
+          status?: string
+          submission_id?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          word_count?: number | null
+        }
+        Update: {
+          content?: string | null
+          content_brief_id?: string | null
+          content_type?: string
+          created_at?: string
+          id?: string
+          multimedia_suggestions?: string | null
+          resources?: string[] | null
+          status?: string
+          submission_id?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_items_content_brief_id_fkey"
+            columns: ["content_brief_id"]
+            isOneToOne: false
+            referencedRelation: "content_briefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_items_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "content_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_submissions: {
         Row: {
           completed_at: string | null

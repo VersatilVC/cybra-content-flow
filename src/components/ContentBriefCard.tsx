@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,6 +47,8 @@ export default function ContentBriefCard({
         return 'bg-yellow-100 text-yellow-800';
       case 'approved':
         return 'bg-blue-100 text-blue-800';
+      case 'content_created':
+        return 'bg-purple-100 text-purple-800';
       case 'discarded':
         return 'bg-red-100 text-red-800';
       default:
@@ -56,10 +57,16 @@ export default function ContentBriefCard({
   };
 
   const getStatusLabel = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    switch (status) {
+      case 'content_created':
+        return 'Content Created';
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
   };
 
-  const canCreateContent = brief.status === 'ready' || brief.status === 'approved';
+  const canCreateContent = (brief.status === 'ready' || brief.status === 'approved') && brief.status !== 'content_created';
+  const hasContentCreated = brief.status === 'content_created';
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -114,6 +121,16 @@ export default function ContentBriefCard({
           </div>
           
           <div className="flex gap-2">
+            {hasContentCreated && (
+              <Button
+                onClick={() => window.location.href = '/content-items'}
+                size="sm"
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                <Eye className="w-3 h-3 mr-1" />
+                View Content
+              </Button>
+            )}
             {canCreateContent && (
               <Button
                 onClick={() => onCreateContentItem(brief.id)}

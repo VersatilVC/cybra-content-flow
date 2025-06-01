@@ -4,7 +4,7 @@ export interface ContentBrief {
   title: string;
   description: string | null;
   content: string | null;
-  status: 'draft' | 'ready' | 'approved' | 'discarded';
+  status: 'draft' | 'ready' | 'approved' | 'discarded' | 'content_created';
   source_type: 'idea' | 'suggestion';
   source_id: string;
   brief_type: 'Blog Post' | 'Guide';
@@ -25,7 +25,7 @@ export interface CreateContentBriefData {
   title: string;
   description: string | null;
   content: string | null;
-  status: 'draft' | 'ready' | 'approved' | 'discarded';
+  status: 'draft' | 'ready' | 'approved' | 'discarded' | 'content_created';
   source_type: 'idea' | 'suggestion';
   source_id: string;
   brief_type: 'Blog Post' | 'Guide';
