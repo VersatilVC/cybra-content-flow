@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +11,7 @@ import {
 } from '@/services/contentIdeasApi';
 import { triggerWebhook } from '@/services/webhookService';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeFilename } from '@/lib/fileUtils';
 
 export function useContentIdeas(filters?: ContentIdeaFilters) {
   const { user } = useAuth();
@@ -33,10 +35,17 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
       delete finalIdeaData.file; // Remove file from idea data before saving to database
       
       if (ideaData.file && ideaData.source_type === 'file') {
-        const fileName = `${Date.now()}-${ideaData.file.name}`;
+        const originalFilename = ideaData.file.name;
+        const sanitizedFilename = sanitizeFilename(originalFilename);
+        const fileName = `${Date.now()}-${sanitizedFilename}`;
         const filePath = `${user.id}/${fileName}`;
         
-        console.log('Uploading file to storage:', filePath);
+        console.log('Uploading file to storage:', {
+          originalFilename,
+          sanitizedFilename,
+          filePath
+        });
+        
         const { error: uploadError } = await supabase.storage
           .from('content-files')
           .upload(filePath, ideaData.file);
@@ -49,7 +58,8 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
         // Update source_data with the actual uploaded filename
         finalIdeaData.source_data = {
           filename: fileName,
-          originalName: ideaData.file.name,
+          originalName: originalFilename,
+          sanitizedName: sanitizedFilename,
           size: ideaData.file.size,
           type: ideaData.file.type
         };
