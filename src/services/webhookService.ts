@@ -58,10 +58,10 @@ export const triggerContentProcessingWebhook = async (briefId: string, userId: s
       .from('content_submissions')
       .insert({
         user_id: userId,
-        knowledge_base: 'content_creation', // Special knowledge base for content creation
+        knowledge_base: 'content_creation',
         content_type: brief.brief_type,
         processing_status: 'queued',
-        file_url: null, // No file for content creation
+        file_url: null,
         original_filename: `${brief.title} - Content Creation`,
       })
       .select()
@@ -73,53 +73,98 @@ export const triggerContentProcessingWebhook = async (briefId: string, userId: s
 
     console.log('Content submission created:', submission.id);
 
-    // Get the process-content function URL with proper action parameter
-    const supabaseUrl = 'https://uejgjytmqpcilwfrlpai.supabase.co';
-    const triggerUrl = `${supabaseUrl}/functions/v1/process-content?action=trigger`;
+    // Check for active content_processing webhooks (N8N)
+    const { data: webhooks, error: webhookError } = await supabase
+      .from('webhook_configurations')
+      .select('*')
+      .eq('webhook_type', 'content_processing')
+      .eq('is_active', true);
 
-    // Prepare webhook payload for the process-content function
-    const payload = {
-      submissionId: submission.id,
-      type: 'content_creation',
-      brief_id: briefId,
-      user_id: userId,
-      brief_title: brief.title,
-      brief_type: brief.brief_type,
-      target_audience: brief.target_audience,
-      timestamp: new Date().toISOString(),
-    };
-
-    console.log('Triggering process-content function with payload:', payload);
-    
-    // Call the process-content function directly
-    const response = await fetch(triggerUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Process-content function failed: ${response.status} - ${errorText}`);
+    if (webhookError) {
+      console.error('Error fetching webhook configurations:', webhookError);
+      throw new Error(`Webhook configuration error: ${webhookError.message}`);
     }
 
-    const result = await response.json();
-    console.log('Process-content function result:', result);
-    
-    // Update submission status to indicate function was triggered
-    await supabase
-      .from('content_submissions')
-      .update({ 
-        processing_status: 'processing',
-        webhook_triggered_at: new Date().toISOString()
-      })
-      .eq('id', submission.id);
+    if (webhooks && webhooks.length > 0) {
+      // Use N8N webhook for content processing
+      console.log('Found content_processing webhooks, triggering N8N workflow');
+      
+      const payload = {
+        submission_id: submission.id,
+        type: 'content_creation',
+        brief_id: briefId,
+        user_id: userId,
+        brief_title: brief.title,
+        brief_type: brief.brief_type,
+        target_audience: brief.target_audience,
+        timestamp: new Date().toISOString(),
+      };
 
-    console.log('Content processing triggered successfully');
-    return submission.id;
+      console.log('Triggering N8N webhook with payload:', payload);
+      
+      // Trigger the N8N webhook using the existing triggerWebhook function
+      await triggerWebhook('content_processing', payload);
+      
+      // Update submission status to indicate webhook was triggered
+      await supabase
+        .from('content_submissions')
+        .update({ 
+          processing_status: 'processing',
+          webhook_triggered_at: new Date().toISOString()
+        })
+        .eq('id', submission.id);
+
+      console.log('N8N webhook triggered successfully');
+      return submission.id;
+    } else {
+      // Fallback to direct edge function call if no webhook is configured
+      console.log('No content_processing webhooks found, falling back to edge function');
+      
+      const supabaseUrl = 'https://uejgjytmqpcilwfrlpai.supabase.co';
+      const triggerUrl = `${supabaseUrl}/functions/v1/process-content?action=trigger`;
+
+      const payload = {
+        submissionId: submission.id,
+        type: 'content_creation',
+        brief_id: briefId,
+        user_id: userId,
+        brief_title: brief.title,
+        brief_type: brief.brief_type,
+        target_audience: brief.target_audience,
+        timestamp: new Date().toISOString(),
+      };
+
+      console.log('Triggering process-content function with payload:', payload);
+      
+      const response = await fetch(triggerUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Process-content function failed: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Process-content function result:', result);
+      
+      // Update submission status to indicate function was triggered
+      await supabase
+        .from('content_submissions')
+        .update({ 
+          processing_status: 'processing',
+          webhook_triggered_at: new Date().toISOString()
+        })
+        .eq('id', submission.id);
+
+      console.log('Edge function triggered successfully');
+      return submission.id;
+    }
   } catch (error) {
     console.error('Content processing failed:', error);
     throw error;
