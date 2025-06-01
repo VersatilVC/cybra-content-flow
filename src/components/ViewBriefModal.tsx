@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { ContentBrief } from '@/types/contentBriefs';
-import { FileText, User, Calendar, Tag, Target, BookOpen, ExternalLink, Plus } from 'lucide-react';
+import { FileText } from 'lucide-react';
+import BriefHeader from './brief/BriefHeader';
+import BriefMetadata from './brief/BriefMetadata';
+import BriefContent from './brief/BriefContent';
+import CreateContentCTA from './brief/CreateContentCTA';
 
 interface ViewBriefModalProps {
   brief: ContentBrief | null;
@@ -37,31 +39,6 @@ interface BriefContent {
 export default function ViewBriefModal({ brief, open, onClose, onCreateContentItem }: ViewBriefModalProps) {
   if (!brief) return null;
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ready':
-        return 'bg-green-100 text-green-800';
-      case 'draft':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'approved':
-        return 'bg-blue-100 text-blue-800';
-      case 'discarded':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const parseBriefContent = (content: string | null): BriefContent | null => {
     if (!content) return null;
     
@@ -76,44 +53,7 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
     }
   };
 
-  const getSectionBulletPoints = (section: any): string[] => {
-    console.log('Processing section:', section);
-    
-    // Check for sectionPoints first (the actual property being used)
-    if (section.sectionPoints && Array.isArray(section.sectionPoints)) {
-      return section.sectionPoints;
-    }
-    
-    // Check other possible property names for bullet points
-    if (section.bulletPoints) {
-      if (Array.isArray(section.bulletPoints)) {
-        return section.bulletPoints;
-      }
-      if (typeof section.bulletPoints === 'string') {
-        // Try to split by newlines or other delimiters
-        return section.bulletPoints.split('\n').filter(point => point.trim().length > 0);
-      }
-    }
-    
-    if (section.points && Array.isArray(section.points)) {
-      return section.points;
-    }
-    
-    if (section.items && Array.isArray(section.items)) {
-      return section.items;
-    }
-    
-    if (section.content && typeof section.content === 'string') {
-      // Try to extract bullet points from content
-      const lines = section.content.split('\n').filter(line => line.trim().length > 0);
-      return lines;
-    }
-    
-    return [];
-  };
-
   const briefContent = parseBriefContent(brief.content);
-  const canCreateContent = brief.status === 'ready' || brief.status === 'approved';
 
   // Debug logging
   console.log('Brief content structure:', {
@@ -136,49 +76,10 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
         
         <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{brief.title}</h2>
-              <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  <span>Created {formatDate(brief.created_at)}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  <span>Updated {formatDate(brief.updated_at)}</span>
-                </div>
-              </div>
-            </div>
-            <Badge className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(brief.status)}`}>
-              {brief.status.charAt(0).toUpperCase() + brief.status.slice(1)}
-            </Badge>
-          </div>
+          <BriefHeader brief={brief} />
 
           {/* Metadata */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-2">
-              <Tag className="w-4 h-4 text-gray-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">Brief Type</p>
-                <p className="text-sm text-gray-600">{brief.brief_type}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <User className="w-4 h-4 text-gray-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">Target Audience</p>
-                <p className="text-sm text-gray-600">{brief.target_audience}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-gray-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">Source</p>
-                <p className="text-sm text-gray-600">{brief.source_type}</p>
-              </div>
-            </div>
-          </div>
+          <BriefMetadata brief={brief} />
 
           {/* Description */}
           {brief.description && (
@@ -193,133 +94,8 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
           {/* Structured Content */}
           {briefContent ? (
             <div className="space-y-6">
-              {/* What & Why Section */}
-              {briefContent.whatAndWhy && (
-                <div>
-                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
-                    <Target className="w-5 h-5 text-blue-600" />
-                    What & Why
-                  </h3>
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
-                    {briefContent.whatAndWhy.targetAudience && (
-                      <div>
-                        <h4 className="font-medium text-blue-900">Target Audience</h4>
-                        <p className="text-blue-800">{briefContent.whatAndWhy.targetAudience}</p>
-                      </div>
-                    )}
-                    {briefContent.whatAndWhy.goal && (
-                      <div>
-                        <h4 className="font-medium text-blue-900">Goal</h4>
-                        <p className="text-blue-800">{briefContent.whatAndWhy.goal}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Content Sections */}
-              {briefContent.contentSections && Array.isArray(briefContent.contentSections) && briefContent.contentSections.length > 0 && (
-                <div>
-                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
-                    <FileText className="w-5 h-5 text-green-600" />
-                    Content Sections
-                  </h3>
-                  <div className="space-y-4">
-                    {briefContent.contentSections.map((section, index) => {
-                      const bulletPoints = getSectionBulletPoints(section);
-                      console.log(`Section ${index + 1} bullet points:`, bulletPoints);
-                      
-                      return (
-                        <div key={index} className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                          <h4 className="font-semibold text-green-900 mb-2">
-                            {index + 1}. {section.sectionTitle || section.title || `Section ${index + 1}`}
-                          </h4>
-                          {bulletPoints.length > 0 ? (
-                            <ul className="list-disc list-inside space-y-1 text-green-800">
-                              {bulletPoints.map((point, pointIndex) => (
-                                <li key={pointIndex}>{point}</li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <div className="text-green-700 italic">
-                              <p>No bullet points available for this section</p>
-                              <details className="mt-2 text-xs">
-                                <summary className="cursor-pointer">Debug info</summary>
-                                <pre className="mt-1 bg-white p-2 rounded text-xs overflow-x-auto">
-                                  {JSON.stringify(section, null, 2)}
-                                </pre>
-                              </details>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Show a message if no content sections exist */}
-              {(!briefContent.contentSections || !Array.isArray(briefContent.contentSections) || briefContent.contentSections.length === 0) && (
-                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-2">
-                    <FileText className="w-5 h-5 text-gray-600" />
-                    Content Sections
-                  </h3>
-                  <p className="text-gray-600 italic">No content sections have been defined for this brief yet.</p>
-                </div>
-              )}
-
-              {/* Supporting Research */}
-              {briefContent.supportingResearch && Array.isArray(briefContent.supportingResearch) && briefContent.supportingResearch.length > 0 && (
-                <div>
-                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
-                    <BookOpen className="w-5 h-5 text-purple-600" />
-                    Supporting Research
-                  </h3>
-                  <div className="space-y-3">
-                    {briefContent.supportingResearch.map((research, index) => (
-                      <div key={index} className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-medium text-purple-900 mb-1">{research.title}</h4>
-                            <p className="text-purple-800 text-sm">{research.description}</p>
-                          </div>
-                          {research.url && (
-                            <a
-                              href={research.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-purple-600 hover:text-purple-800 text-sm ml-3"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              View
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Create Content Item CTA */}
-              {canCreateContent && (
-                <div className="p-6 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Ready to Create Content?</h3>
-                    <p className="text-gray-600 mb-4">
-                      Transform this brief into a content item and start writing your {brief.brief_type.toLowerCase()}.
-                    </p>
-                    <Button
-                      onClick={() => onCreateContentItem?.(brief.id)}
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Content Item
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <BriefContent briefContent={briefContent} />
+              <CreateContentCTA brief={brief} onCreateContentItem={onCreateContentItem} />
             </div>
           ) : (
             /* Fallback for non-JSON content */
