@@ -40,7 +40,7 @@ export default function EditBriefModal({ brief, open, onClose, onSave, isUpdatin
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
   const [structuredContent, setStructuredContent] = useState<BriefContentData>({});
-  const [status, setStatus] = useState<'draft' | 'ready' | 'approved' | 'discarded'>('draft');
+  const [status, setStatus] = useState<'draft' | 'ready' | 'approved' | 'discarded' | 'content_created'>('draft');
   const [briefType, setBriefType] = useState<'Blog Post' | 'Guide'>('Blog Post');
   const [targetAudience, setTargetAudience] = useState<'Private Sector' | 'Government Sector'>('Private Sector');
   const [activeTab, setActiveTab] = useState('basic');
@@ -184,7 +184,7 @@ export default function EditBriefModal({ brief, open, onClose, onSave, isUpdatin
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Status
               </label>
-              <Select value={status} onValueChange={(value: 'draft' | 'ready' | 'approved' | 'discarded') => setStatus(value)}>
+              <Select value={status} onValueChange={(value: 'draft' | 'ready' | 'approved' | 'discarded' | 'content_created') => setStatus(value)}>
                 <SelectTrigger className="w-48">
                   <SelectValue />
                 </SelectTrigger>
@@ -192,6 +192,7 @@ export default function EditBriefModal({ brief, open, onClose, onSave, isUpdatin
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="ready">Ready</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="content_created">Content Created</SelectItem>
                   <SelectItem value="discarded">Discarded</SelectItem>
                 </SelectContent>
               </Select>

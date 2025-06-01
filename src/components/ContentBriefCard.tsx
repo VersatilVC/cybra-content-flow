@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,7 +66,7 @@ export default function ContentBriefCard({
     }
   };
 
-  const canCreateContent = (brief.status === 'ready' || brief.status === 'approved') && brief.status !== 'content_created';
+  const canCreateContent = brief.status === 'ready' || brief.status === 'approved';
   const hasContentCreated = brief.status === 'content_created';
 
   return (
