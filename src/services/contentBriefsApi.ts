@@ -31,7 +31,7 @@ export async function fetchContentBriefs(userId: string, filters?: ContentBriefF
     throw new Error(`Failed to fetch content briefs: ${error.message}`);
   }
 
-  return data || [];
+  return (data || []) as ContentBrief[];
 }
 
 export async function createContentBrief(briefData: CreateContentBriefData): Promise<ContentBrief> {
@@ -45,7 +45,7 @@ export async function createContentBrief(briefData: CreateContentBriefData): Pro
     throw new Error(`Failed to create content brief: ${error.message}`);
   }
 
-  return data;
+  return data as ContentBrief;
 }
 
 export async function updateContentBrief(id: string, updates: Partial<ContentBrief>): Promise<ContentBrief> {
@@ -60,7 +60,7 @@ export async function updateContentBrief(id: string, updates: Partial<ContentBri
     throw new Error(`Failed to update content brief: ${error.message}`);
   }
 
-  return data;
+  return data as ContentBrief;
 }
 
 export async function deleteContentBrief(id: string): Promise<void> {
@@ -86,5 +86,5 @@ export async function getBriefBySourceId(sourceId: string, sourceType: 'idea' | 
     throw new Error(`Failed to get brief: ${error.message}`);
   }
 
-  return data;
+  return data as ContentBrief | null;
 }
