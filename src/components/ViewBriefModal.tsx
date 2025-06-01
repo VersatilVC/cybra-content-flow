@@ -61,15 +61,27 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
     if (!content) return null;
     
     try {
-      return JSON.parse(content) as BriefContent;
+      const parsed = JSON.parse(content) as BriefContent;
+      console.log('Parsed brief content:', parsed);
+      return parsed;
     } catch (error) {
       console.error('Failed to parse brief content:', error);
+      console.log('Raw content:', content);
       return null;
     }
   };
 
   const briefContent = parseBriefContent(brief.content);
   const canCreateContent = brief.status === 'ready' || brief.status === 'approved';
+
+  // Debug logging
+  console.log('Brief content structure:', {
+    rawContent: brief.content,
+    parsedContent: briefContent,
+    contentSections: briefContent?.contentSections,
+    contentSectionsLength: briefContent?.contentSections?.length,
+    isArray: Array.isArray(briefContent?.contentSections)
+  });
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -175,18 +187,32 @@ export default function ViewBriefModal({ brief, open, onClose, onCreateContentIt
                     {briefContent.contentSections.map((section, index) => (
                       <div key={index} className="p-4 bg-green-50 border border-green-200 rounded-lg">
                         <h4 className="font-semibold text-green-900 mb-2">
-                          {index + 1}. {section.title}
+                          {index + 1}. {section.title || `Section ${index + 1}`}
                         </h4>
-                        {Array.isArray(section.bulletPoints) && section.bulletPoints.length > 0 && (
+                        {section.bulletPoints && Array.isArray(section.bulletPoints) && section.bulletPoints.length > 0 && (
                           <ul className="list-disc list-inside space-y-1 text-green-800">
                             {section.bulletPoints.map((point, pointIndex) => (
                               <li key={pointIndex}>{point}</li>
                             ))}
                           </ul>
                         )}
+                        {(!section.bulletPoints || !Array.isArray(section.bulletPoints) || section.bulletPoints.length === 0) && (
+                          <p className="text-green-700 italic">No bullet points available for this section</p>
+                        )}
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Show a message if no content sections exist */}
+              {(!briefContent.contentSections || !Array.isArray(briefContent.contentSections) || briefContent.contentSections.length === 0) && (
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-2">
+                    <FileText className="w-5 h-5 text-gray-600" />
+                    Content Sections
+                  </h3>
+                  <p className="text-gray-600 italic">No content sections have been defined for this brief yet.</p>
                 </div>
               )}
 
