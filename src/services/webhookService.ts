@@ -73,23 +73,43 @@ export const triggerContentProcessingWebhook = async (briefId: string, userId: s
 
     console.log('Content submission created:', submission.id);
 
-    // Prepare enhanced webhook payload with submission_id
+    // Get the process-content function URL with proper action parameter
+    const supabaseUrl = 'https://uejgjytmqpcilwfrlpai.supabase.co';
+    const triggerUrl = `${supabaseUrl}/functions/v1/process-content?action=trigger`;
+
+    // Prepare webhook payload for the process-content function
     const payload = {
+      submissionId: submission.id,
       type: 'content_creation',
-      submission_id: submission.id,
       brief_id: briefId,
       user_id: userId,
       brief_title: brief.title,
       brief_type: brief.brief_type,
       target_audience: brief.target_audience,
-      callback_url: `https://uejgjytmqpcilwfrlpai.supabase.co/functions/v1/process-content?action=callback`,
       timestamp: new Date().toISOString(),
     };
 
-    console.log('Triggering content_processing webhook with payload:', payload);
-    await triggerWebhook('content_processing', payload);
+    console.log('Triggering process-content function with payload:', payload);
     
-    // Update submission status to indicate webhook was triggered
+    // Call the process-content function directly
+    const response = await fetch(triggerUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Process-content function failed: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('Process-content function result:', result);
+    
+    // Update submission status to indicate function was triggered
     await supabase
       .from('content_submissions')
       .update({ 
@@ -98,10 +118,10 @@ export const triggerContentProcessingWebhook = async (briefId: string, userId: s
       })
       .eq('id', submission.id);
 
-    console.log('Content processing webhook triggered successfully');
+    console.log('Content processing triggered successfully');
     return submission.id;
   } catch (error) {
-    console.error('Content processing webhook failed:', error);
+    console.error('Content processing failed:', error);
     throw error;
   }
 };
