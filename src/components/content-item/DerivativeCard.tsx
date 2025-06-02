@@ -1,7 +1,10 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { 
   Download, 
   Edit, 
@@ -12,7 +15,9 @@ import {
   Video,
   Music,
   File,
-  Check
+  Check,
+  Eye,
+  ZoomIn
 } from 'lucide-react';
 import { ContentDerivative } from '@/services/contentDerivativesApi';
 import { formatDate } from '@/lib/utils';
@@ -29,6 +34,8 @@ const DerivativeCard: React.FC<DerivativeCardProps> = ({ derivative }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [isImageExpanded, setIsImageExpanded] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -106,19 +113,130 @@ const DerivativeCard: React.FC<DerivativeCardProps> = ({ derivative }) => {
     }
   };
 
+  const handleImageView = () => {
+    if (derivative.file_url) {
+      window.open(derivative.file_url, '_blank');
+    }
+  };
+
+  const truncateTitle = (title: string, maxLength: number = 50) => {
+    if (title.length <= maxLength) return title;
+    return title.substring(0, maxLength) + '...';
+  };
+
+  const renderImagePreview = () => {
+    if (derivative.content_type !== 'image' || !derivative.file_url) return null;
+
+    return (
+      <div className="bg-gray-50 rounded-lg p-3">
+        <AspectRatio ratio={16/9} className="bg-muted rounded-lg overflow-hidden">
+          {!imageError ? (
+            <img
+              src={derivative.file_url}
+              alt={derivative.title}
+              className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+              onError={() => setImageError(true)}
+              onLoad={() => setImageError(false)}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">
+              <div className="text-center">
+                <Image className="w-8 h-8 mx-auto mb-2" />
+                <p className="text-sm">Image unavailable</p>
+              </div>
+            </div>
+          )}
+        </AspectRatio>
+        
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span className="font-medium">Image:</span>
+            <span className="truncate max-w-[150px]">
+              {derivative.file_path?.split('/').pop() || 'Image file'}
+            </span>
+          </div>
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleImageView}
+              className="h-7 px-2 text-xs hover:bg-blue-50"
+              title="View full size"
+            >
+              <Eye className="w-3 h-3 mr-1" />
+              View
+            </Button>
+            {derivative.file_size && (
+              <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded">
+                {formatFileSize(derivative.file_size)}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderFilePreview = () => {
+    if (derivative.content_type === 'image') {
+      return renderImagePreview();
+    }
+
+    if (derivative.content_type === 'text' && derivative.content) {
+      return (
+        <div className="bg-gray-50 rounded-lg p-3">
+          <div className="text-sm text-gray-700 line-clamp-4 leading-relaxed">
+            {derivative.content}
+          </div>
+        </div>
+      );
+    }
+
+    if (derivative.file_url) {
+      return (
+        <div className="bg-gray-50 rounded-lg p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span className="font-medium">File:</span>
+              <span className="truncate max-w-[200px]">
+                {derivative.file_path?.split('/').pop() || 'Unnamed file'}
+              </span>
+            </div>
+            {derivative.file_size && (
+              <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded">
+                {formatFileSize(derivative.file_size)}
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <>
       <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-purple-200">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2 flex-1">
-              <div className="flex items-center gap-2 text-purple-600">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="flex items-center gap-2 text-purple-600 shrink-0">
                 {getContentTypeIcon(derivative.content_type)}
               </div>
               <div className="flex-1 min-w-0">
-                <CardTitle className="text-lg font-semibold text-gray-900 truncate">
-                  {derivative.title}
-                </CardTitle>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <CardTitle className="text-lg font-semibold text-gray-900 truncate cursor-help">
+                        {truncateTitle(derivative.title)}
+                      </CardTitle>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <p>{derivative.title}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge variant="outline" className="text-xs">
                     {derivative.content_type}
@@ -129,7 +247,7 @@ const DerivativeCard: React.FC<DerivativeCardProps> = ({ derivative }) => {
                 </div>
               </div>
             </div>
-            <Badge className={`px-2 py-1 text-xs font-medium border ${getStatusColor(derivative.status)}`}>
+            <Badge className={`px-2 py-1 text-xs font-medium border shrink-0 ${getStatusColor(derivative.status)}`}>
               {derivative.status}
             </Badge>
           </div>
@@ -137,31 +255,7 @@ const DerivativeCard: React.FC<DerivativeCardProps> = ({ derivative }) => {
         
         <CardContent>
           <div className="space-y-4">
-            {derivative.content_type === 'text' && derivative.content && (
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="text-sm text-gray-700 line-clamp-4 leading-relaxed">
-                  {derivative.content}
-                </div>
-              </div>
-            )}
-            
-            {derivative.content_type !== 'text' && derivative.file_url && (
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="font-medium">File:</span>
-                    <span className="truncate max-w-[200px]">
-                      {derivative.file_path?.split('/').pop() || 'Unnamed file'}
-                    </span>
-                  </div>
-                  {derivative.file_size && (
-                    <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded">
-                      {formatFileSize(derivative.file_size)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
+            {renderFilePreview()}
             
             <div className="flex items-center justify-between pt-3 border-t border-gray-100">
               <div className="text-xs text-gray-500 space-y-1">
@@ -192,7 +286,7 @@ const DerivativeCard: React.FC<DerivativeCardProps> = ({ derivative }) => {
                   )}
                 </Button>
                 
-                {derivative.content_type !== 'text' && derivative.file_url && (
+                {derivative.file_url && (
                   <Button 
                     variant="ghost" 
                     size="sm"

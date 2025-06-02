@@ -1,9 +1,7 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Wand2, 
   FileText,
   Image,
   Video
@@ -39,20 +37,18 @@ const ContentDerivativesSection: React.FC<ContentDerivativesSectionProps> = ({ c
     );
   }
 
+  const totalDerivatives = categorizedDerivatives.General.length + 
+                          categorizedDerivatives.Social.length + 
+                          categorizedDerivatives.Ads.length;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Content Derivatives</h3>
-        <div className="flex gap-2">
-          <Button 
-            onClick={() => handleGenerate('General')}
-            variant="outline" 
-            size="sm"
-            className="text-purple-600 border-purple-300 hover:bg-purple-50"
-          >
-            <Wand2 className="w-4 h-4 mr-2" />
-            Generate
-          </Button>
+        <div>
+          <h3 className="text-lg font-semibold">Content Derivatives</h3>
+          <p className="text-sm text-gray-600 mt-1">
+            {totalDerivatives} derivative{totalDerivatives === 1 ? '' : 's'} created
+          </p>
         </div>
       </div>
 

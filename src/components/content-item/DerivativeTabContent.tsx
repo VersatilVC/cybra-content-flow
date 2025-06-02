@@ -2,7 +2,7 @@
 import React from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { ContentDerivative } from '@/services/contentDerivativesApi';
 import DerivativeCard from './DerivativeCard';
 import EmptyDerivativesState from './EmptyDerivativesState';
@@ -47,7 +47,7 @@ const DerivativeTabContent: React.FC<DerivativeTabContentProps> = ({
   return (
     <TabsContent value={category} className="mt-6">
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <span className="text-2xl">{getCategoryIcon(category)}</span>
             <div>
@@ -70,12 +70,26 @@ const DerivativeTabContent: React.FC<DerivativeTabContentProps> = ({
         </div>
         
         {derivatives.length > 0 && (
-          <div className="flex items-center gap-4 text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-lg">
-            <span className="font-medium">{derivatives.length} derivative{derivatives.length === 1 ? '' : 's'}</span>
+          <div className="flex items-center gap-4 text-sm text-gray-500 bg-gray-50 px-4 py-3 rounded-lg border">
+            <div className="flex items-center gap-1">
+              <span className="font-medium">{derivatives.length}</span>
+              <span>derivative{derivatives.length === 1 ? '' : 's'}</span>
+            </div>
             <span>•</span>
-            <span>{derivatives.filter(d => d.status === 'approved').length} approved</span>
+            <div className="flex items-center gap-1">
+              <span className="font-medium">{derivatives.filter(d => d.status === 'approved').length}</span>
+              <span>approved</span>
+            </div>
             <span>•</span>
-            <span>{derivatives.filter(d => d.status === 'published').length} published</span>
+            <div className="flex items-center gap-1">
+              <span className="font-medium">{derivatives.filter(d => d.status === 'published').length}</span>
+              <span>published</span>
+            </div>
+            <span>•</span>
+            <div className="flex items-center gap-1">
+              <span className="font-medium">{derivatives.filter(d => d.status === 'discarded').length}</span>
+              <span>discarded</span>
+            </div>
           </div>
         )}
       </div>
