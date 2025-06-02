@@ -31,7 +31,7 @@ const EditDerivativeModal: React.FC<EditDerivativeModalProps> = ({
   
   const [title, setTitle] = useState(derivative.title);
   const [content, setContent] = useState(derivative.content || '');
-  const [status, setStatus] = useState(derivative.status);
+  const [status, setStatus] = useState<'draft' | 'approved' | 'published' | 'discarded'>(derivative.status);
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -49,6 +49,10 @@ const EditDerivativeModal: React.FC<EditDerivativeModalProps> = ({
     if (selectedFile) {
       setFile(selectedFile);
     }
+  };
+
+  const handleStatusChange = (value: string) => {
+    setStatus(value as 'draft' | 'approved' | 'published' | 'discarded');
   };
 
   const handleSubmit = async () => {
@@ -123,7 +127,7 @@ const EditDerivativeModal: React.FC<EditDerivativeModalProps> = ({
 
           <div>
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={handleStatusChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
