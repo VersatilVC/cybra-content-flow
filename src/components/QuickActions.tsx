@@ -95,7 +95,7 @@ export function QuickActions() {
       </Card>
 
       <AddIdeaModal
-        open={showIdeaModal}
+        isOpen={showIdeaModal}
         onClose={() => setShowIdeaModal(false)}
       />
     </>
