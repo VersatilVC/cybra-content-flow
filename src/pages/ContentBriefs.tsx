@@ -29,6 +29,7 @@ const ContentBriefs = () => {
   const [selectedBrief, setSelectedBrief] = useState<ContentBrief | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [isCreatingContent, setIsCreatingContent] = useState(false);
+  const [pendingBriefId, setPendingBriefId] = useState<string | null>(null);
 
   const { 
     briefs, 
@@ -39,21 +40,37 @@ const ContentBriefs = () => {
     isUpdating 
   } = useContentBriefs(filters);
 
-  // Check URL params for auto-opening brief details
+  // Check URL params for auto-opening brief details on initial load
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const viewBriefId = urlParams.get('view');
     
-    if (viewBriefId && briefs.length > 0) {
-      const briefToView = briefs.find(brief => brief.id === viewBriefId);
+    if (viewBriefId) {
+      setPendingBriefId(viewBriefId);
+      // Clear the URL parameter immediately
+      window.history.replaceState({}, '', '/content-briefs');
+    }
+  }, []);
+
+  // Handle opening brief when briefs are loaded and we have a pending brief ID
+  useEffect(() => {
+    if (pendingBriefId && briefs.length > 0 && !isLoading) {
+      const briefToView = briefs.find(brief => brief.id === pendingBriefId);
       if (briefToView) {
         setSelectedBrief(briefToView);
         setViewModalOpen(true);
-        // Clear the URL parameter
-        window.history.replaceState({}, '', '/content-briefs');
+        setPendingBriefId(null);
+      } else {
+        // Brief not found, clear pending ID
+        setPendingBriefId(null);
+        toast({
+          title: 'Brief not found',
+          description: 'The requested brief could not be found.',
+          variant: 'destructive',
+        });
       }
     }
-  }, [briefs]);
+  }, [briefs, isLoading, pendingBriefId, toast]);
 
   console.log('ContentBriefs Debug:', {
     user: !!user,
