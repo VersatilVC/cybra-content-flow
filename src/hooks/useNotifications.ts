@@ -98,18 +98,18 @@ export function useNotifications() {
     
     if (entityId) {
       if (notification.related_entity_type === 'idea') {
-        navigate(`/ideas?expand=${entityId}`);
+        navigate(`/content-ideas?expand=${entityId}`);
       } else {
-        navigate(`/ideas?expand=${entityId}`);
+        navigate(`/content-ideas?expand=${entityId}`);
       }
     } else {
-      navigate('/ideas');
+      navigate('/content-ideas');
     }
   };
 
   const handleViewBrief = async (notification: Notification) => {
     markAsRead(notification.id);
-    navigate('/briefs');
+    navigate('/content-briefs');
   };
 
   const handleViewContentItem = async (notification: Notification) => {
