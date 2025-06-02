@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, Briefcase, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,7 @@ const ContentBriefs = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedBrief, setSelectedBrief] = useState<ContentBrief | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [isCreatingContent, setIsCreatingContent] = useState(false);
 
   const { 
     briefs, 
@@ -37,6 +38,22 @@ const ContentBriefs = () => {
     updateBrief,
     isUpdating 
   } = useContentBriefs(filters);
+
+  // Check URL params for auto-opening brief details
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewBriefId = urlParams.get('view');
+    
+    if (viewBriefId && briefs.length > 0) {
+      const briefToView = briefs.find(brief => brief.id === viewBriefId);
+      if (briefToView) {
+        setSelectedBrief(briefToView);
+        setViewModalOpen(true);
+        // Clear the URL parameter
+        window.history.replaceState({}, '', '/content-briefs');
+      }
+    }
+  }, [briefs]);
 
   console.log('ContentBriefs Debug:', {
     user: !!user,
@@ -70,15 +87,19 @@ const ContentBriefs = () => {
   };
 
   const handleCreateContentItem = async (briefId: string) => {
-    if (!user?.id) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please log in to create content items.',
-        variant: 'destructive',
-      });
+    if (!user?.id || isCreatingContent) {
+      if (!user?.id) {
+        toast({
+          title: 'Authentication required',
+          description: 'Please log in to create content items.',
+          variant: 'destructive',
+        });
+      }
       return;
     }
 
+    setIsCreatingContent(true);
+    
     try {
       console.log('Creating content item for brief:', briefId);
       
@@ -97,6 +118,8 @@ const ContentBriefs = () => {
         description: 'Failed to start content creation. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setIsCreatingContent(false);
     }
   };
 

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { ContentBrief } from '@/types/contentBriefs';
@@ -15,19 +15,24 @@ interface CreateContentCTAProps {
 export default function CreateContentCTA({ brief, onCreateContentItem }: CreateContentCTAProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isCreating, setIsCreating] = useState(false);
   const canCreateContent = brief.status === 'ready' || brief.status === 'approved';
 
   if (!canCreateContent) return null;
 
   const handleCreateContent = async () => {
-    if (!user?.id) {
-      toast({
-        title: 'Authentication required',
-        description: 'Please log in to create content items.',
-        variant: 'destructive',
-      });
+    if (!user?.id || isCreating) {
+      if (!user?.id) {
+        toast({
+          title: 'Authentication required',
+          description: 'Please log in to create content items.',
+          variant: 'destructive',
+        });
+      }
       return;
     }
+
+    setIsCreating(true);
 
     try {
       console.log('Creating content item for brief:', brief.id);
@@ -50,6 +55,8 @@ export default function CreateContentCTA({ brief, onCreateContentItem }: CreateC
         description: 'Failed to start content creation. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -62,10 +69,11 @@ export default function CreateContentCTA({ brief, onCreateContentItem }: CreateC
         </p>
         <Button
           onClick={handleCreateContent}
-          className="bg-purple-600 hover:bg-purple-700 text-white"
+          disabled={isCreating}
+          className="bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Create Content Item
+          {isCreating ? 'Creating...' : 'Create Content Item'}
         </Button>
       </div>
     </div>

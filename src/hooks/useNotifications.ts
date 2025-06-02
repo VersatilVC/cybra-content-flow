@@ -109,7 +109,15 @@ export function useNotifications() {
 
   const handleViewBrief = async (notification: Notification) => {
     markAsRead(notification.id);
-    navigate('/content-briefs');
+    
+    // Link directly to the brief details if we have the brief ID
+    const briefId = notification.related_entity_id;
+    if (briefId && notification.related_entity_type === 'brief') {
+      // Navigate to content briefs with a query parameter to open the brief details
+      navigate(`/content-briefs?view=${briefId}`);
+    } else {
+      navigate('/content-briefs');
+    }
   };
 
   const handleViewContentItem = async (notification: Notification) => {
