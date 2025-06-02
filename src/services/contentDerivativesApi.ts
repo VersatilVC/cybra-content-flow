@@ -154,7 +154,11 @@ export async function triggerDerivativeGeneration(
     category: category,
     user_id: userId,
     timestamp: new Date().toISOString(),
-    callback_url: `https://uejgjytmqpcilwfrlpai.supabase.co/functions/v1/process-content?action=callback`
+    callback_url: `https://uejgjytmqpcilwfrlpai.supabase.co/functions/v1/process-content?action=callback`,
+    storage_config: {
+      bucket_name: 'content-derivatives',
+      base_url: 'https://uejgjytmqpcilwfrlpai.supabase.co/storage/v1/object/public/content-derivatives'
+    }
   };
 
   try {

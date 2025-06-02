@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeFilename } from '@/lib/fileUtils';
 
-export async function handleFileUpload(file: File, userId: string) {
+export async function handleFileUpload(file: File, userId: string, bucketName: string = 'content-files') {
   const originalFilename = file.name;
   const sanitizedFilename = sanitizeFilename(originalFilename);
   const fileName = `${Date.now()}-${sanitizedFilename}`;
@@ -11,11 +11,12 @@ export async function handleFileUpload(file: File, userId: string) {
   console.log('Uploading file to storage:', {
     originalFilename,
     sanitizedFilename,
-    filePath
+    filePath,
+    bucketName
   });
   
   const { error: uploadError } = await supabase.storage
-    .from('content-files')
+    .from(bucketName)
     .upload(filePath, file);
     
   if (uploadError) {
@@ -30,6 +31,11 @@ export async function handleFileUpload(file: File, userId: string) {
     originalName: originalFilename,
     sanitizedName: sanitizedFilename,
     size: file.size,
-    type: file.type
+    type: file.type,
+    path: filePath
   };
+}
+
+export async function handleDerivativeFileUpload(file: File, userId: string) {
+  return handleFileUpload(file, userId, 'content-derivatives');
 }
