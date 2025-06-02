@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,8 +49,12 @@ const DerivativeCard: React.FC<DerivativeCardProps> = ({ derivative }) => {
     }
   };
 
-  const formatFileSize = (bytes: number | null) => {
-    if (!bytes) return '';
+  const formatFileSize = (sizeString: string | null) => {
+    if (!sizeString) return '';
+    
+    const bytes = parseInt(sizeString, 10);
+    if (isNaN(bytes)) return '';
+    
     const units = ['B', 'KB', 'MB', 'GB'];
     let size = bytes;
     let unitIndex = 0;
