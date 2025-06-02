@@ -26,13 +26,19 @@ export async function handleFileUpload(file: File, userId: string, bucketName: s
   
   console.log('File uploaded successfully');
   
+  // Generate the correct public URL
+  const { data: publicUrlData } = supabase.storage
+    .from(bucketName)
+    .getPublicUrl(filePath);
+  
   return {
     filename: fileName,
     originalName: originalFilename,
     sanitizedName: sanitizedFilename,
-    size: file.size.toString(), // Convert to string to match database schema
+    size: file.size.toString(),
     type: file.type,
-    path: filePath
+    path: filePath,
+    url: publicUrlData.publicUrl
   };
 }
 

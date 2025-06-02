@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ContentDerivative {
@@ -15,7 +16,7 @@ export interface ContentDerivative {
   file_url: string | null;
   file_path: string | null;
   mime_type: string | null;
-  file_size: string | null; // Changed from number to string to match database schema
+  file_size: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -34,7 +35,7 @@ export interface CreateContentDerivativeData {
   file_url?: string | null;
   file_path?: string | null;
   mime_type?: string | null;
-  file_size?: string | null; // Changed from number to string to match database schema
+  file_size?: string | null;
 }
 
 export async function fetchContentDerivatives(contentItemId: string): Promise<ContentDerivative[]> {
@@ -178,5 +179,36 @@ export async function triggerDerivativeGeneration(
   } catch (error) {
     console.error('Error calling derivative generation webhook:', error);
     throw new Error(`Failed to trigger derivative generation webhook: ${error.message}`);
+  }
+}
+
+// Helper function to download a file from Supabase storage
+export async function downloadDerivativeFile(derivative: ContentDerivative): Promise<void> {
+  if (!derivative.file_path) {
+    throw new Error('No file path available for download');
+  }
+
+  try {
+    const { data, error } = await supabase.storage
+      .from('content-derivatives')
+      .download(derivative.file_path);
+
+    if (error) {
+      console.error('Download error:', error);
+      throw new Error(`Failed to download file: ${error.message}`);
+    }
+
+    // Create a blob URL and trigger download
+    const url = URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = derivative.file_path.split('/').pop() || 'download';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    throw error;
   }
 }

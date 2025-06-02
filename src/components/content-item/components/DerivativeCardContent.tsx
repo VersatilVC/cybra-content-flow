@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Image, Eye } from 'lucide-react';
-import { ContentDerivative } from '@/services/contentDerivativesApi';
+import { Image, Eye, Download } from 'lucide-react';
+import { ContentDerivative, downloadDerivativeFile } from '@/services/contentDerivativesApi';
 import { formatFileSize } from '../utils/derivativeCardHelpers';
+import { useToast } from '@/hooks/use-toast';
 
 interface DerivativeCardContentProps {
   derivative: ContentDerivative;
@@ -12,10 +13,32 @@ interface DerivativeCardContentProps {
 
 const DerivativeCardContent: React.FC<DerivativeCardContentProps> = ({ derivative }) => {
   const [imageError, setImageError] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { toast } = useToast();
 
   const handleImageView = () => {
     if (derivative.file_url) {
       window.open(derivative.file_url, '_blank');
+    }
+  };
+
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      await downloadDerivativeFile(derivative);
+      toast({
+        title: 'Download started',
+        description: 'Your file download has started.',
+      });
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast({
+        title: 'Download failed',
+        description: error instanceof Error ? error.message : 'Failed to download file',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -30,14 +53,21 @@ const DerivativeCardContent: React.FC<DerivativeCardContentProps> = ({ derivativ
               src={derivative.file_url}
               alt={derivative.title}
               className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
-              onError={() => setImageError(true)}
-              onLoad={() => setImageError(false)}
+              onError={() => {
+                console.error('Image load error for URL:', derivative.file_url);
+                setImageError(true);
+              }}
+              onLoad={() => {
+                console.log('Image loaded successfully:', derivative.file_url);
+                setImageError(false);
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">
               <div className="text-center">
                 <Image className="w-8 h-8 mx-auto mb-2" />
                 <p className="text-sm">Image unavailable</p>
+                <p className="text-xs text-gray-400 mt-1">URL: {derivative.file_url}</p>
               </div>
             </div>
           )}
@@ -60,6 +90,17 @@ const DerivativeCardContent: React.FC<DerivativeCardContentProps> = ({ derivativ
             >
               <Eye className="w-3 h-3 mr-1" />
               View
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDownload}
+              disabled={isDownloading}
+              className="h-7 px-2 text-xs hover:bg-green-50"
+              title="Download image"
+            >
+              <Download className="w-3 h-3 mr-1" />
+              {isDownloading ? 'Downloading...' : 'Download'}
             </Button>
             {derivative.file_size && (
               <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded">
@@ -97,11 +138,24 @@ const DerivativeCardContent: React.FC<DerivativeCardContentProps> = ({ derivativ
                 {derivative.file_path?.split('/').pop() || 'Unnamed file'}
               </span>
             </div>
-            {derivative.file_size && (
-              <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded">
-                {formatFileSize(derivative.file_size)}
-              </span>
-            )}
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="h-7 px-2 text-xs hover:bg-green-50"
+                title="Download file"
+              >
+                <Download className="w-3 h-3 mr-1" />
+                {isDownloading ? 'Downloading...' : 'Download'}
+              </Button>
+              {derivative.file_size && (
+                <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded">
+                  {formatFileSize(derivative.file_size)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       );

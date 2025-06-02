@@ -63,7 +63,10 @@ export function useDerivativeGeneration(contentItemId: string) {
           let content = null;
           let file_url = null;
           
-          if (typeInfo.content_type === 'text') {
+          // Set proper content_type based on the derivative type
+          const content_type = typeInfo.content_type || 'text';
+          
+          if (content_type === 'text') {
             content = `Generated ${typeInfo.title.toLowerCase()} content for content item ${contentItemId}. This would be AI-generated content based on the original content.`;
           }
           
@@ -74,14 +77,14 @@ export function useDerivativeGeneration(contentItemId: string) {
             content: content,
             derivative_type: type,
             category: category,
-            content_type: typeInfo.content_type,
+            content_type: content_type,
             file_url: file_url,
             word_count: content ? content.split(' ').length : null,
             metadata: {
               generated_at: new Date().toISOString(),
               generator: 'fallback',
               source_category: category,
-              content_type: typeInfo.content_type
+              content_type: content_type
             }
           });
         }
