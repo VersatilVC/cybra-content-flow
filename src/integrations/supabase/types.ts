@@ -519,6 +519,8 @@ export type Database = {
           id: string
           is_read: boolean
           message: string
+          related_entity_id: string | null
+          related_entity_type: string | null
           related_submission_id: string | null
           title: string
           type: string
@@ -530,6 +532,8 @@ export type Database = {
           id?: string
           is_read?: boolean
           message: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
           related_submission_id?: string | null
           title: string
           type?: string
@@ -541,21 +545,15 @@ export type Database = {
           id?: string
           is_read?: boolean
           message?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
           related_submission_id?: string | null
           title?: string
           type?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_related_submission_id_fkey"
-            columns: ["related_submission_id"]
-            isOneToOne: false
-            referencedRelation: "content_submissions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {

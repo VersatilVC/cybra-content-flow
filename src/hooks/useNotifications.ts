@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -92,8 +93,15 @@ export function useNotifications() {
   const handleViewSuggestions = async (notification: Notification) => {
     markAsRead(notification.id);
     
-    if (notification.related_submission_id) {
-      navigate(`/ideas?expand=${notification.related_submission_id}`);
+    // Use the appropriate entity ID based on the notification type
+    const entityId = notification.related_entity_id || notification.related_submission_id;
+    
+    if (entityId) {
+      if (notification.related_entity_type === 'idea') {
+        navigate(`/ideas?expand=${entityId}`);
+      } else {
+        navigate(`/ideas?expand=${entityId}`);
+      }
     } else {
       navigate('/ideas');
     }
@@ -107,12 +115,11 @@ export function useNotifications() {
   const handleViewContentItem = async (notification: Notification) => {
     markAsRead(notification.id);
     
-    // Extract content item ID from the notification message
-    // The message should contain the content item ID in a format like "content item {id}"
-    const contentItemIdMatch = notification.message.match(/content item ([a-f0-9-]+)/i);
+    // Extract content item ID from the notification
+    const contentItemId = notification.related_entity_id || 
+      notification.message.match(/content item ([a-f0-9-]+)/i)?.[1];
     
-    if (contentItemIdMatch && contentItemIdMatch[1]) {
-      const contentItemId = contentItemIdMatch[1];
+    if (contentItemId && notification.related_entity_type === 'content_item') {
       navigate(`/content-items/${contentItemId}`);
     } else {
       // Fallback to content items list if we can't extract the ID

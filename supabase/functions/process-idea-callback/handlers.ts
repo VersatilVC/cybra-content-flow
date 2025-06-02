@@ -32,14 +32,15 @@ export async function handleContentSuggestionsReady(ideaId: string, suggestionsC
 
   console.log('Content idea updated successfully:', updatedIdea);
 
-  // Create notification
+  // Create notification with idea entity type
   if (updatedIdea) {
     await createNotification(
       updatedIdea.user_id,
       'Content Suggestions Ready',
       `${suggestionsCount || 'Several'} content suggestions have been generated for "${updatedIdea.title}"`,
       'success',
-      ideaId
+      ideaId,
+      'idea'
     );
   }
 
@@ -72,14 +73,15 @@ export async function handleBriefCompletion(ideaId: string, briefId: string, sta
 
     console.log('Content idea updated for brief completion:', updatedIdea);
 
-    // Create success notification
+    // Create success notification with brief entity type
     if (userId) {
       await createNotification(
         userId,
         'Content Brief Ready',
         `Your content brief "${title}" has been created successfully and is ready for review.`,
         'success',
-        ideaId
+        briefId,
+        'brief'
       );
     }
 
@@ -108,7 +110,8 @@ export async function handleBriefCompletion(ideaId: string, briefId: string, sta
         'Content Brief Creation Failed',
         `Failed to create content brief for "${title}". ${errorMessage || 'Please try again.'}`,
         'error',
-        ideaId
+        ideaId,
+        'idea'
       );
     }
 
@@ -136,14 +139,15 @@ export async function handleContentItemCompletion(contentItemId: string, submiss
         .eq('id', submissionId);
     }
 
-    // Create success notification with content item ID for direct linking
+    // Create success notification with content_item entity type
     if (userId) {
       await createNotification(
         userId,
         'Content Processing Complete',
         `Your content item "${title}" has been successfully generated (content item ${contentItemId}) and is ready for review.`,
         'success',
-        submissionId
+        contentItemId,
+        'content_item'
       );
     }
 
@@ -171,7 +175,8 @@ export async function handleContentItemCompletion(contentItemId: string, submiss
         'Content Processing Failed',
         `Failed to generate content item "${title}". ${errorMessage || 'Please try again.'}`,
         'error',
-        submissionId
+        submissionId,
+        'submission'
       );
     }
 
@@ -213,13 +218,14 @@ export async function handleIdeaProcessingComplete(ideaId: string, status: strin
       })
       .eq('id', ideaId);
 
-    // Create success notification
+    // Create success notification with idea entity type
     await createNotification(
       idea.user_id,
       'Idea Processing Complete',
       `Your idea "${idea.title}" has been processed successfully. ${suggestionsCount ? `${suggestionsCount} suggestions are now available.` : 'Content suggestions are ready for review.'}`,
       'success',
-      ideaId
+      ideaId,
+      'idea'
     );
   } else {
     // Update idea status to failed
@@ -231,13 +237,14 @@ export async function handleIdeaProcessingComplete(ideaId: string, status: strin
       })
       .eq('id', ideaId);
 
-    // Create error notification
+    // Create error notification with idea entity type
     await createNotification(
       idea.user_id,
       'Idea Processing Failed',
       `Failed to process your idea "${idea.title}". ${errorMessage || 'Please try submitting again.'}`,
       'error',
-      ideaId
+      ideaId,
+      'idea'
     );
   }
 
@@ -277,13 +284,14 @@ export async function handleKnowledgeBaseProcessingComplete(submissionId: string
       })
       .eq('id', submissionId);
 
-    // Create success notification
+    // Create success notification with submission entity type
     await createNotification(
       submission.user_id,
       'Knowledge Base Processing Complete',
       `Your file "${submission.original_filename}" has been successfully processed and added to the ${submission.knowledge_base} knowledge base.`,
       'success',
-      submissionId
+      submissionId,
+      'submission'
     );
   } else {
     // Update submission status to failed
@@ -295,13 +303,14 @@ export async function handleKnowledgeBaseProcessingComplete(submissionId: string
       })
       .eq('id', submissionId);
 
-    // Create error notification
+    // Create error notification with submission entity type
     await createNotification(
       submission.user_id,
       'Knowledge Base Processing Failed',
       `Failed to process your file "${submission.original_filename}". ${errorMessage || 'Please try uploading again.'}`,
       'error',
-      submissionId
+      submissionId,
+      'submission'
     );
   }
 

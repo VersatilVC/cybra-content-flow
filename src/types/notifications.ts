@@ -11,4 +11,6 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
   related_submission_id?: string;
+  related_entity_id?: string;
+  related_entity_type?: 'submission' | 'idea' | 'brief' | 'content_item';
 }

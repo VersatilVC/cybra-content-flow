@@ -30,18 +30,21 @@ export const getNotificationColor = (type: string) => {
 
 export const isContentSuggestionNotification = (notification: Notification): boolean => {
   return notification.title.includes('Content Suggestions Ready') || 
-         notification.message.includes('content suggestions');
+         notification.message.includes('content suggestions') ||
+         notification.related_entity_type === 'idea';
 };
 
 export const isContentBriefNotification = (notification: Notification): boolean => {
   return notification.title.includes('Content Brief Ready') || 
-         notification.message.includes('content brief');
+         notification.message.includes('content brief') ||
+         notification.related_entity_type === 'brief';
 };
 
 export const isContentItemNotification = (notification: Notification): boolean => {
   return notification.title.includes('Content Processing Complete') || 
          notification.message.includes('content item') ||
-         notification.message.includes('successfully generated');
+         notification.message.includes('successfully generated') ||
+         notification.related_entity_type === 'content_item';
 };
 
 export const mapNotificationRow = (row: NotificationRow): Notification => {
@@ -53,5 +56,7 @@ export const mapNotificationRow = (row: NotificationRow): Notification => {
     is_read: row.is_read,
     created_at: row.created_at,
     related_submission_id: row.related_submission_id || undefined,
+    related_entity_id: row.related_entity_id || undefined,
+    related_entity_type: row.related_entity_type as 'submission' | 'idea' | 'brief' | 'content_item' || undefined,
   };
 };
