@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -33,27 +32,33 @@ const DerivativeGenerationModal: React.FC<DerivativeGenerationModalProps> = ({
     General: [
       { type: 'excerpt_200', title: '200-Word Excerpt', description: 'Short summary for previews', content_type: 'text' as const },
       { type: 'newsletter_paragraph', title: 'Newsletter Paragraph', description: 'Email newsletter section', content_type: 'text' as const },
-      { type: 'executive_summary', title: 'Executive Summary', description: 'High-level overview for executives', content_type: 'text' as const },
-      { type: 'key_takeaways', title: 'Key Takeaways', description: 'Bullet points of main insights', content_type: 'text' as const },
-      { type: 'infographic_concept', title: 'Infographic Concept', description: 'Visual content concept and layout', content_type: 'image' as const },
-      { type: 'presentation_slides', title: 'Presentation Slides', description: 'PowerPoint/slide deck outline', content_type: 'document' as const }
+      { type: 'blog_banner_image', title: 'Blog Banner Image', description: 'Hero image for blog post', content_type: 'image' as const },
+      { type: 'blog_internal_images', title: 'Blog Post Internal Images', description: 'Supporting images for blog content', content_type: 'image' as const },
+      { type: 'nurture_email', title: 'Nurture Email', description: 'Educational email for lead nurturing', content_type: 'text' as const },
+      { type: 'sales_email', title: 'Sales Email', description: 'Direct sales outreach email', content_type: 'text' as const },
+      { type: 'content_transformation', title: 'Turn Content Item Into', description: 'Transform into different content format', content_type: 'text' as const },
+      { type: 'webinar_outline', title: 'Webinar Outline', description: 'Structured webinar presentation outline', content_type: 'document' as const },
+      { type: 'video_topic_points', title: 'Video Topic Points for CEO', description: 'Key talking points for executive video', content_type: 'text' as const },
+      { type: 'conference_speaking', title: 'Conference Speaking Suggestions', description: 'Speaking topics and proposals for conferences', content_type: 'text' as const },
+      { type: 'quiz_poll', title: 'Quiz/Poll', description: 'Interactive quiz or poll content', content_type: 'text' as const },
+      { type: 'audio_version', title: 'Generate Audio Version', description: 'Audio narration of content', content_type: 'audio' as const }
     ],
     Social: [
-      { type: 'linkedin_post_short', title: 'LinkedIn Post (Short)', description: '150-200 characters', content_type: 'text' as const },
-      { type: 'linkedin_post_long', title: 'LinkedIn Post (Long)', description: '500+ characters with hashtags', content_type: 'text' as const },
-      { type: 'twitter_thread', title: 'Twitter Thread', description: 'Multi-tweet thread', content_type: 'text' as const },
-      { type: 'instagram_caption', title: 'Instagram Caption', description: 'Engaging caption with hashtags', content_type: 'text' as const },
-      { type: 'facebook_post', title: 'Facebook Post', description: 'Community-focused post', content_type: 'text' as const },
-      { type: 'social_graphics', title: 'Social Media Graphics', description: 'Visual content for social platforms', content_type: 'image' as const },
-      { type: 'story_content', title: 'Story Content', description: 'Instagram/Facebook story visuals', content_type: 'image' as const }
+      { type: 'linkedin_company', title: 'LinkedIn Post - Company', description: 'Company brand voice LinkedIn post', content_type: 'text' as const },
+      { type: 'linkedin_ceo', title: 'LinkedIn Post - CEO', description: 'CEO thought leadership LinkedIn post', content_type: 'text' as const },
+      { type: 'linkedin_marketing', title: 'LinkedIn Post - Marketing', description: 'Marketing-focused LinkedIn post', content_type: 'text' as const },
+      { type: 'linkedin_sales', title: 'LinkedIn Post - Sales', description: 'Sales-oriented LinkedIn post', content_type: 'text' as const },
+      { type: 'linkedin_product', title: 'LinkedIn Post - Product', description: 'Product-focused LinkedIn post', content_type: 'text' as const },
+      { type: 'x_company', title: 'X Post - Company', description: 'Company brand voice X post', content_type: 'text' as const },
+      { type: 'x_ceo', title: 'X Post - CEO', description: 'CEO thought leadership X post', content_type: 'text' as const },
+      { type: 'x_marketing', title: 'X Post - Marketing', description: 'Marketing-focused X post', content_type: 'text' as const },
+      { type: 'x_sales', title: 'X Post - Sales', description: 'Sales-oriented X post', content_type: 'text' as const },
+      { type: 'x_product', title: 'X Post - Product', description: 'Product-focused X post', content_type: 'text' as const },
+      { type: 'image_carousel', title: 'Image Carousel Slides', description: 'Multi-slide visual content for social media', content_type: 'image' as const }
     ],
     Ads: [
-      { type: 'linkedin_ad_text', title: 'LinkedIn Ad Copy', description: 'Professional ad copy', content_type: 'text' as const },
-      { type: 'google_ad_headline', title: 'Google Ad Headlines', description: 'Multiple headline variations', content_type: 'text' as const },
-      { type: 'facebook_ad_copy', title: 'Facebook Ad Copy', description: 'Engaging ad content', content_type: 'text' as const },
-      { type: 'banner_ad_text', title: 'Banner Ad Text', description: 'Short, punchy ad copy', content_type: 'text' as const },
-      { type: 'display_banners', title: 'Display Banners', description: 'Visual banner ad designs', content_type: 'image' as const },
-      { type: 'video_ad_script', title: 'Video Ad Script', description: 'Script for video advertisements', content_type: 'text' as const }
+      { type: 'linkedin_text_ad', title: 'LinkedIn - Text Ad Copy', description: 'Professional LinkedIn advertising copy', content_type: 'text' as const },
+      { type: 'linkedin_image_ads', title: 'LinkedIn - Image Ads', description: 'Visual LinkedIn advertising creatives', content_type: 'image' as const }
     ]
   };
 
