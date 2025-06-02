@@ -6,12 +6,17 @@ export interface ContentDerivative {
   content_item_id: string;
   user_id: string;
   title: string;
-  content: string;
+  content: string | null;
   derivative_type: string;
   category: 'General' | 'Social' | 'Ads';
   status: 'draft' | 'approved' | 'published' | 'discarded';
   metadata: Record<string, any>;
   word_count: number | null;
+  content_type: 'text' | 'image' | 'audio' | 'video' | 'document';
+  file_url: string | null;
+  file_path: string | null;
+  mime_type: string | null;
+  file_size: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -20,12 +25,17 @@ export interface CreateContentDerivativeData {
   content_item_id: string;
   user_id: string;
   title: string;
-  content: string;
+  content?: string | null;
   derivative_type: string;
   category: 'General' | 'Social' | 'Ads';
   status?: 'draft' | 'approved' | 'published' | 'discarded';
   metadata?: Record<string, any>;
   word_count?: number;
+  content_type?: 'text' | 'image' | 'audio' | 'video' | 'document';
+  file_url?: string | null;
+  file_path?: string | null;
+  mime_type?: string | null;
+  file_size?: number | null;
 }
 
 export async function fetchContentDerivatives(contentItemId: string): Promise<ContentDerivative[]> {
@@ -50,7 +60,10 @@ export async function createContentDerivative(derivativeData: CreateContentDeriv
   
   const { data, error } = await supabase
     .from('content_derivatives')
-    .insert([derivativeData])
+    .insert([{
+      ...derivativeData,
+      content_type: derivativeData.content_type || 'text'
+    }])
     .select()
     .single();
 
@@ -91,5 +104,76 @@ export async function deleteContentDerivative(id: string): Promise<void> {
   if (error) {
     console.error('Error deleting content derivative:', error);
     throw new Error(`Failed to delete content derivative: ${error.message}`);
+  }
+}
+
+export async function triggerDerivativeGeneration(
+  contentItemId: string, 
+  derivativeTypes: string[], 
+  category: 'General' | 'Social' | 'Ads',
+  userId: string
+): Promise<void> {
+  console.log('Triggering derivative generation webhook');
+  
+  // Check if there's an active derivative_generation webhook
+  const { data: webhook, error: webhookError } = await supabase
+    .from('webhook_configurations')
+    .select('webhook_url')
+    .eq('webhook_type', 'derivative_generation')
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (webhookError) {
+    console.error('Error fetching webhook configuration:', webhookError);
+    throw new Error(`Webhook configuration error: ${webhookError.message}`);
+  }
+
+  if (!webhook?.webhook_url) {
+    console.log('No active derivative generation webhook configured, creating derivatives locally');
+    return;
+  }
+
+  // Get the content item for context
+  const { data: contentItem, error: contentError } = await supabase
+    .from('content_items')
+    .select('*')
+    .eq('id', contentItemId)
+    .single();
+
+  if (contentError) {
+    console.error('Error fetching content item:', contentError);
+    throw new Error(`Failed to fetch content item: ${contentError.message}`);
+  }
+
+  // Prepare webhook payload
+  const payload = {
+    type: 'derivative_generation',
+    content_item_id: contentItemId,
+    content_item: contentItem,
+    derivative_types: derivativeTypes,
+    category: category,
+    user_id: userId,
+    timestamp: new Date().toISOString(),
+    callback_url: `https://uejgjytmqpcilwfrlpai.supabase.co/functions/v1/process-content?action=callback`
+  };
+
+  try {
+    const response = await fetch(webhook.webhook_url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const responseText = await response.text();
+      throw new Error(`Webhook failed with status ${response.status}: ${responseText}`);
+    }
+
+    console.log('Derivative generation webhook triggered successfully');
+  } catch (error) {
+    console.error('Error calling derivative generation webhook:', error);
+    throw new Error(`Failed to trigger derivative generation webhook: ${error.message}`);
   }
 }

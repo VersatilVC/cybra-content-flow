@@ -1,5 +1,5 @@
 
-import { Zap, Plus, CheckCircle, XCircle, Clock, Database, AlertCircle } from "lucide-react";
+import { Zap, Plus, CheckCircle, XCircle, Clock, Database, AlertCircle, Wand2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AddWebhookModal } from "@/components/AddWebhookModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -77,6 +77,11 @@ const Webhooks = () => {
     setIsAddWebhookOpen(true);
   };
 
+  const handleAddDerivativeWebhook = () => {
+    setPreselectedType('derivative_generation');
+    setIsAddWebhookOpen(true);
+  };
+
   const handleAddWebhook = () => {
     setPreselectedType('');
     setIsAddWebhookOpen(true);
@@ -95,9 +100,18 @@ const Webhooks = () => {
     }
   };
 
+  const getWebhookIcon = (webhookType: string) => {
+    switch (webhookType) {
+      case 'knowledge_base': return <Database className="w-5 h-5 text-purple-600" />;
+      case 'derivative_generation': return <Wand2 className="w-5 h-5 text-purple-600" />;
+      default: return <Zap className="w-5 h-5 text-purple-600" />;
+    }
+  };
+
   const activeWebhooks = webhooks.filter(w => w.is_active).length;
   const inactiveWebhooks = webhooks.filter(w => !w.is_active).length;
   const knowledgeBaseWebhook = webhooks.find(w => w.webhook_type === 'knowledge_base' && w.is_active);
+  const derivativeWebhook = webhooks.find(w => w.webhook_type === 'derivative_generation' && w.is_active);
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -115,8 +129,9 @@ const Webhooks = () => {
         </button>
       </div>
 
-      {/* Knowledge Base Webhook Setup */}
-      <div className="mb-8">
+      {/* Key Webhook Setups */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Knowledge Base Webhook Setup */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-4">
             <Database className="w-6 h-6 text-purple-600" />
@@ -134,7 +149,7 @@ const Webhooks = () => {
                   </div>
                   <Button onClick={handleAddKnowledgeBaseWebhook} className="ml-4">
                     <Database className="w-4 h-4 mr-2" />
-                    Setup Knowledge Base Webhook
+                    Setup
                   </Button>
                 </div>
               </AlertDescription>
@@ -148,15 +163,56 @@ const Webhooks = () => {
                   <p className="text-sm text-green-700">{knowledgeBaseWebhook.name}</p>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => toggleWebhookStatus(knowledgeBaseWebhook.id, knowledgeBaseWebhook.is_active)}
-                >
-                  Disable
-                </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => toggleWebhookStatus(knowledgeBaseWebhook.id, knowledgeBaseWebhook.is_active)}
+              >
+                Disable
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Derivative Generation Webhook Setup */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Wand2 className="w-6 h-6 text-purple-600" />
+            <h2 className="text-xl font-semibold text-gray-900">Derivative Generation</h2>
+          </div>
+          
+          {!derivativeWebhook ? (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <strong>No derivative generation webhook configured.</strong><br />
+                    To generate content derivatives like social posts and ads, set up a webhook for automated processing.
+                  </div>
+                  <Button onClick={handleAddDerivativeWebhook} className="ml-4">
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    Setup
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <div>
+                  <p className="font-medium text-green-900">Derivative generation webhook is configured</p>
+                  <p className="text-sm text-green-700">{derivativeWebhook.name}</p>
+                </div>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => toggleWebhookStatus(derivativeWebhook.id, derivativeWebhook.is_active)}
+              >
+                Disable
+              </Button>
             </div>
           )}
         </div>
@@ -221,11 +277,7 @@ const Webhooks = () => {
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                        {webhook.webhook_type === 'knowledge_base' ? (
-                          <Database className="w-5 h-5 text-purple-600" />
-                        ) : (
-                          <Zap className="w-5 h-5 text-purple-600" />
-                        )}
+                        {getWebhookIcon(webhook.webhook_type)}
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">{webhook.name}</div>
@@ -244,6 +296,8 @@ const Webhooks = () => {
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       webhook.webhook_type === 'knowledge_base' 
                         ? 'bg-purple-100 text-purple-800'
+                        : webhook.webhook_type === 'derivative_generation'
+                        ? 'bg-indigo-100 text-indigo-800'
                         : 'bg-blue-100 text-blue-800'
                     }`}>
                       {webhook.webhook_type.replace('_', ' ')}

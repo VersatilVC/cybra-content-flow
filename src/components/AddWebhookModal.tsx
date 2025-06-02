@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Zap, Link, Database, AlertCircle, MessageSquare, Lightbulb, FileText, Briefcase } from 'lucide-react';
+import { Zap, Link, Database, AlertCircle, MessageSquare, Lightbulb, FileText, Briefcase, Wand2 } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface AddWebhookModalProps {
@@ -57,6 +56,13 @@ const webhookTypes = [
     description: 'Creates detailed content briefs from processed ideas'
   },
   { 
+    value: 'derivative_generation', 
+    label: 'Derivative Generation', 
+    icon: Wand2, 
+    color: 'text-purple-600',
+    description: 'Generates content derivatives like social posts, ads, and summaries from main content'
+  },
+  { 
     value: 'content_processing', 
     label: 'Content Processing', 
     icon: FileText, 
@@ -100,6 +106,9 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
     } else if (webhookType === 'brief_creator' && !name) {
       setName('Brief Creator Webhook');
       setDescription('Webhook for creating detailed content briefs from ideas');
+    } else if (webhookType === 'derivative_generation' && !name) {
+      setName('Derivative Generation Webhook');
+      setDescription('Webhook for generating content derivatives like social posts, ads, and summaries');
     }
   }, [webhookType, name]);
 
@@ -201,7 +210,7 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
 
     try {
       // Check if there's already an active webhook of this type for certain types
-      if (['knowledge_base', 'ai_chat', 'idea_engine', 'idea_auto_generator', 'brief_creator'].includes(webhookType)) {
+      if (['knowledge_base', 'ai_chat', 'idea_engine', 'idea_auto_generator', 'brief_creator', 'derivative_generation'].includes(webhookType)) {
         const { data: existingWebhooks } = await supabase
           .from('webhook_configurations')
           .select('id, is_active')
@@ -214,7 +223,8 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
             'ai_chat': 'AI chat',
             'idea_engine': 'idea engine',
             'idea_auto_generator': 'idea auto generator',
-            'brief_creator': 'brief creator'
+            'brief_creator': 'brief creator',
+            'derivative_generation': 'derivative generation'
           };
           
           toast({
@@ -319,6 +329,16 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
               <AlertDescription>
                 <strong>{selectedType.label}</strong><br />
                 {selectedType.description}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {webhookType === 'derivative_generation' && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Important:</strong> This webhook will be triggered when users request content derivatives generation. 
+                Your N8N workflow should process the content item and generate the requested derivative types (text, images, documents, etc.).
               </AlertDescription>
             </Alert>
           )}

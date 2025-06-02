@@ -164,12 +164,17 @@ export type Database = {
       content_derivatives: {
         Row: {
           category: string
-          content: string
+          content: string | null
           content_item_id: string
+          content_type: string
           created_at: string
           derivative_type: string
+          file_path: string | null
+          file_size: number | null
+          file_url: string | null
           id: string
           metadata: Json | null
+          mime_type: string | null
           status: string
           title: string
           updated_at: string
@@ -178,12 +183,17 @@ export type Database = {
         }
         Insert: {
           category: string
-          content: string
+          content?: string | null
           content_item_id: string
+          content_type?: string
           created_at?: string
           derivative_type: string
+          file_path?: string | null
+          file_size?: number | null
+          file_url?: string | null
           id?: string
           metadata?: Json | null
+          mime_type?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -192,12 +202,17 @@ export type Database = {
         }
         Update: {
           category?: string
-          content?: string
+          content?: string | null
           content_item_id?: string
+          content_type?: string
           created_at?: string
           derivative_type?: string
+          file_path?: string | null
+          file_size?: number | null
+          file_url?: string | null
           id?: string
           metadata?: Json | null
+          mime_type?: string | null
           status?: string
           title?: string
           updated_at?: string
