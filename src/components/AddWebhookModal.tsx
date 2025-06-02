@@ -33,19 +33,26 @@ export function AddWebhookModal({ open, onOpenChange, onWebhookAdded, preselecte
     resetForm
   } = useWebhookModal();
 
+  const defaultsSetRef = React.useRef(false);
+
   // Reset form when modal opens with preselected type
   React.useEffect(() => {
     if (open) {
       resetForm(preselectedType);
+      defaultsSetRef.current = false;
       
-      // Set defaults only if preselected type is provided and we don't already have a name
-      if (preselectedType && !name) {
+      // Set defaults only if preselected type is provided and we haven't set defaults yet
+      if (preselectedType && !defaultsSetRef.current) {
         const defaults = getWebhookDefaults(preselectedType);
         setName(defaults.name);
         setDescription(defaults.description);
+        defaultsSetRef.current = true;
       }
+    } else {
+      // Reset the ref when modal closes
+      defaultsSetRef.current = false;
     }
-  }, [open, preselectedType, resetForm, setName, setDescription, name]);
+  }, [open, preselectedType, resetForm]);
 
   const handleSubmit = async () => {
     await submitWebhook(

@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -179,12 +179,12 @@ export function useWebhookModal() {
     }
   };
 
-  const resetForm = (preselectedType?: string) => {
+  const resetForm = useCallback((preselectedType?: string) => {
     setName('');
     setDescription('');
     setWebhookUrl('');
     setWebhookType(preselectedType || '');
-  };
+  }, []);
 
   return {
     name,
