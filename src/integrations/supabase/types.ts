@@ -170,7 +170,7 @@ export type Database = {
           created_at: string
           derivative_type: string
           file_path: string | null
-          file_size: number | null
+          file_size: string | null
           file_url: string | null
           id: string
           metadata: Json | null
@@ -189,7 +189,7 @@ export type Database = {
           created_at?: string
           derivative_type: string
           file_path?: string | null
-          file_size?: number | null
+          file_size?: string | null
           file_url?: string | null
           id?: string
           metadata?: Json | null
@@ -208,7 +208,7 @@ export type Database = {
           created_at?: string
           derivative_type?: string
           file_path?: string | null
-          file_size?: number | null
+          file_size?: string | null
           file_url?: string | null
           id?: string
           metadata?: Json | null
