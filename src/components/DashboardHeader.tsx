@@ -1,9 +1,11 @@
 
-import { Bell, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useRef, useEffect } from "react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
+import { NotificationCenter } from "@/components/NotificationCenter";
+import { SearchResults } from "@/components/SearchResults";
+import { useGlobalSearch } from "@/hooks/useGlobalSearch";
 
 interface DashboardHeaderProps {
   title: string;
@@ -11,6 +13,58 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const { results, isLoading, hasQuery } = useGlobalSearch(searchQuery);
+
+  // Handle clicks outside search to close results
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault();
+        const searchInput = searchRef.current?.querySelector('input');
+        searchInput?.focus();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setShowResults(value.trim().length >= 2);
+  };
+
+  const handleSearchFocus = () => {
+    if (hasQuery) {
+      setShowResults(true);
+    }
+  };
+
+  const handleResultSelect = () => {
+    setShowResults(false);
+    setSearchQuery("");
+  };
+
   return (
     <header className="border-b bg-white/50 backdrop-blur-sm">
       <div className="flex items-center justify-between px-6 py-4">
@@ -25,22 +79,25 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="relative hidden md:block">
+          <div className="relative hidden md:block" ref={searchRef}>
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Search content..."
+              placeholder="Search content... (Cmd+K)"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={handleSearchFocus}
               className="pl-10 pr-4 w-80 bg-white/70"
             />
+            {showResults && (hasQuery || isLoading) && (
+              <SearchResults
+                results={results}
+                isLoading={isLoading}
+                onSelect={handleResultSelect}
+              />
+            )}
           </div>
           
-          <Button variant="outline" size="icon" className="relative bg-white/70">
-            <Bell className="w-4 h-4" />
-            <Badge 
-              className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center text-xs bg-red-500 text-white"
-            >
-              3
-            </Badge>
-          </Button>
+          <NotificationCenter />
         </div>
       </div>
     </header>

@@ -22,10 +22,12 @@ export function NotificationCenter() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative text-white/90 hover:text-white hover:bg-white/10">
-          <Bell className="w-5 h-5" />
+        <Button variant="outline" size="icon" className="relative bg-white/70">
+          <Bell className="w-4 h-4" />
           {unreadCount > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-red-500 hover:bg-red-500 flex items-center justify-center">
+            <Badge 
+              className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center text-xs bg-red-500 text-white"
+            >
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>
           )}
