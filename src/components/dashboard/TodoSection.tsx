@@ -85,7 +85,7 @@ export function TodoSection() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => window.location.href = `/content-ideas?idea=${idea.id}`}
+                      onClick={() => window.location.href = `/content-ideas?expand=${idea.id}&action=review`}
                     >
                       Review
                     </Button>
@@ -132,7 +132,7 @@ export function TodoSection() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => window.location.href = `/content-briefs?brief=${brief.id}`}
+                      onClick={() => window.location.href = `/content-briefs?brief=${brief.id}&action=review`}
                     >
                       Review
                     </Button>

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Zap } from 'lucide-react';
+import { Plus, Search, Filter, Zap, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,10 +10,12 @@ import AddIdeaModal from '@/components/AddIdeaModal';
 import EditIdeaModal from '@/components/EditIdeaModal';
 import AutoGenerationControls from '@/components/AutoGenerationControls';
 import ContentIdeaCard from '@/components/ContentIdeaCard';
+import ContentIdeaReviewCard from '@/components/ContentIdeaReviewCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const ContentIdeas = () => {
+  const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null);
@@ -36,6 +38,7 @@ const ContentIdeas = () => {
   } = useContentIdeas(filters);
 
   const expandIdeaId = searchParams.get('expand');
+  const reviewAction = searchParams.get('action') === 'review';
 
   const handleFilterChange = (key: keyof ContentIdeaFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -51,9 +54,16 @@ const ContentIdeas = () => {
     setSelectedIdea(null);
   };
 
+  const handleBackToDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  // Find the specific idea for review
+  const reviewIdea = expandIdeaId ? ideas.find(idea => idea.id === expandIdeaId) : null;
+
   // Clear expand parameter after component mounts
   useEffect(() => {
-    if (expandIdeaId) {
+    if (expandIdeaId && !reviewAction) {
       const timer = setTimeout(() => {
         setSearchParams(prev => {
           const newParams = new URLSearchParams(prev);
@@ -63,12 +73,56 @@ const ContentIdeas = () => {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [expandIdeaId, setSearchParams]);
+  }, [expandIdeaId, reviewAction, setSearchParams]);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // If we're in review mode and have a specific idea, show the review interface
+  if (reviewAction && reviewIdea) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto">
+        <div className="mb-6">
+          <Button 
+            variant="outline" 
+            onClick={handleBackToDashboard}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Review Content Idea</h1>
+          <p className="text-gray-600">Review and take action on this processed content idea</p>
+        </div>
+
+        <ContentIdeaReviewCard
+          idea={reviewIdea}
+          onCreateBrief={createBrief}
+          isCreatingBrief={isCreatingBrief}
+        />
+
+        <div className="mt-6 pt-6 border-t">
+          <h3 className="text-lg font-semibold mb-4">Other Actions</h3>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => handleEdit(reviewIdea)}
+            >
+              Edit Idea
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/content-ideas'}
+            >
+              View All Ideas
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
