@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ContentDerivative {
@@ -16,7 +15,7 @@ export interface ContentDerivative {
   file_url: string | null;
   file_path: string | null;
   mime_type: string | null;
-  file_size: number | null;
+  file_size: string | null; // Changed from number to string to match database schema
   created_at: string;
   updated_at: string;
 }
@@ -35,7 +34,7 @@ export interface CreateContentDerivativeData {
   file_url?: string | null;
   file_path?: string | null;
   mime_type?: string | null;
-  file_size?: number | null;
+  file_size?: string | null; // Changed from number to string to match database schema
 }
 
 export async function fetchContentDerivatives(contentItemId: string): Promise<ContentDerivative[]> {

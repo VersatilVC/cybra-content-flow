@@ -30,7 +30,7 @@ export async function handleFileUpload(file: File, userId: string, bucketName: s
     filename: fileName,
     originalName: originalFilename,
     sanitizedName: sanitizedFilename,
-    size: file.size,
+    size: file.size.toString(), // Convert to string to match database schema
     type: file.type,
     path: filePath
   };

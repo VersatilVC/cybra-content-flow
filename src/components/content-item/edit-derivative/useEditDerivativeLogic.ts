@@ -49,7 +49,7 @@ export function useEditDerivativeLogic(derivative: ContentDerivative, isOpen: bo
           
           updates.file_url = publicUrl;
           updates.file_path = uploadResult.path;
-          updates.file_size = uploadResult.size;
+          updates.file_size = uploadResult.size; // This is now a string
           updates.mime_type = uploadResult.type;
         } catch (uploadError) {
           console.error('File upload failed:', uploadError);
