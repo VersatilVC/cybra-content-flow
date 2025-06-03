@@ -11,9 +11,10 @@ export function SidebarFooter() {
 
   const handleSignOut = async () => {
     try {
+      console.log('SidebarFooter: Initiating sign out');
       await signOut();
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('SidebarFooter: Error signing out:', error);
     }
   };
 
