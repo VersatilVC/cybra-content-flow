@@ -28,37 +28,6 @@ export function useProfile() {
 
         if (error) {
           console.error('useProfile: Profile query error:', error);
-          
-          // If it's a recursion error, try using the security definer function directly
-          if (error.message?.includes('infinite recursion')) {
-            console.log('useProfile: Recursion detected, attempting direct profile fetch');
-            
-            // Try a direct approach without RLS
-            const { data: directData, error: directError } = await supabase.rpc('get_current_user_role');
-            
-            if (directError) {
-              console.error('useProfile: Direct role fetch failed:', directError);
-              return null;
-            }
-            
-            console.log('useProfile: Direct role fetch result:', directData);
-            
-            // Return a minimal profile with just the role for now
-            return {
-              id: user.id,
-              email: user.email || '',
-              role: directData as 'super_admin' | 'admin' | 'creator',
-              status: 'active' as const,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            };
-          }
-          
-          if (error.code === 'PGRST116') {
-            console.log('useProfile: Profile not found, this is normal for new users');
-            return null;
-          }
-          
           throw error;
         }
 
@@ -82,13 +51,7 @@ export function useProfile() {
     enabled: !!user?.id && !!session,
     retry: (failureCount, error: any) => {
       console.log('useProfile: Retry attempt', failureCount, 'for error:', error?.message);
-      
-      // Don't retry on recursion errors
-      if (error?.message?.includes('infinite recursion')) {
-        return false;
-      }
-      
-      // Retry up to 2 times for other errors
+      // Retry up to 2 times for most errors
       return failureCount < 2;
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
