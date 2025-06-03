@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Copy, Check, X } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import PlatformBadge from './PlatformBadge';
 
@@ -51,20 +51,10 @@ const ViewFullPostModal: React.FC<ViewFullPostModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2">
-              <PlatformBadge platform={platform} />
-              <span>Full Post View</span>
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-6 w-6 p-0"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+          <DialogTitle className="flex items-center gap-2">
+            <PlatformBadge platform={platform} />
+            <span>Full Post View</span>
+          </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
