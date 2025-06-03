@@ -14,10 +14,13 @@ export function parseSocialContent(content: string): ParsedSocialContent {
     return {};
   }
 
+  // Ensure we're working with a string
+  const contentString = typeof content === 'string' ? content : JSON.stringify(content);
+  
   // Try to parse as JSON first (if N8N sends structured data)
   try {
     console.log('🔄 [Social Parser] Attempting JSON parse...');
-    const parsed = JSON.parse(content);
+    const parsed = JSON.parse(contentString);
     console.log('✅ [Social Parser] JSON parse successful:', parsed);
     console.log('🔍 [Social Parser] Parsed object keys:', Object.keys(parsed));
     
@@ -33,77 +36,49 @@ export function parseSocialContent(content: string): ParsedSocialContent {
     }
   } catch (parseError) {
     console.log('❌ [Social Parser] JSON parse failed:', parseError);
-    console.log('🔄 [Social Parser] Attempting to fix JSON formatting...');
     
-    // Try to fix common JSON issues with unescaped characters
-    try {
-      // Fix unescaped newlines and other control characters
-      let fixedContent = content
-        .replace(/\n/g, '\\n')        // Escape newlines
-        .replace(/\r/g, '\\r')        // Escape carriage returns
-        .replace(/\t/g, '\\t')        // Escape tabs
-        .replace(/\f/g, '\\f')        // Escape form feeds
-        .replace(/\b/g, '\\b')        // Escape backspaces
-        .replace(/\v/g, '\\v')        // Escape vertical tabs
-        .replace(/\0/g, '\\0')        // Escape null characters
-        .replace(/[\x00-\x1f\x7f-\x9f]/g, ''); // Remove other control characters
-      
-      console.log('🔄 [Social Parser] Attempting parse with fixed formatting...');
-      const parsed = JSON.parse(fixedContent);
-      console.log('✅ [Social Parser] Fixed JSON parse successful:', parsed);
-      
-      if (parsed.linkedin || parsed.x || parsed.twitter) {
-        const result = {
-          linkedin: parsed.linkedin,
-          x: parsed.x || parsed.twitter
-        };
-        console.log('✅ [Social Parser] Found platform content after fix:', result);
-        return result;
-      }
-    } catch (secondParseError) {
-      console.log('❌ [Social Parser] Fixed JSON parse also failed:', secondParseError);
-      console.log('🔄 [Social Parser] Falling back to manual parsing...');
-      
-      // Try manual extraction if it looks like JSON structure
-      if (content.includes('"linkedin"') && content.includes('"x"')) {
-        console.log('🔄 [Social Parser] Attempting manual JSON extraction...');
-        try {
-          const linkedinMatch = content.match(/"linkedin"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-          const xMatch = content.match(/"x"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+    // Try manual regex extraction for JSON-like content
+    if (contentString.includes('"linkedin"') || contentString.includes('"x"')) {
+      console.log('🔄 [Social Parser] Attempting manual JSON extraction...');
+      try {
+        // More robust regex patterns that handle multiline content
+        const linkedinMatch = contentString.match(/"linkedin"\s*:\s*"((?:[^"\\]|\\.|\\n)*?)"/s);
+        const xMatch = contentString.match(/"x"\s*:\s*"((?:[^"\\]|\\.|\\n)*?)"/s);
+        const twitterMatch = contentString.match(/"twitter"\s*:\s*"((?:[^"\\]|\\.|\\n)*?)"/s);
+        
+        if (linkedinMatch || xMatch || twitterMatch) {
+          const result: ParsedSocialContent = {};
           
-          if (linkedinMatch || xMatch) {
-            const result: ParsedSocialContent = {};
-            
-            if (linkedinMatch && linkedinMatch[1]) {
-              // Unescape the extracted content
-              result.linkedin = linkedinMatch[1]
-                .replace(/\\n/g, '\n')
-                .replace(/\\r/g, '\r')
-                .replace(/\\t/g, '\t')
-                .replace(/\\"/g, '"')
-                .replace(/\\\\/g, '\\');
-              console.log('✅ [Social Parser] LinkedIn extracted manually:', result.linkedin.substring(0, 100) + '...');
-            }
-            
-            if (xMatch && xMatch[1]) {
-              // Unescape the extracted content
-              result.x = xMatch[1]
-                .replace(/\\n/g, '\n')
-                .replace(/\\r/g, '\r')
-                .replace(/\\t/g, '\t')
-                .replace(/\\"/g, '"')
-                .replace(/\\\\/g, '\\');
-              console.log('✅ [Social Parser] X extracted manually:', result.x.substring(0, 100) + '...');
-            }
-            
-            if (result.linkedin || result.x) {
-              console.log('✅ [Social Parser] Manual extraction successful');
-              return result;
-            }
+          if (linkedinMatch && linkedinMatch[1]) {
+            // Unescape the extracted content
+            result.linkedin = linkedinMatch[1]
+              .replace(/\\n/g, '\n')
+              .replace(/\\r/g, '\r')
+              .replace(/\\t/g, '\t')
+              .replace(/\\"/g, '"')
+              .replace(/\\\\/g, '\\');
+            console.log('✅ [Social Parser] LinkedIn extracted manually:', result.linkedin.substring(0, 100) + '...');
           }
-        } catch (manualError) {
-          console.log('❌ [Social Parser] Manual extraction failed:', manualError);
+          
+          const xContent = xMatch || twitterMatch;
+          if (xContent && xContent[1]) {
+            // Unescape the extracted content
+            result.x = xContent[1]
+              .replace(/\\n/g, '\n')
+              .replace(/\\r/g, '\r')
+              .replace(/\\t/g, '\t')
+              .replace(/\\"/g, '"')
+              .replace(/\\\\/g, '\\');
+            console.log('✅ [Social Parser] X extracted manually:', result.x.substring(0, 100) + '...');
+          }
+          
+          if (result.linkedin || result.x) {
+            console.log('✅ [Social Parser] Manual extraction successful');
+            return result;
+          }
         }
+      } catch (manualError) {
+        console.log('❌ [Social Parser] Manual extraction failed:', manualError);
       }
     }
     
@@ -112,8 +87,8 @@ export function parseSocialContent(content: string): ParsedSocialContent {
 
   // Parse text-based content with headers/separators
   console.log('🔄 [Social Parser] Attempting text-based parsing...');
-  const linkedinMatch = content.match(/(?:LinkedIn:?\s*\n|### LinkedIn.*?\n)([\s\S]*?)(?=\n(?:X|Twitter|###)|$)/i);
-  const xMatch = content.match(/(?:(?:X|Twitter):?\s*\n|### (?:X|Twitter).*?\n)([\s\S]*?)(?=\n(?:LinkedIn|###)|$)/i);
+  const linkedinMatch = contentString.match(/(?:LinkedIn:?\s*\n|### LinkedIn.*?\n)([\s\S]*?)(?=\n(?:X|Twitter|###)|$)/i);
+  const xMatch = contentString.match(/(?:(?:X|Twitter):?\s*\n|### (?:X|Twitter).*?\n)([\s\S]*?)(?=\n(?:LinkedIn|###)|$)/i);
 
   console.log('🔍 [Social Parser] LinkedIn regex match:', linkedinMatch);
   console.log('🔍 [Social Parser] X regex match:', xMatch);
@@ -131,10 +106,10 @@ export function parseSocialContent(content: string): ParsedSocialContent {
   }
 
   // If no specific platform content found, treat as generic social content for both platforms
-  if (!result.linkedin && !result.x && content.trim()) {
+  if (!result.linkedin && !result.x && contentString.trim()) {
     console.log('⚠️ [Social Parser] No platform-specific content found, using as generic for both platforms');
-    result.linkedin = content.trim();
-    result.x = content.trim();
+    result.linkedin = contentString.trim();
+    result.x = contentString.trim();
   }
 
   console.log('🔍 [Social Parser] Final result:', {
