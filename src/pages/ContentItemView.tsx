@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +17,8 @@ import {
   Tag,
   Link as LinkIcon,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  Wordpress
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,6 +29,7 @@ import { ContentItem } from '@/services/contentItemsApi';
 import ContentDerivativesSection from '@/components/content-item/ContentDerivativesSection';
 import { RequestAIFixModal } from '@/components/content-item/RequestAIFixModal';
 import { EditContentModal } from '@/components/content-item/EditContentModal';
+import { publishToWordPress } from '@/services/wordpressPublishingService';
 import ReactMarkdown from 'react-markdown';
 
 const ContentItemView = () => {
@@ -39,6 +40,7 @@ const ContentItemView = () => {
   const { updateContentItem, isUpdating } = useContentItems();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAIFixModalOpen, setIsAIFixModalOpen] = useState(false);
+  const [isPublishingToWordPress, setIsPublishingToWordPress] = useState(false);
 
   const { data: contentItem, isLoading, error, refetch } = useQuery({
     queryKey: ['content-item', id],
@@ -141,6 +143,33 @@ const ContentItemView = () => {
       title: 'Content Published',
       description: 'Your content item has been published successfully.',
     });
+  };
+
+  const handleWordPressPublish = async () => {
+    if (!contentItem || !user) return;
+    
+    setIsPublishingToWordPress(true);
+    
+    try {
+      await publishToWordPress(contentItem, user.id);
+      
+      toast({
+        title: 'WordPress Publishing Started',
+        description: 'Your content is being published to WordPress. You will receive a notification when complete.',
+      });
+      
+      // Refresh the content item to show updated status
+      refetch();
+    } catch (error) {
+      console.error('WordPress publishing failed:', error);
+      toast({
+        title: 'WordPress Publishing Failed',
+        description: error instanceof Error ? error.message : 'Failed to start WordPress publishing. Please check your webhook configuration.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPublishingToWordPress(false);
+    }
   };
 
   const handleDiscard = () => {
@@ -282,6 +311,20 @@ const ContentItemView = () => {
         >
           <Wand2 className="w-4 h-4 mr-2" />
           Request AI Fix
+        </Button>
+
+        <Button 
+          onClick={handleWordPressPublish}
+          disabled={isPublishingToWordPress || isUpdating}
+          variant="outline"
+          className="border-orange-300 text-orange-600 hover:bg-orange-50"
+        >
+          {isPublishingToWordPress ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Wordpress className="w-4 h-4 mr-2" />
+          )}
+          {isPublishingToWordPress ? 'Publishing...' : 'Publish to WordPress'}
         </Button>
         
         <Button 

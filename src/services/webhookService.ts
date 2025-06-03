@@ -27,6 +27,7 @@ export const triggerWebhook = async (webhookType: string, payload: any) => {
     }
   } else {
     console.log(`No active webhooks found for type: ${webhookType}`);
+    throw new Error(`No active ${webhookType} webhook configured. Please set up a webhook in the Webhooks section.`);
   }
 };
 

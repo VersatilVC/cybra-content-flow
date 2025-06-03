@@ -1,5 +1,5 @@
 
-import { Database, Wand2, Lightbulb, FileText, RefreshCw, Wrench } from 'lucide-react';
+import { Database, Wand2, Lightbulb, FileText, RefreshCw, Wrench, Wordpress } from 'lucide-react';
 
 export const webhookTypes = [
   {
@@ -43,6 +43,12 @@ export const webhookTypes = [
     label: 'Content Item Fix',
     icon: Wrench,
     description: 'Fix and improve existing content items based on feedback'
+  },
+  {
+    value: 'wordpress_publishing',
+    label: 'WordPress Publishing',
+    icon: Wordpress,
+    description: 'Publish content items to WordPress sites'
   }
 ];
 
@@ -75,6 +81,10 @@ export const getWebhookDefaults = (type: string) => {
     content_item_fix: {
       name: 'Content Item Fixer',
       description: 'Fixes and improves existing content items based on user feedback'
+    },
+    wordpress_publishing: {
+      name: 'WordPress Publisher',
+      description: 'Publishes content items to WordPress sites with media attachments'
     }
   };
 
