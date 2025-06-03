@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +17,8 @@ import {
   FileText,
   Tag,
   Link as LinkIcon,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +27,8 @@ import { useContentItems } from '@/hooks/useContentItems';
 import { supabase } from '@/integrations/supabase/client';
 import { ContentItem } from '@/services/contentItemsApi';
 import ContentDerivativesSection from '@/components/content-item/ContentDerivativesSection';
+import { RequestAIFixModal } from '@/components/content-item/RequestAIFixModal';
+import { EditContentModal } from '@/components/content-item/EditContentModal';
 import ReactMarkdown from 'react-markdown';
 
 const ContentItemView = () => {
@@ -33,9 +37,10 @@ const ContentItemView = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { updateContentItem, isUpdating } = useContentItems();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAIFixModalOpen, setIsAIFixModalOpen] = useState(false);
 
-  const { data: contentItem, isLoading, error } = useQuery({
+  const { data: contentItem, isLoading, error, refetch } = useQuery({
     queryKey: ['content-item', id],
     queryFn: async () => {
       if (!id || !user?.id) throw new Error('Missing ID or user');
@@ -94,20 +99,34 @@ const ContentItemView = () => {
     });
   };
 
-  const handleRequestAIFix = async () => {
+  const handleEditContent = () => {
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveContent = (updates: Partial<ContentItem>) => {
     if (!contentItem) return;
     
-    // This would integrate with your N8N workflow for AI fixes
-    toast({
-      title: 'AI Fix Requested',
-      description: 'Your content will be reviewed and improved by AI.',
-    });
-    
-    // Update status to indicate AI processing
     updateContentItem({ 
       id: contentItem.id, 
-      updates: { status: 'needs_revision' } 
+      updates 
     });
+    
+    setIsEditModalOpen(false);
+    refetch(); // Refresh the data to show updated content
+  };
+
+  const handleRequestAIFix = () => {
+    setIsAIFixModalOpen(true);
+  };
+
+  const handleAIFixRequested = () => {
+    // Update status to indicate AI processing
+    if (contentItem) {
+      updateContentItem({ 
+        id: contentItem.id, 
+        updates: { status: 'needs_revision' } 
+      });
+    }
   };
 
   const handlePublish = () => {
@@ -121,6 +140,20 @@ const ContentItemView = () => {
     toast({
       title: 'Content Published',
       description: 'Your content item has been published successfully.',
+    });
+  };
+
+  const handleDiscard = () => {
+    if (!contentItem) return;
+    
+    updateContentItem({ 
+      id: contentItem.id, 
+      updates: { status: 'discarded' } 
+    });
+    
+    toast({
+      title: 'Content Discarded',
+      description: 'The content item has been discarded.',
     });
   };
 
@@ -170,7 +203,7 @@ const ContentItemView = () => {
         </nav>
       </div>
 
-      {/* Title and Actions */}
+      {/* Title and Status */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{contentItem.title}</h1>
@@ -233,8 +266,9 @@ const ContentItemView = () => {
         )}
         
         <Button 
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={handleEditContent}
           variant="outline"
+          className="border-blue-300 text-blue-600 hover:bg-blue-50"
         >
           <Edit className="w-4 h-4 mr-2" />
           Edit Content
@@ -251,12 +285,12 @@ const ContentItemView = () => {
         </Button>
         
         <Button 
-          onClick={() => handleStatusUpdate('discarded')}
+          onClick={handleDiscard}
           disabled={isUpdating}
           variant="ghost"
           className="text-red-600 hover:text-red-700 hover:bg-red-50"
         >
-          <XCircle className="w-4 h-4 mr-2" />
+          <AlertTriangle className="w-4 h-4 mr-2" />
           Discard
         </Button>
       </div>
@@ -376,6 +410,22 @@ const ContentItemView = () => {
           <ContentDerivativesSection contentItemId={contentItem.id} />
         </TabsContent>
       </Tabs>
+
+      {/* Modals */}
+      <EditContentModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        contentItem={contentItem}
+        onSave={handleSaveContent}
+        isUpdating={isUpdating}
+      />
+
+      <RequestAIFixModal
+        open={isAIFixModalOpen}
+        onOpenChange={setIsAIFixModalOpen}
+        contentItem={contentItem}
+        onFixRequested={handleAIFixRequested}
+      />
     </div>
   );
 };

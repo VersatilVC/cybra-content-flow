@@ -1,66 +1,86 @@
 
 import React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import { WebhookType } from './webhookTypes';
+import { InfoIcon, AlertTriangle } from 'lucide-react';
 
 interface WebhookTypeAlertsProps {
-  selectedType: WebhookType | undefined;
+  selectedType: any;
   webhookType: string;
 }
 
 export function WebhookTypeAlerts({ selectedType, webhookType }: WebhookTypeAlertsProps) {
   if (!selectedType) return null;
 
+  const getAlertContent = () => {
+    switch (webhookType) {
+      case 'knowledge_base':
+        return {
+          type: 'info' as const,
+          icon: InfoIcon,
+          title: 'Knowledge Base Processing',
+          description: 'This webhook will receive file uploads and URL submissions for processing into your knowledge base. The payload includes file metadata, content, and processing instructions.'
+        };
+      case 'derivative_generation':
+        return {
+          type: 'info' as const,
+          icon: InfoIcon,
+          title: 'Derivative Generation',
+          description: 'This webhook will receive requests to generate content derivatives like social media posts, ads, and marketing copy. The payload includes the source content and derivative type specifications.'
+        };
+      case 'idea_engine':
+        return {
+          type: 'info' as const,
+          icon: InfoIcon,
+          title: 'Idea Processing',
+          description: 'This webhook will receive content ideas for processing and development. The payload includes idea details, source information, and processing preferences.'
+        };
+      case 'brief_creation':
+        return {
+          type: 'info' as const,
+          icon: InfoIcon,
+          title: 'Brief Creation',
+          description: 'This webhook will receive approved ideas for conversion into detailed content briefs. The payload includes idea data and brief generation requirements.'
+        };
+      case 'auto_generation':
+        return {
+          type: 'info' as const,
+          icon: InfoIcon,
+          title: 'Auto Generation',
+          description: 'This webhook will receive automated content generation requests. The payload includes generation parameters, content requirements, and scheduling information.'
+        };
+      case 'content_processing':
+        return {
+          type: 'info' as const,
+          icon: InfoIcon,
+          title: 'Content Processing',
+          description: 'This webhook will receive content briefs for processing into complete content items. The payload includes brief details, requirements, and content specifications.'
+        };
+      case 'content_item_fix':
+        return {
+          type: 'info' as const,
+          icon: InfoIcon,
+          title: 'Content Item Fix',
+          description: 'This webhook will receive content improvement requests. The payload includes the current content, user feedback, and fix requirements for AI-powered content enhancement.'
+        };
+      default:
+        return null;
+    }
+  };
+
+  const alertContent = getAlertContent();
+  if (!alertContent) return null;
+
+  const { type, icon: Icon, title, description } = alertContent;
+
   return (
-    <>
-      <Alert>
-        <selectedType.icon className="h-4 w-4" />
-        <AlertDescription>
-          <strong>{selectedType.label}</strong><br />
-          {selectedType.description}
-        </AlertDescription>
-      </Alert>
-
-      {webhookType === 'derivative_generation' && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Important:</strong> This webhook will be triggered when users request content derivatives generation. 
-            Your N8N workflow should process the content item and generate the requested derivative types (text, images, documents, etc.).
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {webhookType === 'knowledge_base' && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Important:</strong> This webhook will be triggered when files or URLs are uploaded to knowledge bases. 
-            Make sure your N8N workflow is configured to handle the payload structure and respond with status updates.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {webhookType === 'ai_chat' && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Important:</strong> This webhook will be triggered when users send chat messages. 
-            Your N8N workflow should process the message and return a JSON response with 'response' and optional 'sources' fields.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {(webhookType === 'idea_engine' || webhookType === 'idea_auto_generator' || webhookType === 'brief_creator') && (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Important:</strong> This webhook will be triggered for content idea processing. 
-            Make sure your N8N workflow can handle the idea data structure and respond appropriately.
-          </AlertDescription>
-        </Alert>
-      )}
-    </>
+    <Alert className={type === 'warning' ? 'border-yellow-200 bg-yellow-50' : 'border-blue-200 bg-blue-50'}>
+      <Icon className={`h-4 w-4 ${type === 'warning' ? 'text-yellow-600' : 'text-blue-600'}`} />
+      <AlertDescription>
+        <div className={type === 'warning' ? 'text-yellow-800' : 'text-blue-800'}>
+          <strong>{title}</strong><br />
+          {description}
+        </div>
+      </AlertDescription>
+    </Alert>
   );
 }
