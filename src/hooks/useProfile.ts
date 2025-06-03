@@ -26,7 +26,8 @@ export function useProfile() {
 
       return {
         ...data,
-        role: data.role as 'super_admin' | 'admin' | 'creator'
+        role: data.role as 'super_admin' | 'admin' | 'creator',
+        status: data.status as 'active' | 'inactive'
       };
     },
     enabled: !!user?.id,

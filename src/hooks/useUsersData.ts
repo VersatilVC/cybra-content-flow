@@ -19,7 +19,11 @@ export function useUsersData() {
 
       if (error) throw error;
       
-      return data || [];
+      return (data || []).map(user => ({
+        ...user,
+        role: user.role as 'super_admin' | 'admin' | 'creator',
+        status: user.status as 'active' | 'inactive'
+      }));
     },
   });
 
