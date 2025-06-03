@@ -34,12 +34,21 @@ export function RequestAIFixModal({ open, onOpenChange, contentItem, onFixReques
     setIsSubmitting(true);
     
     try {
+      // Get the content idea ID from the content brief if it exists
+      let contentIdeaId: string | undefined;
+      if (contentItem.content_brief_id) {
+        // We could fetch the brief to get the source_id, but for now we'll pass undefined
+        // This would require an additional query to the content_briefs table
+        contentIdeaId = undefined;
+      }
+
       await triggerContentItemFixWebhook({
         contentItemId: contentItem.id,
         userId: contentItem.user_id,
         feedback: feedback.trim(),
         currentContent: contentItem.content || '',
         title: contentItem.title,
+        contentIdeaId: contentIdeaId,
       });
 
       toast({
