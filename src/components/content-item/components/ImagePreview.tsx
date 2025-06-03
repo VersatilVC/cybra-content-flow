@@ -1,0 +1,134 @@
+
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Image, Eye, Download, RefreshCw } from 'lucide-react';
+import { ContentDerivative, downloadDerivativeFile } from '@/services/contentDerivativesApi';
+import { formatFileSize } from '../utils/derivativeCardHelpers';
+import { useToast } from '@/hooks/use-toast';
+
+interface ImagePreviewProps {
+  derivative: ContentDerivative;
+}
+
+const ImagePreview: React.FC<ImagePreviewProps> = ({ derivative }) => {
+  const [imageError, setImageError] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const { toast } = useToast();
+
+  const handleImageView = () => {
+    if (derivative.file_url) {
+      window.open(derivative.file_url, '_blank');
+    }
+  };
+
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      await downloadDerivativeFile(derivative);
+      toast({
+        title: 'Download started',
+        description: 'Your file download has started.',
+      });
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast({
+        title: 'Download failed',
+        description: error instanceof Error ? error.message : 'Failed to download file',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleRetryImage = () => {
+    setImageError(false);
+    setRetryCount(prev => prev + 1);
+  };
+
+  if (derivative.content_type !== 'image' || !derivative.file_url) {
+    return null;
+  }
+
+  return (
+    <div className="bg-gray-50 rounded-lg p-3">
+      <AspectRatio ratio={16/9} className="bg-muted rounded-lg overflow-hidden">
+        {!imageError ? (
+          <img
+            key={retryCount}
+            src={derivative.file_url}
+            alt={derivative.title}
+            className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+            onError={() => {
+              console.error('Image load error for URL:', derivative.file_url);
+              console.error('File path:', derivative.file_path);
+              setImageError(true);
+            }}
+            onLoad={() => {
+              console.log('Image loaded successfully:', derivative.file_url);
+              setImageError(false);
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">
+            <div className="text-center">
+              <Image className="w-8 h-8 mx-auto mb-2" />
+              <p className="text-sm">Image unavailable</p>
+              <p className="text-xs text-gray-400 mt-1 break-all px-2">URL: {derivative.file_url}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRetryImage}
+                className="mt-2 h-6 px-2 text-xs"
+              >
+                <RefreshCw className="w-3 h-3 mr-1" />
+                Retry
+              </Button>
+            </div>
+          </div>
+        )}
+      </AspectRatio>
+      
+      <div className="flex items-center justify-between mt-3">
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span className="font-medium">Image:</span>
+          <span className="truncate max-w-[150px]">
+            {derivative.file_path?.split('/').pop() || 'Image file'}
+          </span>
+        </div>
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleImageView}
+            className="h-7 px-2 text-xs hover:bg-blue-50"
+            title="View full size"
+          >
+            <Eye className="w-3 h-3 mr-1" />
+            View
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="h-7 px-2 text-xs hover:bg-green-50"
+            title="Download image"
+          >
+            <Download className="w-3 h-3 mr-1" />
+            {isDownloading ? 'Downloading...' : 'Download'}
+          </Button>
+          {derivative.file_size && (
+            <span className="text-xs text-gray-400 bg-white px-2 py-1 rounded">
+              {formatFileSize(derivative.file_size)}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ImagePreview;
