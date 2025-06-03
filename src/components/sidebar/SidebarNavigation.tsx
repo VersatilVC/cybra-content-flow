@@ -90,7 +90,11 @@ export function SidebarNavigation() {
   const { profile, loading } = useProfile();
   const isAdmin = profile?.role === 'super_admin' || profile?.role === 'admin';
 
-  console.log('SidebarNavigation render:', { profile, loading, isAdmin });
+  console.log('SidebarNavigation render:', { 
+    profile: profile ? { role: profile.role, email: profile.email } : null, 
+    loading, 
+    isAdmin 
+  });
 
   return (
     <SidebarContent className="px-3 py-4">
@@ -118,7 +122,7 @@ export function SidebarNavigation() {
         </SidebarGroupContent>
       </SidebarGroup>
 
-      {isAdmin && (
+      {!loading && isAdmin && (
         <SidebarGroup className="mt-6">
           <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2">
             Administration
@@ -141,6 +145,14 @@ export function SidebarNavigation() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
+        </SidebarGroup>
+      )}
+
+      {loading && (
+        <SidebarGroup className="mt-6">
+          <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2">
+            Loading permissions...
+          </SidebarGroupLabel>
         </SidebarGroup>
       )}
     </SidebarContent>

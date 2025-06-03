@@ -22,7 +22,7 @@ export function SidebarFooter() {
     return (
       <UISidebarFooter className="border-t border-sidebar-border/50 p-4">
         <div className="flex items-center gap-3 px-2 py-2">
-          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
             <span className="text-white text-sm font-medium">...</span>
           </div>
           <div className="flex-1 min-w-0">
@@ -33,15 +33,23 @@ export function SidebarFooter() {
     );
   }
 
-  // Determine display name and email
-  const displayName = profile?.first_name && profile?.last_name 
-    ? `${profile.first_name} ${profile.last_name}`
-    : profile?.email || user?.email || 'User';
+  // Determine display name and email with improved fallbacks
+  const firstName = profile?.first_name || user?.user_metadata?.first_name;
+  const lastName = profile?.last_name || user?.user_metadata?.last_name;
+  const userEmail = profile?.email || user?.email;
+  
+  const displayName = firstName && lastName 
+    ? `${firstName} ${lastName}`
+    : firstName || userEmail || 'User';
     
-  const displayEmail = profile?.email || user?.email;
-  const initials = profile?.first_name?.[0] || displayEmail?.[0]?.toUpperCase() || 'U';
+  const initials = firstName?.[0] || userEmail?.[0]?.toUpperCase() || 'U';
 
-  console.log('SidebarFooter render:', { profile, user, displayName, displayEmail });
+  console.log('SidebarFooter render:', { 
+    profile: profile ? { ...profile, role: profile.role } : null, 
+    user: user ? { id: user.id, email: user.email } : null, 
+    displayName, 
+    userEmail 
+  });
 
   return (
     <UISidebarFooter className="border-t border-sidebar-border/50 p-4">
@@ -55,7 +63,12 @@ export function SidebarFooter() {
           <p className="text-white font-medium text-sm truncate">
             {displayName}
           </p>
-          <p className="text-white/70 text-xs truncate">{displayEmail}</p>
+          <p className="text-white/70 text-xs truncate">{userEmail}</p>
+          {profile?.role && (
+            <p className="text-white/50 text-xs truncate">
+              {profile.role.replace('_', ' ')}
+            </p>
+          )}
         </div>
         <Button
           variant="ghost"
