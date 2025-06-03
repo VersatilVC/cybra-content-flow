@@ -22,7 +22,7 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   console.log('🔍 [SocialContentPreview] Raw derivative content:', derivative.content);
   
   // At this point we know derivative.content is not null due to the check above
-  const content = derivative.content;
+  const content = derivative.content!; // Type assertion since we checked above
   
   // Check if content is already a parsed object
   let contentToProcess = content;
