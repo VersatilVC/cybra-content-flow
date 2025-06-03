@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Zap, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -137,7 +136,7 @@ const ContentIdeas = () => {
         </div>
         <div className="flex gap-3">
           <Button
-            onClick={generateNow}
+            onClick={() => generateNow()}
             disabled={isGenerating}
             variant="outline"
             className="flex items-center gap-2"
