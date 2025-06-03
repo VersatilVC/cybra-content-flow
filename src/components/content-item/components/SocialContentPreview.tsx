@@ -21,15 +21,18 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   console.log('🔄 [SocialContentPreview] Parsing social content for derivative:', derivative.id);
   console.log('🔍 [SocialContentPreview] Raw derivative content:', derivative.content);
   
+  // At this point we know derivative.content is not null due to the check above
+  const content = derivative.content;
+  
   // Check if content is already a parsed object
-  let contentToProcess = derivative.content;
-  if (typeof derivative.content === 'object' && derivative.content !== null) {
-    console.log('✅ [SocialContentPreview] Content is already an object:', derivative.content);
+  let contentToProcess = content;
+  if (typeof content === 'object' && content !== null) {
+    console.log('✅ [SocialContentPreview] Content is already an object:', content);
     // If it's already an object with linkedin/x properties, use it directly
-    if ('linkedin' in derivative.content || 'x' in derivative.content) {
+    if ('linkedin' in content || 'x' in content) {
       const parsedContent = {
-        linkedin: derivative.content.linkedin || undefined,
-        x: derivative.content.x || derivative.content.twitter || undefined
+        linkedin: content.linkedin || undefined,
+        x: content.x || content.twitter || undefined
       };
       console.log('✅ [SocialContentPreview] Using direct object content:', parsedContent);
       
@@ -53,7 +56,7 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
       );
     }
     // If it's an object but not in the expected format, stringify it for parsing
-    contentToProcess = JSON.stringify(derivative.content);
+    contentToProcess = JSON.stringify(content);
   }
   
   const parsedContent = parseSocialContent(contentToProcess as string);
