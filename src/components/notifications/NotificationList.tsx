@@ -9,6 +9,7 @@ interface NotificationListProps {
   notifications: Notification[];
   isLoading: boolean;
   onMarkAsRead: (id: string) => void;
+  onDelete: (id: string) => void;
   onViewSuggestions: (notification: Notification) => void;
   onViewBrief: (notification: Notification) => void;
   onViewContentItem: (notification: Notification) => void;
@@ -18,6 +19,7 @@ export function NotificationList({
   notifications, 
   isLoading, 
   onMarkAsRead, 
+  onDelete,
   onViewSuggestions, 
   onViewBrief,
   onViewContentItem
@@ -41,6 +43,7 @@ export function NotificationList({
               key={notification.id}
               notification={notification}
               onMarkAsRead={onMarkAsRead}
+              onDelete={onDelete}
               onViewSuggestions={onViewSuggestions}
               onViewBrief={onViewBrief}
               onViewContentItem={onViewContentItem}

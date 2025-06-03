@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -56,6 +55,37 @@ export function useNotifications() {
       toast({
         title: 'Error',
         description: 'Failed to mark notification as read',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId);
+
+      if (error) throw error;
+
+      const deletedNotification = notifications.find(n => n.id === notificationId);
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      
+      // Update unread count if the deleted notification was unread
+      if (deletedNotification && !deletedNotification.is_read) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+
+      toast({
+        title: 'Notification Deleted',
+        description: 'The notification has been removed.',
+      });
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete notification',
         variant: 'destructive',
       });
     }
@@ -167,6 +197,7 @@ export function useNotifications() {
     unreadCount,
     isLoading,
     markAsRead,
+    deleteNotification,
     markAllAsRead,
     handleViewSuggestions,
     handleViewBrief,

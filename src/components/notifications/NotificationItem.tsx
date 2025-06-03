@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
+import { Eye, Trash } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Notification } from '@/types/notifications';
 import { 
@@ -15,6 +15,7 @@ import {
 interface NotificationItemProps {
   notification: Notification;
   onMarkAsRead: (id: string) => void;
+  onDelete: (id: string) => void;
   onViewSuggestions: (notification: Notification) => void;
   onViewBrief: (notification: Notification) => void;
   onViewContentItem: (notification: Notification) => void;
@@ -23,11 +24,17 @@ interface NotificationItemProps {
 export function NotificationItem({ 
   notification, 
   onMarkAsRead, 
+  onDelete,
   onViewSuggestions, 
   onViewBrief,
   onViewContentItem
 }: NotificationItemProps) {
   const IconComponent = getNotificationIcon(notification.type);
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(notification.id);
+  };
 
   return (
     <div
@@ -49,9 +56,19 @@ export function NotificationItem({
             }`}>
               {notification.title}
             </h4>
-            {!notification.is_read && (
-              <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0" />
-            )}
+            <div className="flex items-center gap-2">
+              {!notification.is_read && (
+                <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0" />
+              )}
+              <Button
+                onClick={handleDelete}
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+              >
+                <Trash className="w-3 h-3" />
+              </Button>
+            </div>
           </div>
           <p className={`text-sm mt-1 ${
             notification.is_read ? 'text-gray-500' : 'text-gray-700'

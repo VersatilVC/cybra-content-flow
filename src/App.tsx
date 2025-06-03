@@ -15,6 +15,7 @@ import ContentBriefs from "./pages/ContentBriefs";
 import ContentItems from "./pages/ContentItems";
 import ContentItemView from "./pages/ContentItemView";
 import ContentCalendar from "./pages/ContentCalendar";
+import NotificationCenter from "./pages/NotificationCenter";
 import KnowledgeBases from "./pages/KnowledgeBases";
 import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
@@ -44,6 +45,7 @@ const App = () => (
                     <Route path="/content-items" element={<ContentItems />} />
                     <Route path="/content-items/:id" element={<ContentItemView />} />
                     <Route path="/content-calendar" element={<ContentCalendar />} />
+                    <Route path="/notifications" element={<NotificationCenter />} />
                     <Route path="/knowledge-bases" element={<KnowledgeBases />} />
                     <Route path="/chat" element={<Chat />} />
                     <Route path="/settings" element={<Settings />} />

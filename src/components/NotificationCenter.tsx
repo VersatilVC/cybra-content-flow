@@ -13,6 +13,7 @@ export function NotificationCenter() {
     unreadCount,
     isLoading,
     markAsRead,
+    deleteNotification,
     markAllAsRead,
     handleViewSuggestions,
     handleViewBrief,
@@ -56,6 +57,7 @@ export function NotificationCenter() {
           notifications={notifications}
           isLoading={isLoading}
           onMarkAsRead={markAsRead}
+          onDelete={deleteNotification}
           onViewSuggestions={handleViewSuggestions}
           onViewBrief={handleViewBrief}
           onViewContentItem={handleViewContentItem}
