@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
@@ -134,10 +133,19 @@ const DerivativeCardContent: React.FC<DerivativeCardContentProps> = ({ derivativ
 
   const renderSocialContent = () => {
     if (!isSocialDerivative(derivative.derivative_type) || !derivative.content) {
+      console.log('🚫 [DerivativeCard] Not a social derivative or no content:', {
+        isSocial: isSocialDerivative(derivative.derivative_type),
+        hasContent: !!derivative.content,
+        derivativeType: derivative.derivative_type
+      });
       return null;
     }
 
+    console.log('🔄 [DerivativeCard] Parsing social content for derivative:', derivative.id);
+    console.log('🔍 [DerivativeCard] Raw derivative content:', derivative.content);
+    
     const parsedContent = parseSocialContent(derivative.content);
+    console.log('✅ [DerivativeCard] Parsed social content result:', parsedContent);
     
     return (
       <div className="space-y-4">
