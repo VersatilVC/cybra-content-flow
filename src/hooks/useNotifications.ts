@@ -123,11 +123,12 @@ export function useNotifications() {
   const handleViewContentItem = async (notification: Notification) => {
     markAsRead(notification.id);
     
-    // Extract content item ID from the notification
-    const contentItemId = notification.related_entity_id || 
-      notification.message.match(/content item ([a-f0-9-]+)/i)?.[1];
+    // Use the related_entity_id if it's a content_item type, otherwise extract from message
+    const contentItemId = notification.related_entity_type === 'content_item' 
+      ? notification.related_entity_id 
+      : notification.message.match(/content item ([a-f0-9-]+)/i)?.[1];
     
-    if (contentItemId && notification.related_entity_type === 'content_item') {
+    if (contentItemId) {
       navigate(`/content-items/${contentItemId}`);
     } else {
       // Fallback to content items list if we can't extract the ID

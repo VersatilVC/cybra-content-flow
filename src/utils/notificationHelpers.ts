@@ -44,7 +44,8 @@ export const isContentItemNotification = (notification: Notification): boolean =
   return notification.title.includes('Content Processing Complete') || 
          notification.message.includes('content item') ||
          notification.message.includes('successfully generated') ||
-         notification.related_entity_type === 'content_item';
+         notification.related_entity_type === 'content_item' ||
+         (notification.title.includes('Content Processing Complete') && notification.message.includes('ready for review'));
 };
 
 export const mapNotificationRow = (row: NotificationRow): Notification => {

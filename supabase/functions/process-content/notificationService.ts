@@ -16,10 +16,15 @@ export async function createNotification(
     : 'Content Processing Failed';
   
   let notificationMessage;
+  let relatedEntityId = null;
+  let relatedEntityType = null;
+  
   if (status === 'completed') {
     if (submission.knowledge_base === 'content_creation' && contentItemId) {
-      // Include content item ID in the message for direct linking
-      notificationMessage = `Your content item "${contentName}" has been successfully generated (content item ${contentItemId}) and is ready for review.`;
+      // Set the content item as the related entity for direct linking
+      relatedEntityId = contentItemId;
+      relatedEntityType = 'content_item';
+      notificationMessage = `Your content item "${contentName}" has been successfully generated and is ready for review.`;
     } else if (submission.knowledge_base === 'content_creation') {
       notificationMessage = `Your content item "${contentName}" has been successfully generated and is ready for review.`;
     } else {
@@ -36,7 +41,9 @@ export async function createNotification(
       title: notificationTitle,
       message: notificationMessage,
       type: status === 'completed' ? 'success' : 'error',
-      related_submission_id: submission.id
+      related_submission_id: submission.id,
+      related_entity_id: relatedEntityId,
+      related_entity_type: relatedEntityType
     });
 
   if (notificationError) {

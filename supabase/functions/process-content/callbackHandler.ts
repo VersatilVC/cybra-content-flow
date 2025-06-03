@@ -34,14 +34,14 @@ export async function handleCallbackAction(
     await updateBriefStatus(supabase, brief_id, 'content_created');
   }
 
-  // Create notification
+  // Create notification with content item ID for direct linking
   await createNotification(
     supabase,
     submission.user_id,
     submission,
     status || 'completed',
     error_message,
-    content_item_id
+    content_item_id // Pass the content item ID for direct linking
   );
 
   return new Response(
