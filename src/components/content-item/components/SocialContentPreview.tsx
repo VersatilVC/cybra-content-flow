@@ -29,9 +29,10 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
     console.log('✅ [SocialContentPreview] Content is already an object:', content);
     // If it's already an object with linkedin/x properties, use it directly
     if ('linkedin' in content || 'x' in content) {
+      const contentObj = content as any;
       const parsedContent = {
-        linkedin: (content as any).linkedin || undefined,
-        x: (content as any).x || (content as any).twitter || undefined
+        linkedin: contentObj.linkedin || undefined,
+        x: contentObj.x || contentObj.twitter || undefined
       };
       console.log('✅ [SocialContentPreview] Using direct object content:', parsedContent);
       
