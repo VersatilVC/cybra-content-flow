@@ -8,7 +8,7 @@ import { useContentIdeas } from '@/hooks/useContentIdeas';
 import { ContentIdeaFilters, ContentIdea } from '@/types/contentIdeas';
 import AddIdeaModal from '@/components/AddIdeaModal';
 import EditIdeaModal from '@/components/EditIdeaModal';
-import AutoGenerationControls from '@/components/AutoGenerationControls';
+import { useAutoGeneration } from '@/hooks/useAutoGeneration';
 import ContentIdeaCard from '@/components/ContentIdeaCard';
 import ContentIdeaReviewCard from '@/components/ContentIdeaReviewCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -19,7 +19,6 @@ const ContentIdeas = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null);
-  const [showAutoGenControls, setShowAutoGenControls] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<ContentIdeaFilters>({
     contentType: 'All Content Types',
@@ -27,6 +26,8 @@ const ContentIdeas = () => {
     status: 'All Statuses',
     search: '',
   });
+
+  const { generateNow, isGenerating } = useAutoGeneration();
 
   const { 
     ideas, 
@@ -136,12 +137,13 @@ const ContentIdeas = () => {
         </div>
         <div className="flex gap-3">
           <Button
-            onClick={() => setShowAutoGenControls(!showAutoGenControls)}
+            onClick={generateNow}
+            disabled={isGenerating}
             variant="outline"
             className="flex items-center gap-2"
           >
             <Zap className="w-4 h-4" />
-            Auto Generate
+            {isGenerating ? 'Generating...' : 'Auto Generate'}
           </Button>
           <Button
             onClick={() => setShowAddModal(true)}
@@ -152,12 +154,6 @@ const ContentIdeas = () => {
           </Button>
         </div>
       </div>
-
-      {showAutoGenControls && (
-        <div className="mb-8">
-          <AutoGenerationControls />
-        </div>
-      )}
 
       {/* Search and Filters */}
       <div className="mb-6 space-y-4">
