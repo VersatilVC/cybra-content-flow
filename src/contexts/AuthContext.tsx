@@ -58,6 +58,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             break;
           case 'SIGNED_OUT':
             console.log('AuthContext: User signed out');
+            // Only redirect after successful sign out
+            if (window.location.pathname !== '/auth') {
+              window.location.href = '/auth';
+            }
             break;
           case 'TOKEN_REFRESHED':
             console.log('AuthContext: Token refreshed');
@@ -127,24 +131,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       console.log('AuthContext: Signing out user');
+      
+      // Clear local state first to prevent UI flickering
+      setUser(null);
+      setSession(null);
+      
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('AuthContext: Error signing out:', error);
-        throw error;
+        // Even if signOut fails, clear local state and redirect
+        // This handles cases where the session is already invalid
       }
       
       console.log('AuthContext: Successfully signed out');
       
-      // Clear local state immediately
-      setUser(null);
-      setSession(null);
-      
-      // Force a page reload to clear any cached state
-      window.location.href = '/auth';
     } catch (error) {
       console.error('AuthContext: Sign out failed:', error);
-      throw error;
+      // Clear local state even on error to prevent being stuck
+      setUser(null);
+      setSession(null);
     }
   };
 
