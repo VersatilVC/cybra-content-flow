@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -41,14 +40,16 @@ export function useIdeaMutations() {
         content_type: rawData.content_type as 'Blog Post' | 'Guide',
         target_audience: rawData.target_audience as 'Private Sector' | 'Government Sector',
         status: rawData.status as 'processing' | 'processed' | 'brief_created' | 'discarded',
-        source_type: rawData.source_type as 'manual' | 'file' | 'url',
+        source_type: rawData.source_type as 'manual' | 'file' | 'url' | 'auto_generated',
         source_data: rawData.source_data,
         created_at: rawData.created_at,
         updated_at: rawData.updated_at,
       };
       
-      // Trigger webhooks
-      await triggerIdeaWebhooks(data, user.id);
+      // Only trigger webhooks for non-auto-generated ideas (auto-generated ones handle their own webhooks)
+      if (data.source_type !== 'auto_generated') {
+        await triggerIdeaWebhooks(data, user.id);
+      }
 
       return data;
     },

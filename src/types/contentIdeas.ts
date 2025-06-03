@@ -6,7 +6,7 @@ export interface ContentIdea {
   content_type: 'Blog Post' | 'Guide';
   target_audience: 'Private Sector' | 'Government Sector';
   status: 'processing' | 'processed' | 'brief_created' | 'discarded';
-  source_type: 'manual' | 'file' | 'url';
+  source_type: 'manual' | 'file' | 'url' | 'auto_generated';
   source_data: any;
   created_at: string;
   updated_at: string;
@@ -25,7 +25,7 @@ export interface CreateContentIdeaData {
   content_type: 'Blog Post' | 'Guide';
   target_audience: 'Private Sector' | 'Government Sector';
   status: 'processing' | 'processed' | 'brief_created' | 'discarded';
-  source_type: 'manual' | 'file' | 'url';
+  source_type: 'manual' | 'file' | 'url' | 'auto_generated';
   source_data: any;
 }
 

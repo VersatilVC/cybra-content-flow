@@ -1,86 +1,61 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-
-export interface AutoGenerationSchedule {
-  id: string;
-  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly';
-  is_active: boolean;
-  next_run_at: string;
-  created_at: string;
-  updated_at: string;
-}
+import { createContentIdea } from '@/services/contentIdeasApi';
+import { triggerAutoGenerationWebhooks } from '@/lib/webhookHandlers';
 
 export function useAutoGeneration() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: schedule, isLoading } = useQuery({
-    queryKey: ['auto-generation-schedule', user?.id],
-    queryFn: async (): Promise<AutoGenerationSchedule | null> => {
-      if (!user?.id) return null;
-      
-      const { data, error } = await supabase
-        .from('auto_generation_schedules')
-        .select('*')
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      if (!data) return null;
-
-      // Type cast to ensure proper types
-      return {
-        id: data.id,
-        frequency: data.frequency as 'daily' | 'weekly' | 'monthly' | 'quarterly',
-        is_active: data.is_active,
-        next_run_at: data.next_run_at,
-        created_at: data.created_at,
-        updated_at: data.updated_at,
-      };
-    },
-    enabled: !!user?.id,
-  });
-
   const generateNowMutation = useMutation({
     mutationFn: async () => {
-      // Trigger webhook for immediate generation
-      const webhooks = await supabase
-        .from('webhook_configurations')
-        .select('*')
-        .eq('webhook_type', 'idea_auto_generator')
-        .eq('is_active', true);
+      if (!user?.id) throw new Error('User not authenticated');
 
-      if (webhooks.data && webhooks.data.length > 0) {
-        for (const webhook of webhooks.data) {
-          try {
-            await fetch(webhook.webhook_url, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                type: 'auto_generation',
-                mode: 'immediate',
-                user_id: user?.id,
-                timestamp: new Date().toISOString(),
-              }),
-            });
-          } catch (webhookError) {
-            console.error('Webhook error:', webhookError);
-          }
+      console.log('Creating auto-generated content idea...');
+      
+      // Create an auto-generated content idea
+      const currentDate = new Date().toLocaleDateString();
+      const autoIdeaData = {
+        title: `Auto generated - ${currentDate}`,
+        description: 'Auto-generated content ideas based on current trends and data',
+        content_type: 'Blog Post' as const,
+        target_audience: 'Private Sector' as const,
+        status: 'processing' as const,
+        source_type: 'auto_generated' as const,
+        source_data: {
+          generated_at: new Date().toISOString(),
+          generation_type: 'auto',
+          user_id: user.id
         }
-      }
+      };
+
+      const createdIdea = await createContentIdea(user.id, autoIdeaData);
+      console.log('Auto-generated content idea created:', createdIdea);
+
+      // Trigger auto-generation webhooks with the created idea data
+      await triggerAutoGenerationWebhooks(user.id, {
+        content_idea_id: createdIdea.id,
+        title: createdIdea.title,
+        content_type: createdIdea.content_type,
+        target_audience: createdIdea.target_audience,
+        generated_at: new Date().toISOString(),
+        generation_type: 'auto'
+      });
+
+      return createdIdea;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['content-ideas'] });
       toast({
         title: 'Auto-generation started',
-        description: 'Content ideas are being generated automatically.',
+        description: 'Content ideas are being generated automatically. Check back in a few minutes to see the results.',
       });
     },
     onError: (error) => {
+      console.error('Auto-generation failed:', error);
       toast({
         title: 'Failed to start auto-generation',
         description: error instanceof Error ? error.message : 'Unknown error',
@@ -89,67 +64,8 @@ export function useAutoGeneration() {
     },
   });
 
-  const updateScheduleMutation = useMutation({
-    mutationFn: async (scheduleData: { frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly'; is_active: boolean }) => {
-      if (!user?.id) throw new Error('User not authenticated');
-
-      const nextRunAt = calculateNextRun(scheduleData.frequency);
-      
-      const { data, error } = await supabase
-        .from('auto_generation_schedules')
-        .upsert({
-          user_id: user.id,
-          frequency: scheduleData.frequency,
-          is_active: scheduleData.is_active,
-          next_run_at: nextRunAt,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['auto-generation-schedule'] });
-      toast({
-        title: 'Schedule updated',
-        description: 'Auto-generation schedule has been updated.',
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Failed to update schedule',
-        description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
-      });
-    },
-  });
-
   return {
-    schedule,
-    isLoading,
     generateNow: generateNowMutation.mutate,
-    updateSchedule: updateScheduleMutation.mutate,
     isGenerating: generateNowMutation.isPending,
-    isUpdatingSchedule: updateScheduleMutation.isPending,
   };
-}
-
-function calculateNextRun(frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly'): string {
-  const now = new Date();
-  switch (frequency) {
-    case 'daily':
-      now.setDate(now.getDate() + 1);
-      break;
-    case 'weekly':
-      now.setDate(now.getDate() + 7);
-      break;
-    case 'monthly':
-      now.setMonth(now.getMonth() + 1);
-      break;
-    case 'quarterly':
-      now.setMonth(now.getMonth() + 3);
-      break;
-  }
-  return now.toISOString();
 }

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { triggerWebhook } from '@/services/webhookService';
 import { ContentIdea } from '@/types/contentIdeas';
@@ -94,21 +93,28 @@ export async function triggerAutoGenerationWebhooks(userId: string, requestData:
   const webhookPayload = {
     type: 'auto_generation',
     user_id: userId,
+    content_idea_id: requestData.content_idea_id,
+    content_idea_title: requestData.title,
+    content_type: requestData.content_type,
+    target_audience: requestData.target_audience,
     request_data: requestData,
     timestamp: new Date().toISOString(),
     callback_url: `${getCallbackBaseUrl()}/functions/v1/process-idea-callback`,
     callback_data: {
       type: 'auto_generation_complete',
-      user_id: userId
+      content_idea_id: requestData.content_idea_id,
+      user_id: userId,
+      title: requestData.title
     }
   };
 
   try {
-    console.log('Triggering auto_generation webhook with callback info');
+    console.log('Triggering auto_generation webhook with idea data:', webhookPayload);
     await triggerWebhook('auto_generation', webhookPayload);
     console.log('Auto-generation webhook triggered successfully');
   } catch (webhookError) {
     console.error('Auto-generation webhook trigger failed:', webhookError);
+    throw webhookError;
   }
 }
 
