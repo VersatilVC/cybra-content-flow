@@ -6,8 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 
 export function SidebarFooter() {
-  const { signOut } = useAuth();
-  const { profile } = useProfile();
+  const { signOut, user } = useAuth();
+  const { profile, loading } = useProfile();
 
   const handleSignOut = async () => {
     try {
@@ -17,22 +17,45 @@ export function SidebarFooter() {
     }
   };
 
+  // Show loading state while profile is being fetched
+  if (loading) {
+    return (
+      <UISidebarFooter className="border-t border-sidebar-border/50 p-4">
+        <div className="flex items-center gap-3 px-2 py-2">
+          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            <span className="text-white text-sm font-medium">...</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-medium text-sm">Loading...</p>
+          </div>
+        </div>
+      </UISidebarFooter>
+    );
+  }
+
+  // Determine display name and email
+  const displayName = profile?.first_name && profile?.last_name 
+    ? `${profile.first_name} ${profile.last_name}`
+    : profile?.email || user?.email || 'User';
+    
+  const displayEmail = profile?.email || user?.email;
+  const initials = profile?.first_name?.[0] || displayEmail?.[0]?.toUpperCase() || 'U';
+
+  console.log('SidebarFooter render:', { profile, user, displayName, displayEmail });
+
   return (
     <UISidebarFooter className="border-t border-sidebar-border/50 p-4">
       <div className="flex items-center gap-3 px-2 py-2">
         <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
           <span className="text-white text-sm font-medium">
-            {profile?.first_name?.[0] || profile?.email?.[0]?.toUpperCase() || 'U'}
+            {initials}
           </span>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-white font-medium text-sm truncate">
-            {profile?.first_name && profile?.last_name 
-              ? `${profile.first_name} ${profile.last_name}`
-              : profile?.email || 'User'
-            }
+            {displayName}
           </p>
-          <p className="text-white/70 text-xs truncate">{profile?.email}</p>
+          <p className="text-white/70 text-xs truncate">{displayEmail}</p>
         </div>
         <Button
           variant="ghost"

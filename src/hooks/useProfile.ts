@@ -13,6 +13,8 @@ export function useProfile() {
     queryFn: async (): Promise<Profile | null> => {
       if (!user?.id) return null;
       
+      console.log('Fetching profile for user:', user.id);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -20,9 +22,15 @@ export function useProfile() {
         .single();
 
       if (error) {
-        console.log('Profile not found, this is normal for new users');
-        return null;
+        console.log('Profile query error:', error);
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, this is normal for new users');
+          return null;
+        }
+        throw error;
       }
+
+      console.log('Profile data retrieved:', data);
 
       return {
         ...data,
@@ -31,7 +39,7 @@ export function useProfile() {
       };
     },
     enabled: !!user?.id,
-    retry: false,
+    retry: 1,
   });
 
   return {

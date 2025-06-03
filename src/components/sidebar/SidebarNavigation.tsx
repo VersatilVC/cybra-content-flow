@@ -87,8 +87,10 @@ const adminItems = [
 
 export function SidebarNavigation() {
   const location = useLocation();
-  const { profile } = useProfile();
+  const { profile, loading } = useProfile();
   const isAdmin = profile?.role === 'super_admin' || profile?.role === 'admin';
+
+  console.log('SidebarNavigation render:', { profile, loading, isAdmin });
 
   return (
     <SidebarContent className="px-3 py-4">
