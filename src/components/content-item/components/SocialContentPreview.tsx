@@ -22,15 +22,15 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   console.log('🔍 [SocialContentPreview] Raw derivative content:', derivative.content);
   
   // At this point we know derivative.content is not null due to the check above
-  // Use non-null assertion since we've already checked for null
-  const content: string | object = derivative.content!;
+  // Use non-null assertion and explicit typing to avoid TypeScript issues
+  const rawContent = derivative.content as string | object;
   
   // Check if content is already a parsed object
-  if (typeof content === 'object' && content !== null) {
-    console.log('✅ [SocialContentPreview] Content is already an object:', content);
+  if (typeof rawContent === 'object') {
+    console.log('✅ [SocialContentPreview] Content is already an object:', rawContent);
     // If it's already an object with linkedin/x properties, use it directly
-    if ('linkedin' in content || 'x' in content) {
-      const contentObj = content as any;
+    if ('linkedin' in rawContent || 'x' in rawContent) {
+      const contentObj = rawContent as any;
       const parsedContent = {
         linkedin: contentObj.linkedin || undefined,
         x: contentObj.x || contentObj.twitter || undefined
@@ -57,7 +57,7 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
       );
     }
     // If it's an object but not in the expected format, stringify it for parsing
-    const contentToProcess = JSON.stringify(content);
+    const contentToProcess = JSON.stringify(rawContent);
     const parsedContent = parseSocialContent(contentToProcess);
     console.log('✅ [SocialContentPreview] Parsed social content result:', parsedContent);
     
@@ -82,7 +82,7 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   }
   
   // Handle string content
-  const parsedContent = parseSocialContent(content as string);
+  const parsedContent = parseSocialContent(rawContent as string);
   console.log('✅ [SocialContentPreview] Parsed social content result:', parsedContent);
   
   return (
