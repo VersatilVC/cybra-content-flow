@@ -18,7 +18,7 @@ import {
   Link as LinkIcon,
   Loader2,
   AlertTriangle,
-  Wordpress
+  Globe
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
@@ -322,7 +322,7 @@ const ContentItemView = () => {
           {isPublishingToWordPress ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           ) : (
-            <Wordpress className="w-4 h-4 mr-2" />
+            <Globe className="w-4 h-4 mr-2" />
           )}
           {isPublishingToWordPress ? 'Publishing...' : 'Publish to WordPress'}
         </Button>

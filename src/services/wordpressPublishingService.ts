@@ -126,7 +126,7 @@ export async function publishToWordPress(contentItem: ContentItem, userId: strin
   const featuredImage = imageDerivatives.length > 0 ? {
     url: imageDerivatives[0].file_url || '',
     alt: imageDerivatives[0].title || contentItem.title,
-    caption: imageDerivatives[0].description || ''
+    caption: imageDerivatives[0].content || ''
   } : undefined;
 
   // Prepare media attachments from all image derivatives
@@ -135,7 +135,7 @@ export async function publishToWordPress(contentItem: ContentItem, userId: strin
     type: 'image',
     filename: derivative.title || `${contentItem.title}-image`,
     alt: derivative.title || contentItem.title,
-    caption: derivative.description || ''
+    caption: derivative.content || ''
   }));
 
   // Create the WordPress publish payload

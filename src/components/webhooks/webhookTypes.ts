@@ -1,5 +1,5 @@
 
-import { Database, Wand2, Lightbulb, FileText, RefreshCw, Wrench, Wordpress } from 'lucide-react';
+import { Database, Wand2, Lightbulb, FileText, RefreshCw, Wrench, Globe } from 'lucide-react';
 
 export const webhookTypes = [
   {
@@ -47,7 +47,7 @@ export const webhookTypes = [
   {
     value: 'wordpress_publishing',
     label: 'WordPress Publishing',
-    icon: Wordpress,
+    icon: Globe,
     description: 'Publish content items to WordPress sites'
   }
 ];
