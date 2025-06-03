@@ -29,7 +29,13 @@ const EditDerivativeModal: React.FC<EditDerivativeModalProps> = ({
     setFile,
     isUploading,
     isUpdating,
-    handleSubmit
+    handleSubmit,
+    headline,
+    setHeadline,
+    introText,
+    setIntroText,
+    imageUrl,
+    setImageUrl
   } = useEditDerivativeLogic(derivative, isOpen, onClose);
 
   return (
@@ -52,6 +58,12 @@ const EditDerivativeModal: React.FC<EditDerivativeModalProps> = ({
           setStatus={setStatus}
           file={file}
           setFile={setFile}
+          headline={headline}
+          setHeadline={setHeadline}
+          introText={introText}
+          setIntroText={setIntroText}
+          imageUrl={imageUrl}
+          setImageUrl={setImageUrl}
         />
 
         <div className="flex gap-3 pt-4">

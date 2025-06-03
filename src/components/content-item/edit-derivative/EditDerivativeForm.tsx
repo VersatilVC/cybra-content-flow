@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ContentDerivative } from '@/services/contentDerivativesApi';
 import { StatusSelect } from './StatusSelect';
 import { FileUploadSection } from './FileUploadSection';
+import { LinkedInAdEditForm } from './LinkedInAdEditForm';
 
 interface EditDerivativeFormProps {
   derivative: ContentDerivative;
@@ -18,6 +19,13 @@ interface EditDerivativeFormProps {
   setStatus: (status: 'draft' | 'approved' | 'published' | 'discarded') => void;
   file: File | null;
   setFile: (file: File | null) => void;
+  // LinkedIn ad specific props
+  headline?: string;
+  setHeadline?: (headline: string) => void;
+  introText?: string;
+  setIntroText?: (introText: string) => void;
+  imageUrl?: string;
+  setImageUrl?: (imageUrl: string) => void;
 }
 
 export const EditDerivativeForm: React.FC<EditDerivativeFormProps> = ({
@@ -29,8 +37,16 @@ export const EditDerivativeForm: React.FC<EditDerivativeFormProps> = ({
   status,
   setStatus,
   file,
-  setFile
+  setFile,
+  headline = '',
+  setHeadline = () => {},
+  introText = '',
+  setIntroText = () => {},
+  imageUrl = '',
+  setImageUrl = () => {}
 }) => {
+  const isLinkedInAd = derivative.derivative_type === 'linkedin_ads';
+
   return (
     <div className="space-y-4">
       <div>
@@ -51,7 +67,16 @@ export const EditDerivativeForm: React.FC<EditDerivativeFormProps> = ({
         <Badge variant="outline">{derivative.derivative_type}</Badge>
       </div>
 
-      {derivative.content_type === 'text' ? (
+      {isLinkedInAd ? (
+        <LinkedInAdEditForm
+          headline={headline}
+          setHeadline={setHeadline}
+          introText={introText}
+          setIntroText={setIntroText}
+          imageUrl={imageUrl}
+          setImageUrl={setImageUrl}
+        />
+      ) : derivative.content_type === 'text' ? (
         <div>
           <Label htmlFor="content">Content</Label>
           <Textarea

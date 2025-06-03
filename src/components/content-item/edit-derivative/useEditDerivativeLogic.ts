@@ -16,6 +16,11 @@ export function useEditDerivativeLogic(derivative: ContentDerivative, isOpen: bo
   const [status, setStatus] = useState<'draft' | 'approved' | 'published' | 'discarded'>(derivative.status);
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // LinkedIn ad specific states
+  const [headline, setHeadline] = useState('');
+  const [introText, setIntroText] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -23,6 +28,25 @@ export function useEditDerivativeLogic(derivative: ContentDerivative, isOpen: bo
       setContent(derivative.content || '');
       setStatus(derivative.status);
       setFile(null);
+      
+      // Parse LinkedIn ad content if applicable
+      if (derivative.derivative_type === 'linkedin_ads' && derivative.content) {
+        try {
+          const adContent = JSON.parse(derivative.content);
+          setHeadline(adContent.headline || '');
+          setIntroText(adContent.intro_text || '');
+          setImageUrl(adContent.image_url || derivative.file_url || '');
+        } catch (error) {
+          // Fallback to treating content as headline
+          setHeadline(derivative.content);
+          setIntroText('');
+          setImageUrl(derivative.file_url || '');
+        }
+      } else {
+        setHeadline('');
+        setIntroText('');
+        setImageUrl('');
+      }
     }
   }, [isOpen, derivative]);
 
@@ -33,11 +57,28 @@ export function useEditDerivativeLogic(derivative: ContentDerivative, isOpen: bo
       let updates: Partial<ContentDerivative> = {
         title,
         status,
-        word_count: derivative.content_type === 'text' ? content.split(' ').length : derivative.word_count
       };
 
-      if (derivative.content_type === 'text') {
+      // Handle LinkedIn ad content reconstruction
+      if (derivative.derivative_type === 'linkedin_ads') {
+        const adContent = {
+          headline: headline.trim(),
+          intro_text: introText.trim(),
+          image_url: imageUrl.trim()
+        };
+        
+        updates.content = JSON.stringify(adContent);
+        updates.word_count = (headline + ' ' + introText).split(' ').filter(word => word.length > 0).length;
+        
+        // Update file_url if image_url changed
+        if (imageUrl !== derivative.file_url) {
+          updates.file_url = imageUrl;
+        }
+      } else if (derivative.content_type === 'text') {
         updates.content = content;
+        updates.word_count = content.split(' ').filter(word => word.length > 0).length;
+      } else {
+        updates.word_count = derivative.word_count;
       }
 
       // Handle file upload if a new file is selected
@@ -49,7 +90,7 @@ export function useEditDerivativeLogic(derivative: ContentDerivative, isOpen: bo
           
           updates.file_url = publicUrl;
           updates.file_path = uploadResult.path;
-          updates.file_size = uploadResult.size; // This is now a string
+          updates.file_size = uploadResult.size;
           updates.mime_type = uploadResult.type;
         } catch (uploadError) {
           console.error('File upload failed:', uploadError);
@@ -82,6 +123,13 @@ export function useEditDerivativeLogic(derivative: ContentDerivative, isOpen: bo
     setFile,
     isUploading,
     isUpdating,
-    handleSubmit
+    handleSubmit,
+    // LinkedIn ad specific returns
+    headline,
+    setHeadline,
+    introText,
+    setIntroText,
+    imageUrl,
+    setImageUrl
   };
 }

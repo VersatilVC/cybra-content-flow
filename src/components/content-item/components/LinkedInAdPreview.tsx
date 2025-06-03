@@ -97,18 +97,6 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({ derivative }) => 
           </div>
         </div>
       </div>
-
-      {/* Debug info for development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-2 bg-gray-50 rounded text-xs text-gray-600">
-          <strong>Content Structure:</strong>
-          <pre className="mt-1 whitespace-pre-wrap">
-            Content: {derivative.content}
-            File URL: {derivative.file_url}
-            Parsed: {JSON.stringify(adContent, null, 2)}
-          </pre>
-        </div>
-      )}
     </div>
   );
 };

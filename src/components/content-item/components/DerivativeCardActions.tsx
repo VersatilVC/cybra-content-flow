@@ -19,23 +19,56 @@ const DerivativeCardActions: React.FC<DerivativeCardActionsProps> = ({
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
 
+  const getContentToCopy = () => {
+    // Handle LinkedIn ads specifically
+    if (derivative.derivative_type === 'linkedin_ads' && derivative.content) {
+      try {
+        const adContent = JSON.parse(derivative.content);
+        const parts = [];
+        
+        if (adContent.headline) {
+          parts.push(`Headline: ${adContent.headline}`);
+        }
+        
+        if (adContent.intro_text) {
+          parts.push(`\nIntro: ${adContent.intro_text}`);
+        }
+        
+        return parts.join('\n');
+      } catch (error) {
+        // Fallback to raw content if JSON parsing fails
+        return derivative.content;
+      }
+    }
+    
+    // Handle regular text content
+    if (derivative.content_type === 'text' && derivative.content) {
+      return derivative.content;
+    }
+    
+    // Handle file URL as fallback
+    if (derivative.file_url) {
+      return derivative.file_url;
+    }
+    
+    return '';
+  };
+
   const handleCopy = async () => {
     try {
-      if (derivative.content_type === 'text' && derivative.content) {
-        await navigator.clipboard.writeText(derivative.content);
+      const contentToCopy = getContentToCopy();
+      
+      if (contentToCopy) {
+        await navigator.clipboard.writeText(contentToCopy);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
+        
+        const isLinkedInAd = derivative.derivative_type === 'linkedin_ads';
         toast({
           title: 'Content copied',
-          description: 'The content has been copied to your clipboard.',
-        });
-      } else if (derivative.file_url) {
-        await navigator.clipboard.writeText(derivative.file_url);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-        toast({
-          title: 'URL copied',
-          description: 'The file URL has been copied to your clipboard.',
+          description: isLinkedInAd 
+            ? 'The LinkedIn ad copy has been copied to your clipboard.'
+            : 'The content has been copied to your clipboard.',
         });
       }
     } catch (error) {
@@ -65,7 +98,8 @@ const DerivativeCardActions: React.FC<DerivativeCardActionsProps> = ({
         size="sm"
         onClick={handleCopy}
         className="h-8 w-8 p-0 hover:bg-gray-100"
-        title={derivative.content_type === 'text' ? 'Copy content' : 'Copy URL'}
+        title={derivative.derivative_type === 'linkedin_ads' ? 'Copy ad text' : 
+               derivative.content_type === 'text' ? 'Copy content' : 'Copy URL'}
       >
         {isCopied ? (
           <Check className="w-4 h-4 text-green-600" />
