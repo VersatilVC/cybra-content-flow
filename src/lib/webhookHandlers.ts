@@ -109,8 +109,8 @@ export async function triggerAutoGenerationWebhooks(userId: string, requestData:
   };
 
   try {
-    console.log('Triggering auto_generation webhook with idea data:', webhookPayload);
-    await triggerWebhook('auto_generation', webhookPayload);
+    console.log('Triggering idea_auto_generator webhook with idea data:', webhookPayload);
+    await triggerWebhook('idea_auto_generator', webhookPayload);
     console.log('Auto-generation webhook triggered successfully');
   } catch (webhookError) {
     console.error('Auto-generation webhook trigger failed:', webhookError);
