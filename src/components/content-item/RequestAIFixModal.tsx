@@ -49,6 +49,7 @@ export function RequestAIFixModal({ open, onOpenChange, contentItem, onFixReques
         currentContent: contentItem.content || '',
         title: contentItem.title,
         contentIdeaId: contentIdeaId,
+        submissionId: contentItem.submission_id,
       });
 
       toast({

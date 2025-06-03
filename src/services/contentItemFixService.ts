@@ -9,6 +9,7 @@ export interface ContentItemFixRequest {
   currentContent: string;
   title: string;
   contentIdeaId?: string;
+  submissionId?: string;
 }
 
 export const triggerContentItemFixWebhook = async (fixRequest: ContentItemFixRequest) => {
@@ -32,6 +33,7 @@ export const triggerContentItemFixWebhook = async (fixRequest: ContentItemFixReq
         type: 'content_item_fix',
         content_item_id: fixRequest.contentItemId,
         content_idea_id: fixRequest.contentIdeaId,
+        submission_id: fixRequest.submissionId,
         user_id: fixRequest.userId,
         feedback: fixRequest.feedback,
         current_content: fixRequest.currentContent,
@@ -42,6 +44,7 @@ export const triggerContentItemFixWebhook = async (fixRequest: ContentItemFixReq
           type: 'content_item_fix_complete',
           content_item_id: fixRequest.contentItemId,
           content_idea_id: fixRequest.contentIdeaId,
+          submission_id: fixRequest.submissionId,
           user_id: fixRequest.userId,
           title: fixRequest.title
         }
