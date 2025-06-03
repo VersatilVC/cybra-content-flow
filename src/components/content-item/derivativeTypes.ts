@@ -22,16 +22,11 @@ export const derivativeTypes: Record<'General' | 'Social' | 'Ads', DerivativeTyp
     { type: 'audio_version', title: 'Generate Audio Version', description: 'Audio narration of content', content_type: 'audio' }
   ],
   Social: [
-    { type: 'linkedin_company', title: 'LinkedIn Post - Company', description: 'Company brand voice LinkedIn post', content_type: 'text' },
-    { type: 'linkedin_ceo', title: 'LinkedIn Post - CEO', description: 'CEO thought leadership LinkedIn post', content_type: 'text' },
-    { type: 'linkedin_marketing', title: 'LinkedIn Post - Marketing', description: 'Marketing-focused LinkedIn post', content_type: 'text' },
-    { type: 'linkedin_sales', title: 'LinkedIn Post - Sales', description: 'Sales-oriented LinkedIn post', content_type: 'text' },
-    { type: 'linkedin_product', title: 'LinkedIn Post - Product', description: 'Product-focused LinkedIn post', content_type: 'text' },
-    { type: 'x_company', title: 'X Post - Company', description: 'Company brand voice X post', content_type: 'text' },
-    { type: 'x_ceo', title: 'X Post - CEO', description: 'CEO thought leadership X post', content_type: 'text' },
-    { type: 'x_marketing', title: 'X Post - Marketing', description: 'Marketing-focused X post', content_type: 'text' },
-    { type: 'x_sales', title: 'X Post - Sales', description: 'Sales-oriented X post', content_type: 'text' },
-    { type: 'x_product', title: 'X Post - Product', description: 'Product-focused X post', content_type: 'text' },
+    { type: 'social_company', title: 'Social Posts - Company', description: 'Company brand voice social media posts', content_type: 'text' },
+    { type: 'social_personal_ceo', title: 'Social Posts - Personal - CEO', description: 'CEO personal thought leadership posts', content_type: 'text' },
+    { type: 'social_department_marketing', title: 'Social Posts - Department - Marketing', description: 'Marketing department focused social posts', content_type: 'text' },
+    { type: 'social_department_sales', title: 'Social Posts - Department - Sales', description: 'Sales department focused social posts', content_type: 'text' },
+    { type: 'social_department_product', title: 'Social Posts - Department - Product', description: 'Product department focused social posts', content_type: 'text' },
     { type: 'image_carousel', title: 'Image Carousel Slides', description: 'Multi-slide visual content for social media', content_type: 'image' }
   ],
   Ads: [
