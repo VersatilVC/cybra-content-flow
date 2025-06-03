@@ -12,7 +12,9 @@ export interface Profile {
   email: string;
   first_name?: string;
   last_name?: string;
-  role: 'admin' | 'user';
+  role: 'super_admin' | 'admin' | 'creator';
+  status: 'active' | 'inactive';
+  last_active?: string;
   created_at: string;
   updated_at: string;
 }

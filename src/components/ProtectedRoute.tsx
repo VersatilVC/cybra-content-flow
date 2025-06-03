@@ -37,7 +37,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
       );
     }
     
-    if (!profile || profile.role !== 'admin') {
+    if (!profile || (profile.role !== 'super_admin' && profile.role !== 'admin')) {
       return <Navigate to="/dashboard" replace />;
     }
   }

@@ -1,3 +1,4 @@
+
 import {
   Brain,
   Calendar,
@@ -97,7 +98,7 @@ export function AppSidebar() {
   const location = useLocation();
   const { signOut } = useAuth();
   const { profile } = useProfile();
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = profile?.role === 'super_admin' || profile?.role === 'admin';
   const [logoError, setLogoError] = useState(false);
 
   const handleLogoError = () => {

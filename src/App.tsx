@@ -49,8 +49,16 @@ const App = () => (
                     <Route path="/knowledge-bases" element={<KnowledgeBases />} />
                     <Route path="/chat" element={<Chat />} />
                     <Route path="/settings" element={<Settings />} />
-                    <Route path="/user-management" element={<UserManagement />} />
-                    <Route path="/webhooks" element={<Webhooks />} />
+                    <Route path="/user-management" element={
+                      <ProtectedRoute adminOnly={true}>
+                        <UserManagement />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/webhooks" element={
+                      <ProtectedRoute adminOnly={true}>
+                        <Webhooks />
+                      </ProtectedRoute>
+                    } />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </AppLayout>

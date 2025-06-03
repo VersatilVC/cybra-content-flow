@@ -26,7 +26,7 @@ export function useProfile() {
 
       return {
         ...data,
-        role: data.role as 'admin' | 'user'
+        role: data.role as 'super_admin' | 'admin' | 'creator'
       };
     },
     enabled: !!user?.id,
