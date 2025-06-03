@@ -73,10 +73,10 @@ export function WebhookTypeAlerts({ selectedType, webhookType }: WebhookTypeAler
   const { type, icon: Icon, title, description } = alertContent;
 
   return (
-    <Alert className={type === 'warning' ? 'border-yellow-200 bg-yellow-50' : 'border-blue-200 bg-blue-50'}>
-      <Icon className={`h-4 w-4 ${type === 'warning' ? 'text-yellow-600' : 'text-blue-600'}`} />
+    <Alert className="border-blue-200 bg-blue-50">
+      <Icon className="h-4 w-4 text-blue-600" />
       <AlertDescription>
-        <div className={type === 'warning' ? 'text-yellow-800' : 'text-blue-800'}>
+        <div className="text-blue-800">
           <strong>{title}</strong><br />
           {description}
         </div>
