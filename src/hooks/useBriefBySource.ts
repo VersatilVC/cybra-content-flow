@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -19,6 +20,3 @@ export function useBriefBySource(sourceId: string, sourceType: 'idea' | 'suggest
     enabled: !!sourceId,
   });
 }
-
-// Add the new hook export
-export { useBriefBySource } from './useBriefBySource';

@@ -22,6 +22,7 @@ export default function IdeaSuggestionsSection({
   onCreateBrief, 
   isCreatingBrief 
 }: IdeaSuggestionsSectionProps) {
+  // Always fetch suggestions when the section should be shown
   const { data: suggestions, isLoading: loadingSuggestions } = useContentSuggestions(
     showSuggestions ? idea.id : ''
   );

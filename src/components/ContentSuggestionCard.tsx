@@ -51,8 +51,8 @@ export default function ContentSuggestionCard({
 
   const handleViewBrief = () => {
     if (existingBrief) {
-      // Navigate to brief details - for now we'll just show a toast
-      console.log('Navigate to brief:', existingBrief.id);
+      // Navigate to the brief details page
+      window.location.href = `/content-briefs?brief=${existingBrief.id}&action=view`;
     }
   };
 
@@ -98,6 +98,17 @@ export default function ContentSuggestionCard({
     );
   };
 
+  const getBriefStatusBadge = () => {
+    if (existingBrief) {
+      return (
+        <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+          Brief Created
+        </Badge>
+      );
+    }
+    return null;
+  };
+
   return (
     <Card className="ml-8 border-l-4 border-l-purple-300 bg-purple-50/30 shadow-sm">
       <CardContent className="p-4">
@@ -107,9 +118,12 @@ export default function ContentSuggestionCard({
               {suggestion.source_url ? <LinkIcon className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="text-md font-medium text-gray-900 mb-1 line-clamp-2">
-                {suggestion.title}
-              </h4>
+              <div className="flex items-center gap-2 mb-1">
+                <h4 className="text-md font-medium text-gray-900 line-clamp-2">
+                  {suggestion.title}
+                </h4>
+                {getBriefStatusBadge()}
+              </div>
               {suggestion.description && (
                 <div className="mb-2">
                   <p className="text-sm text-gray-600">{displayDescription}</p>
@@ -149,14 +163,6 @@ export default function ContentSuggestionCard({
           <div className="flex items-center gap-2 text-xs text-gray-500">
             {suggestion.source_url ? <LinkIcon className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
             <span>{suggestion.source_url ? 'Web source' : 'Document source'}</span>
-            {existingBrief && (
-              <>
-                <span>•</span>
-                <Badge variant="outline" className="text-xs">
-                  Brief {existingBrief.status}
-                </Badge>
-              </>
-            )}
           </div>
           
           <div className="flex gap-2">
