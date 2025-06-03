@@ -15,18 +15,26 @@ interface LinkedInAdContent {
 }
 
 const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({ derivative }) => {
-  // Parse the LinkedIn ad content
+  // Parse the LinkedIn ad content with fallback handling
   let adContent: LinkedInAdContent = {};
   
   if (derivative.content) {
     try {
+      // Try to parse as JSON first
       adContent = JSON.parse(derivative.content);
     } catch (error) {
-      console.error('Failed to parse LinkedIn ad content:', error);
-      // Fallback to treating content as headline if JSON parsing fails
+      // If JSON parsing fails, treat content as headline
+      console.log('Content is not JSON, treating as headline:', derivative.content);
       adContent = { headline: derivative.content };
     }
   }
+
+  // Use file_url as image source if no image_url in parsed content
+  const imageUrl = adContent.image_url || derivative.file_url;
+  
+  // Ensure we have at least a headline
+  const headline = adContent.headline || 'LinkedIn Ad';
+  const introText = adContent.intro_text;
 
   return (
     <div className="border rounded-lg p-4 bg-white shadow-sm">
@@ -44,24 +52,22 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({ derivative }) => 
       {/* Ad Content */}
       <div className="space-y-3">
         {/* Headline */}
-        {adContent.headline && (
-          <h3 className="font-semibold text-gray-900 text-lg leading-tight">
-            {adContent.headline}
-          </h3>
-        )}
+        <h3 className="font-semibold text-gray-900 text-lg leading-tight">
+          {headline}
+        </h3>
 
         {/* Intro Text */}
-        {adContent.intro_text && (
+        {introText && (
           <p className="text-gray-700 text-sm leading-relaxed">
-            {adContent.intro_text}
+            {introText}
           </p>
         )}
 
         {/* Image */}
-        {(adContent.image_url || derivative.file_url) && (
+        {imageUrl && (
           <div className="mt-3">
             <img
-              src={adContent.image_url || derivative.file_url || ''}
+              src={imageUrl}
               alt="LinkedIn Ad Creative"
               className="w-full h-48 object-cover rounded-lg border"
               onError={(e) => {
@@ -97,7 +103,9 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({ derivative }) => 
         <div className="mt-4 p-2 bg-gray-50 rounded text-xs text-gray-600">
           <strong>Content Structure:</strong>
           <pre className="mt-1 whitespace-pre-wrap">
-            {JSON.stringify(adContent, null, 2)}
+            Content: {derivative.content}
+            File URL: {derivative.file_url}
+            Parsed: {JSON.stringify(adContent, null, 2)}
           </pre>
         </div>
       )}

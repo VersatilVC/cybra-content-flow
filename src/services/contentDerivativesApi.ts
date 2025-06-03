@@ -145,7 +145,7 @@ export async function triggerDerivativeGeneration(
     throw new Error(`Failed to fetch content item: ${contentError.message}`);
   }
 
-  // Prepare webhook payload with special handling for LinkedIn ads
+  // Prepare webhook payload with enhanced LinkedIn ads handling
   const payload = {
     type: 'derivative_generation',
     content_item_id: contentItemId,
@@ -159,12 +159,18 @@ export async function triggerDerivativeGeneration(
       bucket_name: 'content-derivatives',
       base_url: 'https://uejgjytmqpcilwfrlpai.supabase.co/storage/v1/object/public/content-derivatives'
     },
-    // Add special instructions for LinkedIn ads
+    // Enhanced instructions for LinkedIn ads with proper structure
     special_instructions: {
       linkedin_ads: {
         output_format: 'composite',
         required_components: ['headline', 'intro_text', 'image_url'],
-        content_structure: 'json'
+        content_structure: 'json',
+        expected_format: {
+          content: 'JSON string containing: {"headline": "...", "intro_text": "...", "image_url": "..."}',
+          content_type: 'composite',
+          file_url: 'URL to the generated image (same as image_url in content JSON)'
+        },
+        instructions: 'Generate headline, intro text, and image as a complete LinkedIn ad. Store structured JSON in content field with all three components.'
       }
     }
   };
