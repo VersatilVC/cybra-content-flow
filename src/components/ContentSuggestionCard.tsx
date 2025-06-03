@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileText, LinkIcon, Edit, Trash2, Briefcase, Eye, Loader2 } from 'lucide-react';
 import { ContentSuggestion } from '@/types/contentIdeas';
-import { useBriefBySource } from '@/hooks/useContentBriefs';
+import { useBriefBySource } from '@/hooks/useBriefBySource';
 
 interface ContentSuggestionCardProps {
   suggestion: ContentSuggestion;
