@@ -1,7 +1,7 @@
-
-import { Zap, Plus, CheckCircle, XCircle, Clock, Database, AlertCircle, Wand2 } from "lucide-react";
+import { Zap, Plus, CheckCircle, XCircle, Clock, Database, AlertCircle, Wand2, Edit } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AddWebhookModal } from "@/components/AddWebhookModal";
+import { EditWebhookModal } from "@/components/EditWebhookModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,8 @@ interface WebhookConfig {
 
 const Webhooks = () => {
   const [isAddWebhookOpen, setIsAddWebhookOpen] = useState(false);
+  const [isEditWebhookOpen, setIsEditWebhookOpen] = useState(false);
+  const [selectedWebhook, setSelectedWebhook] = useState<WebhookConfig | null>(null);
   const [webhooks, setWebhooks] = useState<WebhookConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [preselectedType, setPreselectedType] = useState<string>('');
@@ -70,6 +72,11 @@ const Webhooks = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleEditWebhook = (webhook: WebhookConfig) => {
+    setSelectedWebhook(webhook);
+    setIsEditWebhookOpen(true);
   };
 
   const handleAddKnowledgeBaseWebhook = () => {
@@ -325,6 +332,13 @@ const Webhooks = () => {
                   <td className="py-4 px-6 text-right">
                     <div className="flex gap-2 justify-end">
                       <button 
+                        onClick={() => handleEditWebhook(webhook)}
+                        className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </button>
+                      <button 
                         onClick={() => toggleWebhookStatus(webhook.id, webhook.is_active)}
                         className={`text-sm font-medium ${
                           webhook.is_active 
@@ -356,6 +370,13 @@ const Webhooks = () => {
         onOpenChange={setIsAddWebhookOpen}
         onWebhookAdded={fetchWebhooks}
         preselectedType={preselectedType}
+      />
+
+      <EditWebhookModal 
+        open={isEditWebhookOpen}
+        onOpenChange={setIsEditWebhookOpen}
+        onWebhookUpdated={fetchWebhooks}
+        webhook={selectedWebhook}
       />
     </div>
   );

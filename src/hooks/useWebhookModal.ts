@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -179,6 +178,70 @@ export function useWebhookModal() {
     }
   };
 
+  const updateWebhook = async (webhookId: string, onSuccess?: () => void, onWebhookUpdated?: () => void) => {
+    if (!name || !webhookUrl || !webhookType) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please fill in all required fields.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!validateUrl(webhookUrl)) {
+      toast({
+        title: 'Invalid URL',
+        description: 'Please enter a valid webhook URL.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: 'Authentication Error',
+        description: 'You must be logged in to update webhooks.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase
+        .from('webhook_configurations')
+        .update({
+          name,
+          description,
+          webhook_url: webhookUrl,
+          webhook_type: webhookType,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', webhookId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Webhook Updated Successfully! ✅',
+        description: `Webhook "${name}" has been updated.`,
+      });
+
+      if (onSuccess) onSuccess();
+      if (onWebhookUpdated) onWebhookUpdated();
+
+    } catch (error) {
+      console.error('Error updating webhook:', error);
+      toast({
+        title: 'Failed to Update Webhook',
+        description: error instanceof Error ? error.message : 'Failed to update webhook',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const resetForm = useCallback((preselectedType?: string) => {
     setName('');
     setDescription('');
@@ -199,6 +262,7 @@ export function useWebhookModal() {
     isTestingWebhook,
     testWebhook,
     submitWebhook,
+    updateWebhook,
     resetForm
   };
 }
