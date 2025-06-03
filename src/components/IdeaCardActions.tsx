@@ -25,6 +25,9 @@ export default function IdeaCardActions({
     }
   };
 
+  // Show suggestions button for both processed and brief_created statuses
+  const showSuggestionsButton = idea.status === 'processed' || idea.status === 'brief_created';
+
   return (
     <div className="flex items-center justify-between pt-4 border-t">
       <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -33,7 +36,7 @@ export default function IdeaCardActions({
       </div>
       
       <div className="flex gap-2">
-        {idea.status === 'processed' && (
+        {showSuggestionsButton && (
           <Button
             onClick={onToggleSuggestions}
             size="sm"
