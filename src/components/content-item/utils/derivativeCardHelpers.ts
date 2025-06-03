@@ -14,6 +14,7 @@ export const getContentTypeIcon = (contentType: string) => {
     case 'video': return 'Video';
     case 'audio': return 'Music';
     case 'document': return 'File';
+    case 'composite': return 'Layers';
     default: return 'FileText';
   }
 };

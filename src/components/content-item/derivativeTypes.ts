@@ -3,7 +3,7 @@ export interface DerivativeTypeInfo {
   type: string;
   title: string;
   description: string;
-  content_type: 'text' | 'image' | 'audio' | 'video' | 'document';
+  content_type: 'text' | 'image' | 'audio' | 'video' | 'document' | 'composite';
 }
 
 export const derivativeTypes: Record<'General' | 'Social' | 'Ads', DerivativeTypeInfo[]> = {
@@ -30,8 +30,7 @@ export const derivativeTypes: Record<'General' | 'Social' | 'Ads', DerivativeTyp
     { type: 'image_carousel', title: 'Image Carousel Slides', description: 'Multi-slide visual content for social media', content_type: 'image' }
   ],
   Ads: [
-    { type: 'linkedin_text_ad', title: 'LinkedIn - Text Ad Copy', description: 'Professional LinkedIn advertising copy', content_type: 'text' },
-    { type: 'linkedin_image_ads', title: 'LinkedIn - Image Ads', description: 'Visual LinkedIn advertising creatives', content_type: 'image' }
+    { type: 'linkedin_ads', title: 'LinkedIn Ads', description: 'Complete LinkedIn ad with headline, intro text, and image', content_type: 'composite' }
   ]
 };
 
@@ -41,6 +40,7 @@ export const getContentTypeIcon = (contentType: string) => {
     case 'video': return '🎥';
     case 'audio': return '🎵';
     case 'document': return '📄';
+    case 'composite': return '🎯';
     default: return '📝';
   }
 };

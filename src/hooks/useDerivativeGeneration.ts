@@ -68,6 +68,13 @@ export function useDerivativeGeneration(contentItemId: string) {
           
           if (content_type === 'text') {
             content = `Generated ${typeInfo.title.toLowerCase()} content for content item ${contentItemId}. This would be AI-generated content based on the original content.`;
+          } else if (content_type === 'composite' && type === 'linkedin_ads') {
+            // Create structured LinkedIn ad content
+            content = JSON.stringify({
+              headline: `AI-Generated Headline for ${typeInfo.title}`,
+              intro_text: `This is a sample intro text for the LinkedIn ad. It would be generated based on the original content item and optimized for LinkedIn's advertising format.`,
+              image_url: null // Will be populated by webhook
+            });
           }
           
           await createDerivative({
@@ -79,7 +86,7 @@ export function useDerivativeGeneration(contentItemId: string) {
             category: category,
             content_type: content_type,
             file_url: file_url,
-            word_count: content ? content.split(' ').length : null,
+            word_count: content && content_type === 'text' ? content.split(' ').length : null,
             metadata: {
               generated_at: new Date().toISOString(),
               generator: 'fallback',

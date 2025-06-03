@@ -6,6 +6,7 @@ import ImagePreview from './ImagePreview';
 import FilePreview from './FilePreview';
 import TextContentPreview from './TextContentPreview';
 import SocialContentPreview from './SocialContentPreview';
+import LinkedInAdPreview from './LinkedInAdPreview';
 
 interface DerivativeCardContentProps {
   derivative: ContentDerivative;
@@ -13,6 +14,11 @@ interface DerivativeCardContentProps {
 
 const DerivativeCardContent: React.FC<DerivativeCardContentProps> = ({ derivative }) => {
   const renderContent = () => {
+    // Handle LinkedIn ads specifically
+    if (derivative.derivative_type === 'linkedin_ads') {
+      return <LinkedInAdPreview derivative={derivative} />;
+    }
+
     // Handle image content
     if (derivative.content_type === 'image') {
       return <ImagePreview derivative={derivative} />;

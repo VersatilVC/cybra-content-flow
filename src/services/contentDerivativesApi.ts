@@ -12,7 +12,7 @@ export interface ContentDerivative {
   status: 'draft' | 'approved' | 'published' | 'discarded';
   metadata: Record<string, any>;
   word_count: number | null;
-  content_type: 'text' | 'image' | 'audio' | 'video' | 'document';
+  content_type: 'text' | 'image' | 'audio' | 'video' | 'document' | 'composite';
   file_url: string | null;
   file_path: string | null;
   mime_type: string | null;
@@ -31,7 +31,7 @@ export interface CreateContentDerivativeData {
   status?: 'draft' | 'approved' | 'published' | 'discarded';
   metadata?: Record<string, any>;
   word_count?: number;
-  content_type?: 'text' | 'image' | 'audio' | 'video' | 'document';
+  content_type?: 'text' | 'image' | 'audio' | 'video' | 'document' | 'composite';
   file_url?: string | null;
   file_path?: string | null;
   mime_type?: string | null;
@@ -145,7 +145,7 @@ export async function triggerDerivativeGeneration(
     throw new Error(`Failed to fetch content item: ${contentError.message}`);
   }
 
-  // Prepare webhook payload
+  // Prepare webhook payload with special handling for LinkedIn ads
   const payload = {
     type: 'derivative_generation',
     content_item_id: contentItemId,
@@ -158,6 +158,14 @@ export async function triggerDerivativeGeneration(
     storage_config: {
       bucket_name: 'content-derivatives',
       base_url: 'https://uejgjytmqpcilwfrlpai.supabase.co/storage/v1/object/public/content-derivatives'
+    },
+    // Add special instructions for LinkedIn ads
+    special_instructions: {
+      linkedin_ads: {
+        output_format: 'composite',
+        required_components: ['headline', 'intro_text', 'image_url'],
+        content_structure: 'json'
+      }
     }
   };
 
