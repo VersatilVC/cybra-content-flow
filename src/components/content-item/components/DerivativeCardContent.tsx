@@ -5,7 +5,9 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Image, Eye, Download, RefreshCw } from 'lucide-react';
 import { ContentDerivative, downloadDerivativeFile } from '@/services/contentDerivativesApi';
 import { formatFileSize } from '../utils/derivativeCardHelpers';
+import { parseSocialContent, isSocialDerivative } from '../utils/socialContentParser';
 import { useToast } from '@/hooks/use-toast';
+import SocialPostSection from './SocialPostSection';
 
 interface DerivativeCardContentProps {
   derivative: ContentDerivative;
@@ -56,7 +58,7 @@ const DerivativeCardContent: React.FC<DerivativeCardContentProps> = ({ derivativ
         <AspectRatio ratio={16/9} className="bg-muted rounded-lg overflow-hidden">
           {!imageError ? (
             <img
-              key={retryCount} // Force re-render on retry
+              key={retryCount}
               src={derivative.file_url}
               alt={derivative.title}
               className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
@@ -130,9 +132,41 @@ const DerivativeCardContent: React.FC<DerivativeCardContentProps> = ({ derivativ
     );
   };
 
+  const renderSocialContent = () => {
+    if (!isSocialDerivative(derivative.derivative_type) || !derivative.content) {
+      return null;
+    }
+
+    const parsedContent = parseSocialContent(derivative.content);
+    
+    return (
+      <div className="space-y-4">
+        {parsedContent.linkedin && (
+          <SocialPostSection
+            platform="linkedin"
+            content={parsedContent.linkedin}
+            characterCount={parsedContent.linkedin.length}
+          />
+        )}
+        {parsedContent.x && (
+          <SocialPostSection
+            platform="x"
+            content={parsedContent.x}
+            characterCount={parsedContent.x.length}
+          />
+        )}
+      </div>
+    );
+  };
+
   const renderFilePreview = () => {
     if (derivative.content_type === 'image') {
       return renderImagePreview();
+    }
+
+    // Handle social content with platform tagging
+    if (isSocialDerivative(derivative.derivative_type)) {
+      return renderSocialContent();
     }
 
     if (derivative.content_type === 'text' && derivative.content) {
