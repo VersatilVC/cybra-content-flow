@@ -23,7 +23,7 @@ export default function ContentSuggestionCard({
   isCreatingBrief 
 }: ContentSuggestionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data: existingBrief } = useBriefBySource(suggestion.id, 'suggestion');
+  const { data: existingBrief, isLoading: loadingBrief } = useBriefBySource(suggestion.id, 'suggestion');
   
   const MAX_DESCRIPTION_LENGTH = 120;
   const needsTruncation = suggestion.description && suggestion.description.length > MAX_DESCRIPTION_LENGTH;
@@ -67,6 +67,21 @@ export default function ContentSuggestionCard({
         >
           <Loader2 className="w-3 h-3 mr-1 animate-spin" />
           Creating...
+        </Button>
+      );
+    }
+
+    // Show loading state while checking for existing brief
+    if (loadingBrief) {
+      return (
+        <Button
+          disabled
+          size="sm"
+          className="text-gray-400"
+          variant="ghost"
+        >
+          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+          Checking...
         </Button>
       );
     }
