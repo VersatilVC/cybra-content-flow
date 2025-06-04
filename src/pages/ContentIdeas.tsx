@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useContentIdeas } from '@/hooks/useContentIdeas';
 import { ContentIdeaFilters, ContentIdea } from '@/types/contentIdeas';
 import AddIdeaModal from '@/components/AddIdeaModal';
 import EditIdeaModal from '@/components/EditIdeaModal';
-import AutoGenerationControls from '@/components/AutoGenerationControls';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ContentIdeasHeader from '@/components/content-ideas/ContentIdeasHeader';
 import ContentIdeasFilters from '@/components/content-ideas/ContentIdeasFilters';
@@ -96,11 +94,6 @@ const ContentIdeas = () => {
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <ContentIdeasHeader onNewIdea={() => setShowAddModal(true)} />
-
-      {/* Auto Generation Controls */}
-      <div className="mb-6">
-        <AutoGenerationControls />
-      </div>
 
       <ContentIdeasFilters 
         filters={filters}
