@@ -6,7 +6,6 @@ import IdeaCardHeader from '@/components/IdeaCardHeader';
 import IdeaCardContent from '@/components/IdeaCardContent';
 import IdeaCardActions from '@/components/IdeaCardActions';
 import IdeaSuggestionsSection from '@/components/IdeaSuggestionsSection';
-import IdeaCreateBriefButton from '@/components/IdeaCreateBriefButton';
 
 interface ContentIdeaCardProps {
   idea: ContentIdea;
@@ -37,17 +36,6 @@ export default function ContentIdeaCard({
         <CardContent className="p-6">
           <IdeaCardHeader idea={idea} />
           <IdeaCardContent idea={idea} />
-          
-          {/* Brief Action Button for processed ideas */}
-          {(idea.status === 'processed' || idea.status === 'brief_created') && (
-            <div className="mt-4 pt-4 border-t">
-              <IdeaCreateBriefButton
-                idea={idea}
-                onCreateBrief={onCreateBrief}
-                isCreatingBrief={isCreatingBrief}
-              />
-            </div>
-          )}
           
           <IdeaCardActions
             idea={idea}
