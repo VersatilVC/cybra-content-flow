@@ -58,6 +58,11 @@ const ContentIdeas = () => {
     navigate('/dashboard');
   };
 
+  const handleQuickGenerate = () => {
+    // Use default values for quick generation
+    generateNow('Blog Post', 'Private Sector');
+  };
+
   // Find the specific idea for review
   const reviewIdea = expandIdeaId ? ideas.find(idea => idea.id === expandIdeaId) : null;
 
@@ -136,7 +141,7 @@ const ContentIdeas = () => {
         </div>
         <div className="flex gap-3">
           <Button
-            onClick={() => generateNow()}
+            onClick={handleQuickGenerate}
             disabled={isGenerating}
             variant="outline"
             className="flex items-center gap-2"
