@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Loader2, Plus, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ContentItem } from '@/services/contentItemsApi';
+import StructuredContentEditor from './StructuredContentEditor';
 
 interface EditContentModalProps {
   open: boolean;
@@ -90,14 +90,14 @@ export function EditContentModal({ open, onOpenChange, contentItem, onSave, isUp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Edit className="w-5 h-5 text-blue-600" />
             Edit Content
           </DialogTitle>
           <DialogDescription>
-            Make changes to your content. All fields except title are optional.
+            Make changes to your content using the visual editor or raw markdown.
           </DialogDescription>
         </DialogHeader>
 
@@ -114,24 +114,19 @@ export function EditContentModal({ open, onOpenChange, contentItem, onSave, isUp
 
           <div className="space-y-2">
             <Label htmlFor="summary">Summary</Label>
-            <Textarea
+            <Input
               id="summary"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               placeholder="Brief summary of the content..."
-              rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="content">Content *</Label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Enter your content here..."
-              rows={12}
-              className="resize-none font-mono text-sm"
+            <Label>Content *</Label>
+            <StructuredContentEditor
+              content={content}
+              onChange={setContent}
             />
             <p className="text-xs text-gray-500">
               Word count: {content.trim().split(/\s+/).filter(word => word.length > 0).length}
