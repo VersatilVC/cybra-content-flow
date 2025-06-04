@@ -1,4 +1,3 @@
-
 import { 
   FileText, 
   Lightbulb, 
@@ -10,6 +9,7 @@ import { StatsCard } from "@/components/StatsCard";
 import { QuickActions } from "@/components/QuickActions";
 import { RecentActivity } from "@/components/RecentActivity";
 import { TodoSection } from "@/components/dashboard/TodoSection";
+import AutoGenerationControls from "@/components/AutoGenerationControls";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -73,6 +73,11 @@ const Dashboard = () => {
               />
             </>
           )}
+        </div>
+
+        {/* Auto Generation Controls */}
+        <div className="grid grid-cols-1 gap-6">
+          <AutoGenerationControls />
         </div>
 
         {/* Main Content */}

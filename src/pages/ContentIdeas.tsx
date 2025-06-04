@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Zap, ArrowLeft } from 'lucide-react';
+import { Plus, Search, Filter, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,7 +8,7 @@ import { useContentIdeas } from '@/hooks/useContentIdeas';
 import { ContentIdeaFilters, ContentIdea } from '@/types/contentIdeas';
 import AddIdeaModal from '@/components/AddIdeaModal';
 import EditIdeaModal from '@/components/EditIdeaModal';
-import { useAutoGeneration } from '@/hooks/useAutoGeneration';
+import AutoGenerationControls from '@/components/AutoGenerationControls';
 import ContentIdeaCard from '@/components/ContentIdeaCard';
 import ContentIdeaReviewCard from '@/components/ContentIdeaReviewCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -25,8 +26,6 @@ const ContentIdeas = () => {
     status: 'All Statuses',
     search: '',
   });
-
-  const { generateNow, isGenerating } = useAutoGeneration();
 
   const { 
     ideas, 
@@ -56,11 +55,6 @@ const ContentIdeas = () => {
 
   const handleBackToDashboard = () => {
     navigate('/dashboard');
-  };
-
-  const handleQuickGenerate = () => {
-    // Use default values for quick generation
-    generateNow('Blog Post', 'Private Sector');
   };
 
   // Find the specific idea for review
@@ -141,15 +135,6 @@ const ContentIdeas = () => {
         </div>
         <div className="flex gap-3">
           <Button
-            onClick={handleQuickGenerate}
-            disabled={isGenerating}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <Zap className="w-4 h-4" />
-            {isGenerating ? 'Generating...' : 'Auto Generate'}
-          </Button>
-          <Button
             onClick={() => setShowAddModal(true)}
             className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2"
           >
@@ -157,6 +142,11 @@ const ContentIdeas = () => {
             New Idea
           </Button>
         </div>
+      </div>
+
+      {/* Auto Generation Controls */}
+      <div className="mb-6">
+        <AutoGenerationControls />
       </div>
 
       {/* Search and Filters */}
