@@ -26,6 +26,18 @@ export function useBriefCreation(ideas: ContentIdea[]) {
       setCreatingBriefId(id);
       
       if (type === 'idea') {
+        // First check if brief already exists to prevent duplicates
+        const { data: existingBrief } = await supabase
+          .from('content_briefs')
+          .select('id')
+          .eq('source_id', id)
+          .eq('source_type', 'idea')
+          .maybeSingle();
+
+        if (existingBrief) {
+          throw new Error('Brief already exists for this idea');
+        }
+
         // Update idea status to show it's being processed
         await updateContentIdea(id, { status: 'processing' });
 
@@ -40,6 +52,18 @@ export function useBriefCreation(ideas: ContentIdea[]) {
           timestamp: new Date().toISOString(),
         });
       } else if (type === 'suggestion') {
+        // First check if brief already exists for this suggestion
+        const { data: existingBrief } = await supabase
+          .from('content_briefs')
+          .select('id')
+          .eq('source_id', id)
+          .eq('source_type', 'suggestion')
+          .maybeSingle();
+
+        if (existingBrief) {
+          throw new Error('Brief already exists for this suggestion');
+        }
+
         // For suggestions, get the suggestion data
         const { data: suggestion, error } = await supabase
           .from('content_suggestions')
@@ -76,6 +100,7 @@ export function useBriefCreation(ideas: ContentIdea[]) {
       queryClient.invalidateQueries({ queryKey: ['content-suggestions'] });
       queryClient.invalidateQueries({ queryKey: ['content-briefs'] });
       queryClient.invalidateQueries({ queryKey: ['content-brief'] });
+      queryClient.invalidateQueries({ queryKey: ['content-brief-by-source'] });
       setCreatingBriefId(null);
       toast({
         title: 'Brief creation started',
