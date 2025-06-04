@@ -18,7 +18,9 @@ import {
   Link as LinkIcon,
   Loader2,
   AlertTriangle,
-  Globe
+  Globe,
+  Copy,
+  Check
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
@@ -41,6 +43,7 @@ const ContentItemView = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAIFixModalOpen, setIsAIFixModalOpen] = useState(false);
   const [isPublishingToWordPress, setIsPublishingToWordPress] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const { data: contentItem, isLoading, error, refetch } = useQuery({
     queryKey: ['content-item', id],
@@ -184,6 +187,79 @@ const ContentItemView = () => {
       title: 'Content Discarded',
       description: 'The content item has been discarded.',
     });
+  };
+
+  const convertToMarkdown = (contentItem: ContentItem): string => {
+    const statusInfo = getStatusInfo(contentItem.status);
+    const createdDate = formatDate(contentItem.created_at);
+    
+    let markdown = `# ${contentItem.title}\n\n`;
+    
+    // Add metadata
+    markdown += `**Status:** ${statusInfo.label} | **Type:** ${contentItem.content_type} | **Created:** ${createdDate}\n`;
+    if (contentItem.word_count) {
+      markdown += `**Word Count:** ${contentItem.word_count} words\n`;
+    }
+    markdown += '\n';
+    
+    // Add summary if available
+    if (contentItem.summary) {
+      markdown += `## Summary\n\n${contentItem.summary}\n\n`;
+    }
+    
+    // Add main content
+    if (contentItem.content) {
+      markdown += `## Content\n\n${contentItem.content}\n\n`;
+    }
+    
+    // Add tags if available
+    if (contentItem.tags && contentItem.tags.length > 0) {
+      markdown += `## Tags\n\n`;
+      contentItem.tags.forEach(tag => {
+        markdown += `- ${tag}\n`;
+      });
+      markdown += '\n';
+    }
+    
+    // Add resources if available
+    if (contentItem.resources && contentItem.resources.length > 0) {
+      markdown += `## Resources\n\n`;
+      contentItem.resources.forEach(resource => {
+        markdown += `- ${resource}\n`;
+      });
+      markdown += '\n';
+    }
+    
+    // Add multimedia suggestions if available
+    if (contentItem.multimedia_suggestions) {
+      markdown += `## Multimedia Suggestions\n\n${contentItem.multimedia_suggestions}\n\n`;
+    }
+    
+    return markdown;
+  };
+
+  const handleCopyAsMarkdown = async () => {
+    if (!contentItem) return;
+    
+    try {
+      const markdown = convertToMarkdown(contentItem);
+      await navigator.clipboard.writeText(markdown);
+      
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+      
+      toast({
+        title: 'Copied to clipboard',
+        description: 'Content has been copied as Markdown to your clipboard.',
+      });
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      toast({
+        title: 'Copy failed',
+        description: 'Failed to copy content to clipboard. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isLoading) {
@@ -349,10 +425,25 @@ const ContentItemView = () => {
         <TabsContent value="content" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Content
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Content
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyAsMarkdown}
+                  className="flex items-center gap-2"
+                >
+                  {isCopied ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                  {isCopied ? 'Copied!' : 'Copy as Markdown'}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {contentItem.summary && (
