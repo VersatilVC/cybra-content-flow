@@ -18,6 +18,7 @@ export function NotificationCenter() {
     handleViewSuggestions,
     handleViewBrief,
     handleViewContentItem,
+    handleViewWordPressPublishing,
   } = useNotifications();
 
   return (
@@ -61,6 +62,7 @@ export function NotificationCenter() {
           onViewSuggestions={handleViewSuggestions}
           onViewBrief={handleViewBrief}
           onViewContentItem={handleViewContentItem}
+          onViewWordPressPublishing={handleViewWordPressPublishing}
         />
       </SheetContent>
     </Sheet>

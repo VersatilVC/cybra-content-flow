@@ -8,7 +8,10 @@ import {
   handleContentItemCompletion,
   handleIdeaProcessingComplete,
   handleKnowledgeBaseProcessingComplete,
-  handleAutoGenerationComplete
+  handleAutoGenerationComplete,
+  handleWordPressPublishingComplete,
+  handleContentItemFixComplete,
+  handleDerivativeGenerationComplete
 } from './handlers.ts';
 
 serve(async (req) => {
@@ -64,6 +67,15 @@ serve(async (req) => {
       
       case 'auto_generation_complete':
         return await handleAutoGenerationComplete(user_id, status, callbackData.generated_count, error_message);
+      
+      case 'wordpress_publishing_complete':
+        return await handleWordPressPublishingComplete(content_item_id, status, user_id, title, error_message);
+      
+      case 'content_item_fix_complete':
+        return await handleContentItemFixComplete(content_item_id, status, user_id, title, error_message);
+      
+      case 'derivative_generation_complete':
+        return await handleDerivativeGenerationComplete(content_item_id, status, user_id, title, callbackData.derivative_count, error_message);
       
       default:
         console.log('Unknown callback type:', type);

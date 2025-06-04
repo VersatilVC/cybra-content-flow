@@ -19,6 +19,7 @@ export default function NotificationCenter() {
     handleViewSuggestions,
     handleViewBrief,
     handleViewContentItem,
+    handleViewWordPressPublishing,
   } = useNotifications();
 
   const [activeTab, setActiveTab] = useState('all');
@@ -149,6 +150,7 @@ export default function NotificationCenter() {
                   onViewSuggestions={handleViewSuggestions}
                   onViewBrief={handleViewBrief}
                   onViewContentItem={handleViewContentItem}
+                  onViewWordPressPublishing={handleViewWordPressPublishing}
                 />
               ))}
             </div>

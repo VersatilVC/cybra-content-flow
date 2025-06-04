@@ -9,7 +9,10 @@ import {
   getNotificationColor,
   isContentSuggestionNotification,
   isContentBriefNotification,
-  isContentItemNotification
+  isContentItemNotification,
+  isWordPressPublishingNotification,
+  isDerivativeGenerationNotification,
+  isContentItemFixNotification
 } from '@/utils/notificationHelpers';
 
 interface NotificationItemProps {
@@ -19,6 +22,7 @@ interface NotificationItemProps {
   onViewSuggestions: (notification: Notification) => void;
   onViewBrief: (notification: Notification) => void;
   onViewContentItem: (notification: Notification) => void;
+  onViewWordPressPublishing?: (notification: Notification) => void;
 }
 
 export function NotificationItem({ 
@@ -27,13 +31,103 @@ export function NotificationItem({
   onDelete,
   onViewSuggestions, 
   onViewBrief,
-  onViewContentItem
+  onViewContentItem,
+  onViewWordPressPublishing
 }: NotificationItemProps) {
   const IconComponent = getNotificationIcon(notification.type);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete(notification.id);
+  };
+
+  const getActionButton = () => {
+    if (isContentSuggestionNotification(notification)) {
+      return (
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewSuggestions(notification);
+          }}
+          size="sm"
+          variant="outline"
+          className="mt-2 text-xs"
+        >
+          <Eye className="w-3 h-3 mr-1" />
+          View Suggestions
+        </Button>
+      );
+    }
+
+    if (isContentBriefNotification(notification)) {
+      return (
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewBrief(notification);
+          }}
+          size="sm"
+          variant="outline"
+          className="mt-2 text-xs"
+        >
+          <Eye className="w-3 h-3 mr-1" />
+          View Brief
+        </Button>
+      );
+    }
+
+    if (isWordPressPublishingNotification(notification)) {
+      return (
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewWordPressPublishing ? onViewWordPressPublishing(notification) : onViewContentItem(notification);
+          }}
+          size="sm"
+          variant="outline"
+          className="mt-2 text-xs"
+        >
+          <Eye className="w-3 h-3 mr-1" />
+          View Published Content
+        </Button>
+      );
+    }
+
+    if (isDerivativeGenerationNotification(notification)) {
+      return (
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewContentItem(notification);
+          }}
+          size="sm"
+          variant="outline"
+          className="mt-2 text-xs"
+        >
+          <Eye className="w-3 h-3 mr-1" />
+          View Derivatives
+        </Button>
+      );
+    }
+
+    if (isContentItemFixNotification(notification) || isContentItemNotification(notification)) {
+      return (
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewContentItem(notification);
+          }}
+          size="sm"
+          variant="outline"
+          className="mt-2 text-xs"
+        >
+          <Eye className="w-3 h-3 mr-1" />
+          View Content Item
+        </Button>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -76,50 +170,7 @@ export function NotificationItem({
             {notification.message}
           </p>
           
-          {isContentSuggestionNotification(notification) && (
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewSuggestions(notification);
-              }}
-              size="sm"
-              variant="outline"
-              className="mt-2 text-xs"
-            >
-              <Eye className="w-3 h-3 mr-1" />
-              View Suggestions
-            </Button>
-          )}
-
-          {isContentBriefNotification(notification) && (
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewBrief(notification);
-              }}
-              size="sm"
-              variant="outline"
-              className="mt-2 text-xs"
-            >
-              <Eye className="w-3 h-3 mr-1" />
-              View Brief
-            </Button>
-          )}
-
-          {isContentItemNotification(notification) && (
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewContentItem(notification);
-              }}
-              size="sm"
-              variant="outline"
-              className="mt-2 text-xs"
-            >
-              <Eye className="w-3 h-3 mr-1" />
-              View Content Item
-            </Button>
-          )}
+          {getActionButton()}
           
           <p className="text-xs text-gray-400 mt-2">
             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}

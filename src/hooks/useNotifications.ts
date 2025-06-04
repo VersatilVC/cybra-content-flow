@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -159,9 +160,26 @@ export function useNotifications() {
       : notification.message.match(/content item ([a-f0-9-]+)/i)?.[1];
     
     if (contentItemId) {
-      navigate(`/content-items/${contentItemId}`);
+      // For derivative generation notifications, navigate to the derivatives tab
+      if (notification.message.includes('Derivatives tab') || notification.title.includes('Derivatives Generated')) {
+        navigate(`/content-items/${contentItemId}?tab=derivatives`);
+      } else {
+        navigate(`/content-items/${contentItemId}`);
+      }
     } else {
       // Fallback to content items list if we can't extract the ID
+      navigate('/content-items');
+    }
+  };
+
+  const handleViewWordPressPublishing = async (notification: Notification) => {
+    markAsRead(notification.id);
+    
+    // Navigate to the content item for WordPress publishing notifications
+    const contentItemId = notification.related_entity_id;
+    if (contentItemId && notification.related_entity_type === 'content_item') {
+      navigate(`/content-items/${contentItemId}`);
+    } else {
       navigate('/content-items');
     }
   };
@@ -202,5 +220,6 @@ export function useNotifications() {
     handleViewSuggestions,
     handleViewBrief,
     handleViewContentItem,
+    handleViewWordPressPublishing,
   };
 }

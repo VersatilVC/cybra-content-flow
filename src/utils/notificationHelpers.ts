@@ -1,5 +1,5 @@
 
-import { CheckCircle, AlertCircle, Info, Lightbulb, FileText, Eye } from 'lucide-react';
+import { CheckCircle, AlertCircle, Info, Lightbulb, FileText, Eye, Globe, Wrench, Wand2 } from 'lucide-react';
 import { Notification, NotificationRow } from '@/types/notifications';
 
 export const getNotificationIcon = (type: string) => {
@@ -30,6 +30,7 @@ export const getNotificationColor = (type: string) => {
 
 export const isContentSuggestionNotification = (notification: Notification): boolean => {
   return notification.title.includes('Content Suggestions Ready') || 
+         notification.title.includes('Idea Processing Complete') ||
          notification.message.includes('content suggestions') ||
          notification.related_entity_type === 'idea';
 };
@@ -42,10 +43,32 @@ export const isContentBriefNotification = (notification: Notification): boolean 
 
 export const isContentItemNotification = (notification: Notification): boolean => {
   return notification.title.includes('Content Processing Complete') || 
+         notification.title.includes('AI Content Fix Complete') ||
          notification.message.includes('content item') ||
          notification.message.includes('successfully generated') ||
-         notification.related_entity_type === 'content_item' ||
-         (notification.title.includes('Content Processing Complete') && notification.message.includes('ready for review'));
+         notification.message.includes('ready for review') ||
+         notification.related_entity_type === 'content_item';
+};
+
+export const isWordPressPublishingNotification = (notification: Notification): boolean => {
+  return notification.title.includes('WordPress Publishing Complete') ||
+         notification.title.includes('WordPress Publishing Failed') ||
+         notification.message.includes('published to WordPress') ||
+         (notification.related_entity_type === 'content_item' && 
+          (notification.message.includes('WordPress') || notification.title.includes('WordPress')));
+};
+
+export const isDerivativeGenerationNotification = (notification: Notification): boolean => {
+  return notification.title.includes('Content Derivatives Generated') ||
+         notification.title.includes('Derivative Generation Failed') ||
+         notification.message.includes('content derivatives') ||
+         notification.message.includes('Derivatives tab');
+};
+
+export const isContentItemFixNotification = (notification: Notification): boolean => {
+  return notification.title.includes('AI Content Fix Complete') ||
+         notification.title.includes('AI Content Fix Failed') ||
+         notification.message.includes('improved by AI');
 };
 
 export const mapNotificationRow = (row: NotificationRow): Notification => {

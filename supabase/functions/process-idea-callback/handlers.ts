@@ -1,4 +1,3 @@
-
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createNotification } from './notifications.ts';
 import { createErrorResponse, createSuccessResponse } from './responses.ts';
@@ -350,4 +349,161 @@ export async function handleAutoGenerationComplete(userId: string, status: strin
     status: status === 'success' || status === 'completed' ? 'completed' : 'failed',
     generated_count: generatedCount
   });
+}
+
+export async function handleWordPressPublishingComplete(contentItemId: string, status: string, userId: string, title: string, errorMessage?: string) {
+  console.log(`Processing WordPress publishing completion: ${contentItemId}, status: ${status}`);
+  
+  if (!contentItemId || !userId) {
+    return createErrorResponse('Missing content item ID or user ID');
+  }
+
+  if (status === 'success' || status === 'completed') {
+    // Update content item status to published
+    await supabase
+      .from('content_items')
+      .update({ 
+        status: 'published',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', contentItemId);
+
+    // Create success notification
+    await createNotification(
+      userId,
+      'WordPress Publishing Complete',
+      `Your content "${title}" has been successfully published to WordPress and is now live.`,
+      'success',
+      contentItemId,
+      'content_item'
+    );
+
+    return createSuccessResponse({
+      message: 'WordPress publishing completion processed successfully',
+      content_item_id: contentItemId,
+      status: 'published'
+    });
+  } else {
+    // Update content item status to publish failed
+    await supabase
+      .from('content_items')
+      .update({ 
+        status: 'publish_failed',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', contentItemId);
+
+    // Create error notification
+    await createNotification(
+      userId,
+      'WordPress Publishing Failed',
+      `Failed to publish "${title}" to WordPress. ${errorMessage || 'Please check your WordPress configuration and try again.'}`,
+      'error',
+      contentItemId,
+      'content_item'
+    );
+
+    return createSuccessResponse({
+      success: false,
+      message: 'WordPress publishing failed',
+      content_item_id: contentItemId,
+      error: errorMessage || 'Unknown error'
+    });
+  }
+}
+
+export async function handleContentItemFixComplete(contentItemId: string, status: string, userId: string, title: string, errorMessage?: string) {
+  console.log(`Processing content item fix completion: ${contentItemId}, status: ${status}`);
+  
+  if (!contentItemId || !userId) {
+    return createErrorResponse('Missing content item ID or user ID');
+  }
+
+  if (status === 'success' || status === 'completed') {
+    // Update content item status back to ready for review
+    await supabase
+      .from('content_items')
+      .update({ 
+        status: 'ready_for_review',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', contentItemId);
+
+    // Create success notification
+    await createNotification(
+      userId,
+      'AI Content Fix Complete',
+      `Your content "${title}" has been successfully improved by AI and is ready for review.`,
+      'success',
+      contentItemId,
+      'content_item'
+    );
+
+    return createSuccessResponse({
+      message: 'Content item fix completion processed successfully',
+      content_item_id: contentItemId,
+      status: 'ready_for_review'
+    });
+  } else {
+    // Create error notification
+    await createNotification(
+      userId,
+      'AI Content Fix Failed',
+      `Failed to improve "${title}" with AI. ${errorMessage || 'Please try again or edit the content manually.'}`,
+      'error',
+      contentItemId,
+      'content_item'
+    );
+
+    return createSuccessResponse({
+      success: false,
+      message: 'Content item fix failed',
+      content_item_id: contentItemId,
+      error: errorMessage || 'Unknown error'
+    });
+  }
+}
+
+export async function handleDerivativeGenerationComplete(contentItemId: string, status: string, userId: string, title: string, derivativeCount?: number, errorMessage?: string) {
+  console.log(`Processing derivative generation completion: ${contentItemId}, status: ${status}`);
+  
+  if (!contentItemId || !userId) {
+    return createErrorResponse('Missing content item ID or user ID');
+  }
+
+  if (status === 'success' || status === 'completed') {
+    // Create success notification
+    await createNotification(
+      userId,
+      'Content Derivatives Generated',
+      `Successfully generated ${derivativeCount || 'new'} content derivatives for "${title}". View them in the Derivatives tab.`,
+      'success',
+      contentItemId,
+      'content_item'
+    );
+
+    return createSuccessResponse({
+      message: 'Derivative generation completion processed successfully',
+      content_item_id: contentItemId,
+      derivative_count: derivativeCount,
+      status: 'completed'
+    });
+  } else {
+    // Create error notification
+    await createNotification(
+      userId,
+      'Derivative Generation Failed',
+      `Failed to generate content derivatives for "${title}". ${errorMessage || 'Please try again.'}`,
+      'error',
+      contentItemId,
+      'content_item'
+    );
+
+    return createSuccessResponse({
+      success: false,
+      message: 'Derivative generation failed',
+      content_item_id: contentItemId,
+      error: errorMessage || 'Unknown error'
+    });
+  }
 }

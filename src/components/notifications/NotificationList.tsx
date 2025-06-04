@@ -13,6 +13,7 @@ interface NotificationListProps {
   onViewSuggestions: (notification: Notification) => void;
   onViewBrief: (notification: Notification) => void;
   onViewContentItem: (notification: Notification) => void;
+  onViewWordPressPublishing?: (notification: Notification) => void;
 }
 
 export function NotificationList({ 
@@ -22,7 +23,8 @@ export function NotificationList({
   onDelete,
   onViewSuggestions, 
   onViewBrief,
-  onViewContentItem
+  onViewContentItem,
+  onViewWordPressPublishing
 }: NotificationListProps) {
   return (
     <ScrollArea className="h-[calc(100vh-120px)] mt-6">
@@ -47,6 +49,7 @@ export function NotificationList({
               onViewSuggestions={onViewSuggestions}
               onViewBrief={onViewBrief}
               onViewContentItem={onViewContentItem}
+              onViewWordPressPublishing={onViewWordPressPublishing}
             />
           ))}
         </div>
