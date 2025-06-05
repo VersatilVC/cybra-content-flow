@@ -51,10 +51,43 @@ function convertMarkdownToHtml(markdown: string): string {
   // Basic markdown to HTML conversion
   let html = markdown;
   
-  // Headers
+  // Special handling for TL;DR sections
+  html = html.replace(/^(tl;?dr\??:?)\s*$/gim, (match) => {
+    return '<div style="background-color: #6B46C1; color: white; padding: 20px; border-radius: 8px; margin: 20px 0;"><h3 style="color: white; margin-top: 0; margin-bottom: 15px;">TL;DR?</h3>';
+  });
+  
+  // Close TL;DR sections before next heading or end of content
+  html = html.replace(/(<div style="background-color: #6B46C1[^>]*>[\s\S]*?)(?=\n##|\n#|$)/gim, (match) => {
+    if (!match.includes('</div>')) {
+      return match + '</div>';
+    }
+    return match;
+  });
+  
+  // Convert bullet points within TL;DR sections to styled list items
+  html = html.replace(/(<div style="background-color: #6B46C1[^>]*>[\s\S]*?)(^\* (.*)$|^- (.*)$)/gim, (match, tldrStart, fullBullet, asteriskContent, dashContent) => {
+    const content = asteriskContent || dashContent;
+    if (tldrStart && content) {
+      if (!tldrStart.includes('<ul')) {
+        return tldrStart.replace('</h3>', '</h3><ul style="margin: 0; padding-left: 20px; color: white;">') + `<li>${content}</li>`;
+      } else {
+        return match.replace(fullBullet, `<li>${content}</li>`);
+      }
+    }
+    return match;
+  });
+  
+  // Close ul tags in TL;DR sections
+  html = html.replace(/(<div style="background-color: #6B46C1[^>]*>[\s\S]*?<ul[^>]*>[\s\S]*?)(?=</div>)/gim, (match) => {
+    if (!match.includes('</ul>')) {
+      return match + '</ul>';
+    }
+    return match;
+  });
+  
+  // Headers (removed H1 processing - titles are sent separately)
   html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
   html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
   
   // Bold
   html = html.replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>');
@@ -67,13 +100,31 @@ function convertMarkdownToHtml(markdown: string): string {
   // Links
   html = html.replace(/\[([^\]]*)\]\(([^\)]*)\)/gim, '<a href="$2">$1</a>');
   
-  // Lists
-  html = html.replace(/^\* (.*$)/gim, '<li>$1</li>');
-  html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
+  // Lists (but skip those already processed in TL;DR sections)
+  html = html.replace(/^\* (.*$)/gim, (match, content, offset) => {
+    const beforeMatch = html.substring(0, offset);
+    if (beforeMatch.includes('<div style="background-color: #6B46C1') && !beforeMatch.includes('</div>')) {
+      return match; // Skip - already processed in TL;DR
+    }
+    return `<li>${content}</li>`;
+  });
+  html = html.replace(/^- (.*$)/gim, (match, content, offset) => {
+    const beforeMatch = html.substring(0, offset);
+    if (beforeMatch.includes('<div style="background-color: #6B46C1') && !beforeMatch.includes('</div>')) {
+      return match; // Skip - already processed in TL;DR
+    }
+    return `<li>${content}</li>`;
+  });
   html = html.replace(/^(\d+)\. (.*$)/gim, '<li>$1. $2</li>');
   
-  // Wrap consecutive list items in ul/ol tags
-  html = html.replace(/(<li>.*<\/li>\n?)+/gim, '<ul>$&</ul>');
+  // Wrap consecutive list items in ul/ol tags (excluding TL;DR sections)
+  html = html.replace(/(<li>.*<\/li>\n?)+/gim, (match, offset) => {
+    const beforeMatch = html.substring(0, offset);
+    if (beforeMatch.includes('<div style="background-color: #6B46C1') && !beforeMatch.includes('</div>')) {
+      return match; // Skip - already processed in TL;DR
+    }
+    return `<ul>${match}</ul>`;
+  });
   html = html.replace(/<ul>(<li>\d+\..*<\/li>\n?)+<\/ul>/gim, (match) => {
     return match.replace('<ul>', '<ol>').replace('</ul>', '</ol>');
   });
@@ -84,7 +135,7 @@ function convertMarkdownToHtml(markdown: string): string {
     .map(p => p.trim())
     .filter(p => p.length > 0)
     .map(p => {
-      // Don't wrap if already wrapped in HTML tags
+      // Don't wrap if already wrapped in HTML tags or is part of TL;DR
       if (p.match(/^<(h[1-6]|ul|ol|blockquote|div)/i)) {
         return p;
       }
