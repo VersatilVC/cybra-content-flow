@@ -52,7 +52,7 @@ export function useFeedback() {
           internal_notes,
           created_at,
           updated_at,
-          profiles (
+          profiles!feedback_submissions_submitter_id_fkey (
             first_name,
             last_name,
             email
@@ -61,7 +61,14 @@ export function useFeedback() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as FeedbackSubmission[];
+      
+      // Transform the data to handle the potential null profiles
+      const transformedData = (data || []).map(item => ({
+        ...item,
+        profiles: Array.isArray(item.profiles) ? item.profiles[0] || null : item.profiles
+      }));
+      
+      return transformedData as FeedbackSubmission[];
     },
   });
 
