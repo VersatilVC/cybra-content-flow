@@ -39,8 +39,20 @@ export function useFeedback() {
       const { data, error } = await supabase
         .from('feedback_submissions')
         .select(`
-          *,
-          profiles!submitter_id (
+          id,
+          title,
+          description,
+          category,
+          priority,
+          status,
+          submitter_id,
+          assigned_to,
+          attachment_url,
+          attachment_filename,
+          internal_notes,
+          created_at,
+          updated_at,
+          profiles (
             first_name,
             last_name,
             email
@@ -49,7 +61,7 @@ export function useFeedback() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as FeedbackSubmission[];
     },
   });
 

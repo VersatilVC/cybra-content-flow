@@ -49,7 +49,7 @@ interface FeedbackSubmission {
   assigned_to: string | null;
   created_at: string;
   updated_at: string;
-  profiles: {
+  profiles?: {
     first_name: string | null;
     last_name: string | null;
     email: string;
@@ -70,8 +70,17 @@ const FeedbackManagement: React.FC = () => {
       const { data, error } = await supabase
         .from('feedback_submissions')
         .select(`
-          *,
-          profiles!submitter_id (
+          id,
+          title,
+          description,
+          category,
+          priority,
+          status,
+          submitter_id,
+          assigned_to,
+          created_at,
+          updated_at,
+          profiles (
             first_name,
             last_name,
             email
@@ -80,7 +89,7 @@ const FeedbackManagement: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as FeedbackSubmission[];
     },
   });
 
