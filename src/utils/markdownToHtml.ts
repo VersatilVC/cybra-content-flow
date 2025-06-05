@@ -1,11 +1,12 @@
 
+
 export function convertMarkdownToHtml(markdown: string): string {
   let html = markdown;
   
   // 1. Remove H1 titles completely (they are sent separately as title field)
   html = html.replace(/^# .*$/gm, '').trim();
   
-  // 2. Process TL;DR sections with purple background
+  // 2. Process TL;DR sections with purple background and white text
   html = html.replace(/(^|\n)(tl;?dr\??:?)\s*\n?((?:(?:\* .*|\- .*|\d+\. .*)\n?)*)/gim, (match, prefix, tldrHeader, bulletContent) => {
     // Extract bullet points from the content
     const bullets = bulletContent
@@ -13,14 +14,14 @@ export function convertMarkdownToHtml(markdown: string): string {
       .filter(line => line.trim().match(/^(\*|\-|\d+\.)\s+/))
       .map(line => {
         const content = line.replace(/^(\*|\-|\d+\.)\s+/, '').trim();
-        return `<li>${content}</li>`;
+        return `<li style="color: white; margin-bottom: 8px;">${content}</li>`;
       })
       .join('\n        ');
     
     if (bullets) {
-      return `${prefix}<div style="background-color: #6B46C1; color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-      <h3 style="color: white; margin-top: 0; margin-bottom: 15px;">TL;DR?</h3>
-      <ul style="margin: 0; padding-left: 20px; color: white;">
+      return `${prefix}<div style="background-color: #8B5CF6; color: white; padding: 20px; border-radius: 8px; margin: 20px 0; font-family: system-ui, -apple-system, sans-serif;">
+      <h3 style="color: white; margin-top: 0; margin-bottom: 15px; font-weight: bold; font-size: 1.125rem;">TL;DR</h3>
+      <ul style="margin: 0; padding-left: 20px; color: white; list-style-type: disc;">
         ${bullets}
       </ul>
     </div>`;
@@ -57,7 +58,7 @@ export function convertMarkdownToHtml(markdown: string): string {
   // 8. Wrap consecutive list items in ul/ol tags
   html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => {
     // Skip if this is inside a TL;DR div
-    if (match.includes('background-color: #6B46C1')) {
+    if (match.includes('background-color: #8B5CF6')) {
       return match;
     }
     // Check if these are numbered lists
@@ -90,3 +91,4 @@ export function convertMarkdownToHtml(markdown: string): string {
   
   return html.trim();
 }
+
