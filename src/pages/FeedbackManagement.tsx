@@ -32,14 +32,19 @@ import {
   User
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { Database } from '@/integrations/supabase/types';
+
+type FeedbackCategory = Database['public']['Enums']['feedback_category'];
+type FeedbackPriority = Database['public']['Enums']['feedback_priority'];
+type FeedbackStatus = Database['public']['Enums']['feedback_status'];
 
 interface FeedbackSubmission {
   id: string;
   title: string;
   description: string;
-  category: 'bug' | 'feature_request' | 'general_feedback' | 'improvement';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'open' | 'in_review' | 'in_progress' | 'testing' | 'resolved' | 'closed';
+  category: FeedbackCategory;
+  priority: FeedbackPriority;
+  status: FeedbackStatus;
   submitter_id: string;
   assigned_to: string | null;
   created_at: string;
@@ -66,7 +71,7 @@ const FeedbackManagement: React.FC = () => {
         .from('feedback_submissions')
         .select(`
           *,
-          profiles:submitter_id (
+          profiles!submitter_id (
             first_name,
             last_name,
             email
@@ -83,7 +88,7 @@ const FeedbackManagement: React.FC = () => {
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
         .from('feedback_submissions')
-        .update({ status })
+        .update({ status: status as FeedbackStatus })
         .eq('id', id);
 
       if (error) throw error;

@@ -6,10 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { MessageSquare, Upload } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Database } from '@/integrations/supabase/types';
+
+type FeedbackCategory = Database['public']['Enums']['feedback_category'];
+type FeedbackPriority = Database['public']['Enums']['feedback_priority'];
 
 interface SubmitFeedbackModalProps {
   children?: React.ReactNode;
@@ -19,8 +23,8 @@ export function SubmitFeedbackModal({ children }: SubmitFeedbackModalProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<string>('general_feedback');
-  const [priority, setPriority] = useState<string>('medium');
+  const [category, setCategory] = useState<FeedbackCategory>('general_feedback');
+  const [priority, setPriority] = useState<FeedbackPriority>('medium');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -113,7 +117,7 @@ export function SubmitFeedbackModal({ children }: SubmitFeedbackModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={setCategory}>
+              <Select value={category} onValueChange={(value: FeedbackCategory) => setCategory(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -128,7 +132,7 @@ export function SubmitFeedbackModal({ children }: SubmitFeedbackModalProps) {
 
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
-              <Select value={priority} onValueChange={setPriority}>
+              <Select value={priority} onValueChange={(value: FeedbackPriority) => setPriority(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

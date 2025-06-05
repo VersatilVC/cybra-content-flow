@@ -2,14 +2,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+
+type FeedbackCategory = Database['public']['Enums']['feedback_category'];
+type FeedbackPriority = Database['public']['Enums']['feedback_priority'];
+type FeedbackStatus = Database['public']['Enums']['feedback_status'];
 
 export interface FeedbackSubmission {
   id: string;
   title: string;
   description: string;
-  category: 'bug' | 'feature_request' | 'general_feedback' | 'improvement';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'open' | 'in_review' | 'in_progress' | 'testing' | 'resolved' | 'closed';
+  category: FeedbackCategory;
+  priority: FeedbackPriority;
+  status: FeedbackStatus;
   submitter_id: string;
   assigned_to: string | null;
   attachment_url: string | null;
@@ -35,7 +40,7 @@ export function useFeedback() {
         .from('feedback_submissions')
         .select(`
           *,
-          profiles:submitter_id (
+          profiles!submitter_id (
             first_name,
             last_name,
             email
@@ -58,7 +63,13 @@ export function useFeedback() {
     }) => {
       const { error } = await supabase
         .from('feedback_submissions')
-        .insert(feedback);
+        .insert({
+          title: feedback.title,
+          description: feedback.description,
+          category: feedback.category as FeedbackCategory,
+          priority: feedback.priority as FeedbackPriority,
+          submitter_id: feedback.submitter_id,
+        });
 
       if (error) throw error;
     },
@@ -83,7 +94,10 @@ export function useFeedback() {
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
         .from('feedback_submissions')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update({ 
+          status: status as FeedbackStatus, 
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', id);
 
       if (error) throw error;
@@ -109,7 +123,10 @@ export function useFeedback() {
     mutationFn: async ({ id, priority }: { id: string; priority: string }) => {
       const { error } = await supabase
         .from('feedback_submissions')
-        .update({ priority, updated_at: new Date().toISOString() })
+        .update({ 
+          priority: priority as FeedbackPriority, 
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', id);
 
       if (error) throw error;
