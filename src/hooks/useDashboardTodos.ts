@@ -97,6 +97,7 @@ export function useDashboardTodos() {
         content_brief_id: item.content_brief_id,
         submission_id: item.submission_id,
         user_id: item.user_id,
+        wordpress_url: item.wordpress_url,
         created_at: item.created_at,
         updated_at: item.updated_at,
       }));
