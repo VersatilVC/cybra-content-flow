@@ -331,16 +331,13 @@ export async function handleWordPressPublishingComplete(contentItemId: string, s
         }
       }
 
-      // Create success notification with WordPress link if URL is available
-      const baseMessage = `Content item "${title || 'Untitled'}" has been successfully published to WordPress.`;
-      const notificationMessage = wordpressUrl 
-        ? `${baseMessage} <a href="${wordpressUrl}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">View on WordPress →</a>`
-        : baseMessage;
+      // Create success notification with clean message (no HTML)
+      const cleanMessage = `Content item "${title || 'Untitled'}" has been successfully published to WordPress.`;
 
       await createNotification({
         user_id: userId,
         title: 'WordPress Publishing Complete',
-        message: notificationMessage,
+        message: cleanMessage,
         type: 'success',
         related_entity_id: contentItemId,
         related_entity_type: 'content_item'

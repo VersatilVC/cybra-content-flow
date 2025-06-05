@@ -175,10 +175,35 @@ export function useNotifications() {
   const handleViewWordPressPublishing = async (notification: Notification) => {
     markAsRead(notification.id);
     
-    // Navigate to the content item for WordPress publishing notifications
     const contentItemId = notification.related_entity_id;
     if (contentItemId && notification.related_entity_type === 'content_item') {
-      navigate(`/content-items/${contentItemId}`);
+      try {
+        // Fetch the content item to get the WordPress URL
+        const { data: contentItem, error } = await supabase
+          .from('content_items')
+          .select('wordpress_url')
+          .eq('id', contentItemId)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching content item:', error);
+          // Fallback to content item page
+          navigate(`/content-items/${contentItemId}`);
+          return;
+        }
+        
+        // If WordPress URL exists, open it in a new tab
+        if (contentItem?.wordpress_url) {
+          window.open(contentItem.wordpress_url, '_blank', 'noopener,noreferrer');
+        } else {
+          // Fallback to content item page if no WordPress URL
+          navigate(`/content-items/${contentItemId}`);
+        }
+      } catch (error) {
+        console.error('Error handling WordPress publishing notification:', error);
+        // Fallback to content item page
+        navigate(`/content-items/${contentItemId}`);
+      }
     } else {
       navigate('/content-items');
     }

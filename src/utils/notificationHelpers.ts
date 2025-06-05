@@ -1,4 +1,3 @@
-
 import { CheckCircle, AlertCircle, Info, Lightbulb, FileText, Eye, Globe, Wrench, Wand2 } from 'lucide-react';
 import { Notification, NotificationRow } from '@/types/notifications';
 
@@ -55,7 +54,7 @@ export const isWordPressPublishingNotification = (notification: Notification): b
          notification.title.includes('WordPress Publishing Failed') ||
          notification.message.includes('published to WordPress') ||
          (notification.related_entity_type === 'content_item' && 
-          (notification.message.includes('WordPress') || notification.title.includes('WordPress')));
+          notification.title.includes('WordPress'));
 };
 
 export const isDerivativeGenerationNotification = (notification: Notification): boolean => {

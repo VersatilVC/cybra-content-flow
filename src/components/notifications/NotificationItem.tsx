@@ -77,6 +77,9 @@ export function NotificationItem({
     }
 
     if (isWordPressPublishingNotification(notification)) {
+      // Only show "View on WordPress" for successful publishing
+      const isSuccess = notification.type === 'success' && notification.title.includes('WordPress Publishing Complete');
+      
       return (
         <Button
           onClick={(e) => {
@@ -88,7 +91,7 @@ export function NotificationItem({
           className="mt-2 text-xs"
         >
           <Eye className="w-3 h-3 mr-1" />
-          View Published Content
+          {isSuccess ? 'View on WordPress' : 'View Content Item'}
         </Button>
       );
     }
