@@ -1,17 +1,22 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { triggerWebhook } from '@/services/webhookService';
 import { ContentItem } from '@/services/contentItemsApi';
 import { ContentDerivative } from '@/services/contentDerivativesApi';
+import { generateSlug } from '@/utils/slugGenerator';
 
 export interface WordPressPublishPayload {
   type: 'wordpress_publishing';
   content_item_id: string;
   user_id: string;
   title: string;
+  content: string;
+  slug: string;
+  status: 'draft';
+  comment_status: 'closed';
+  categories: string[];
+  tags: string[];
   content_html: string;
   excerpt?: string;
-  tags?: string[];
   content_type: string;
   word_count?: number;
   featured_image?: {
@@ -115,6 +120,9 @@ export async function publishToWordPress(contentItem: ContentItem, userId: strin
   // Convert markdown content to HTML
   const contentHtml = contentItem.content ? convertMarkdownToHtml(contentItem.content) : '';
 
+  // Generate slug from title
+  const slug = generateSlug(contentItem.title);
+
   // Find potential featured image (look for blog images or general images)
   const imageDerivatives = derivatives?.filter(d => 
     d.derivative_type === 'blog_image' || 
@@ -144,9 +152,14 @@ export async function publishToWordPress(contentItem: ContentItem, userId: strin
     content_item_id: contentItem.id,
     user_id: userId,
     title: contentItem.title,
+    content: contentItem.content || '',
+    slug: slug,
+    status: 'draft',
+    comment_status: 'closed',
+    categories: ['Blog'],
+    tags: contentItem.tags || [],
     content_html: contentHtml,
     excerpt: contentItem.summary || undefined,
-    tags: contentItem.tags || undefined,
     content_type: contentItem.content_type,
     word_count: contentItem.word_count || undefined,
     featured_image: featuredImage,
