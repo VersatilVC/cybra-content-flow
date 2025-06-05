@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { triggerWebhook } from '@/services/webhookService';
 import { ContentItem } from '@/services/contentItemsApi';
@@ -78,7 +79,7 @@ function convertMarkdownToHtml(markdown: string): string {
   });
   
   // Close ul tags in TL;DR sections
-  html = html.replace(/(<div style="background-color: #6B46C1[^>]*>[\s\S]*?<ul[^>]*>[\s\S]*?)(?=</div>)/gim, (match) => {
+  html = html.replace(/(<div style="background-color: #6B46C1[^>]*>[\s\S]*?<ul[^>]*>[\s\S]*?)(?=<\/div>)/gim, (match) => {
     if (!match.includes('</ul>')) {
       return match + '</ul>';
     }
