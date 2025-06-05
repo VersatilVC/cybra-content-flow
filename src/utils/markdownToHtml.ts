@@ -1,22 +1,25 @@
 
-
 export function convertMarkdownToHtml(markdown: string): string {
   let html = markdown;
   
   // 1. Remove H1 titles completely (they are sent separately as title field)
   html = html.replace(/^# .*$/gm, '').trim();
   
-  // 2. Process TL;DR sections with purple background and white text
-  html = html.replace(/(^|\n)(tl;?dr\??:?)\s*\n?((?:(?:\* .*|\- .*|\d+\. .*)\n?)*)/gim, (match, prefix, tldrHeader, bulletContent) => {
-    // Extract bullet points from the content
-    const bullets = bulletContent
-      .split('\n')
-      .filter(line => line.trim().match(/^(\*|\-|\d+\.)\s+/))
+  // 2. Process TL;DR sections FIRST (before header processing) with purple background and white text
+  html = html.replace(/(^|\n)(#{0,2}\s*tl;?dr\??:?\s*#{0,2})\s*\n?((?:(?:\n|\r\n)*(?:\* .*|\- .*|\d+\. .*|\+ .*)(?:\n|\r\n)*)*)/gim, (match, prefix, tldrHeader, content) => {
+    console.log('TL;DR Match found:', { match, prefix, tldrHeader, content });
+    
+    // Extract bullet points from the content, handling various spacing
+    const lines = content.split(/\n|\r\n/).filter(line => line.trim());
+    const bullets = lines
+      .filter(line => line.trim().match(/^(\*|\-|\+|\d+\.)\s+/))
       .map(line => {
-        const content = line.replace(/^(\*|\-|\d+\.)\s+/, '').trim();
-        return `<li style="color: white; margin-bottom: 8px;">${content}</li>`;
+        const cleanContent = line.replace(/^(\*|\-|\+|\d+\.)\s+/, '').trim();
+        return `<li style="color: white; margin-bottom: 8px;">${cleanContent}</li>`;
       })
       .join('\n        ');
+    
+    console.log('Extracted bullets:', bullets);
     
     if (bullets) {
       return `${prefix}<div style="background-color: #8B5CF6; color: white; padding: 20px; border-radius: 8px; margin: 20px 0; font-family: system-ui, -apple-system, sans-serif;">
@@ -30,7 +33,7 @@ export function convertMarkdownToHtml(markdown: string): string {
     return match;
   });
   
-  // 3. Convert headers (H2, H3 only - H1 already removed)
+  // 3. Convert headers (H2, H3 only - H1 already removed, TL;DR already processed)
   html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
   html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
   
@@ -48,11 +51,13 @@ export function convertMarkdownToHtml(markdown: string): string {
   // 7. Process remaining lists (not in TL;DR sections)
   html = html.replace(/^(\* .*$)/gm, '<li>$1</li>');
   html = html.replace(/^(- .*$)/gm, '<li>$1</li>');
+  html = html.replace(/^(\+ .*$)/gm, '<li>$1</li>');
   html = html.replace(/^(\d+\. .*$)/gm, '<li>$1</li>');
   
   // Clean up list item content (remove bullet markers)
   html = html.replace(/<li>\* (.*)<\/li>/g, '<li>$1</li>');
   html = html.replace(/<li>- (.*)<\/li>/g, '<li>$1</li>');
+  html = html.replace(/<li>\+ (.*)<\/li>/g, '<li>$1</li>');
   html = html.replace(/<li>\d+\. (.*)<\/li>/g, '<li>$1</li>');
   
   // 8. Wrap consecutive list items in ul/ol tags
@@ -91,4 +96,3 @@ export function convertMarkdownToHtml(markdown: string): string {
   
   return html.trim();
 }
-
