@@ -21,6 +21,24 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { 
   Bug, 
   Lightbulb, 
@@ -28,7 +46,9 @@ import {
   TrendingUp, 
   Search,
   Calendar,
-  User
+  User,
+  Eye,
+  Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -44,6 +64,7 @@ const FeedbackManagement: React.FC = () => {
     isLoading, 
     error, 
     updateStatus, 
+    deleteFeedback,
     isUpdating 
   } = useFeedback();
 
@@ -104,6 +125,11 @@ const FeedbackManagement: React.FC = () => {
   const handleStatusUpdate = (id: string, status: string) => {
     console.log('Updating status for feedback:', id, 'to:', status);
     updateStatus({ id, status });
+  };
+
+  const handleDelete = (id: string) => {
+    console.log('Deleting feedback:', id);
+    deleteFeedback(id);
   };
 
   return (
@@ -326,9 +352,125 @@ const FeedbackManagement: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">
-                          View Details
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              <DialogHeader>
+                                <DialogTitle>{feedback.title}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <h4 className="font-medium mb-2">Description</h4>
+                                  <p className="text-sm text-muted-foreground">{feedback.description}</p>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <h4 className="font-medium mb-1">Category</h4>
+                                    <div className="flex items-center space-x-2">
+                                      {getCategoryIcon(feedback.category)}
+                                      <span className="text-sm capitalize">
+                                        {feedback.category.replace('_', ' ')}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium mb-1">Priority</h4>
+                                    <Badge 
+                                      variant="secondary"
+                                      className={`${getPriorityColor(feedback.priority)} text-white`}
+                                    >
+                                      {feedback.priority}
+                                    </Badge>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <h4 className="font-medium mb-1">Status</h4>
+                                    <Badge 
+                                      variant="secondary"
+                                      className={`${getStatusColor(feedback.status)} text-white`}
+                                    >
+                                      {feedback.status.replace('_', ' ')}
+                                    </Badge>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-medium mb-1">Submitter</h4>
+                                    <p className="text-sm">
+                                      {feedback.profiles?.first_name && feedback.profiles?.last_name
+                                        ? `${feedback.profiles.first_name} ${feedback.profiles.last_name}`
+                                        : feedback.profiles?.email || 'Unknown'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <h4 className="font-medium mb-1">Created</h4>
+                                  <p className="text-sm">
+                                    {format(new Date(feedback.created_at), 'MMM dd, yyyy HH:mm')}
+                                  </p>
+                                </div>
+
+                                {feedback.internal_notes && (
+                                  <div>
+                                    <h4 className="font-medium mb-2">Internal Notes</h4>
+                                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
+                                      {feedback.internal_notes}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {feedback.attachment_url && (
+                                  <div>
+                                    <h4 className="font-medium mb-2">Attachment</h4>
+                                    <a 
+                                      href={feedback.attachment_url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline text-sm"
+                                    >
+                                      {feedback.attachment_filename || 'Download attachment'}
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete the feedback submission
+                                  "{feedback.title}" and remove it from our servers.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(feedback.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

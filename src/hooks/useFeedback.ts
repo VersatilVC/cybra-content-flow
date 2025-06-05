@@ -202,6 +202,32 @@ export function useFeedback() {
     },
   });
 
+  const deleteFeedbackMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('feedback_submissions')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback-submissions'] });
+      toast({
+        title: 'Success',
+        description: 'Feedback submission deleted successfully',
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting feedback:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete feedback submission',
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     feedbackList,
     isLoading,
@@ -210,7 +236,8 @@ export function useFeedback() {
     updateStatus: updateStatusMutation.mutate,
     updatePriority: updatePriorityMutation.mutate,
     addInternalNote: addInternalNoteMutation.mutate,
+    deleteFeedback: deleteFeedbackMutation.mutate,
     isSubmitting: submitFeedbackMutation.isPending,
-    isUpdating: updateStatusMutation.isPending || updatePriorityMutation.isPending || addInternalNoteMutation.isPending,
+    isUpdating: updateStatusMutation.isPending || updatePriorityMutation.isPending || addInternalNoteMutation.isPending || deleteFeedbackMutation.isPending,
   };
 }
