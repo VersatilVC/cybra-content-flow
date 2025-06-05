@@ -23,7 +23,7 @@ export function convertMarkdownToHtml(markdown: string): string {
     
     if (bullets) {
       return `${prefix}<div style="background-color: #8B5CF6; color: white; padding: 20px; border-radius: 8px; margin: 20px 0; font-family: system-ui, -apple-system, sans-serif;">
-      <h3 style="color: white; margin-top: 0; margin-bottom: 15px; font-weight: bold; font-size: 1.125rem;">TL;DR</h3>
+      <h3 style="color: white !important; margin-top: 0; margin-bottom: 15px; font-weight: bold !important; font-size: 1.5rem !important; line-height: 1.4 !important;">TL;DR</h3>
       <ul style="margin: 0; padding-left: 20px; color: white; list-style-type: disc;">
         ${bullets}
       </ul>
@@ -63,7 +63,7 @@ export function convertMarkdownToHtml(markdown: string): string {
   html = html.replace(/<li>\+ (.*)<\/li>/g, '<li>$1</li>');
   html = html.replace(/<li>\d+\. (.*)<\/li>/g, '<li>$1</li>');
   
-  // 8. Wrap consecutive list items in ul/ol tags
+  // 8. Wrap consecutive list items in ul/ol tags with proper spacing
   html = html.replace(/(<li>.*<\/li>\n?)+/g, (match) => {
     // Skip if this is inside a TL;DR div
     if (match.includes('background-color: #8B5CF6')) {
@@ -71,9 +71,9 @@ export function convertMarkdownToHtml(markdown: string): string {
     }
     // Check if these are numbered lists
     if (match.includes('<li>\\d+\\.')) {
-      return `<ol>${match}</ol>`;
+      return `<ol style="margin-bottom: 24px !important;">${match}</ol>`;
     }
-    return `<ul>${match}</ul>`;
+    return `<ul style="margin-bottom: 24px !important;">${match}</ul>`;
   });
   
   // 9. Blockquotes
