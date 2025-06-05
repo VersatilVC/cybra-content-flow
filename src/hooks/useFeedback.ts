@@ -37,41 +37,43 @@ export function useFeedback() {
     queryFn: async (): Promise<FeedbackSubmission[]> => {
       console.log('Fetching feedback submissions...');
       
-      const { data, error } = await supabase
+      // First, fetch all feedback submissions
+      const { data: feedbackData, error: feedbackError } = await supabase
         .from('feedback_submissions')
-        .select(`
-          id,
-          title,
-          description,
-          category,
-          priority,
-          status,
-          submitter_id,
-          assigned_to,
-          attachment_url,
-          attachment_filename,
-          internal_notes,
-          created_at,
-          updated_at,
-          profiles (
-            first_name,
-            last_name,
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching feedback:', error);
-        throw error;
+      if (feedbackError) {
+        console.error('Error fetching feedback:', feedbackError);
+        throw feedbackError;
       }
+
+      console.log('Raw feedback data:', feedbackData);
+
+      if (!feedbackData || feedbackData.length === 0) {
+        return [];
+      }
+
+      // Get unique submitter IDs
+      const submitterIds = [...new Set(feedbackData.map(item => item.submitter_id))];
       
-      console.log('Raw feedback data:', data);
-      
-      // Transform the data to handle the profiles relationship
-      const transformedData = (data || []).map(item => ({
-        ...item,
-        profiles: item.profiles && !Array.isArray(item.profiles) ? item.profiles : null
+      // Fetch profiles for all submitters
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .in('id', submitterIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        // Continue without profiles data rather than failing completely
+      }
+
+      console.log('Profiles data:', profilesData);
+
+      // Combine feedback with profile data
+      const transformedData = feedbackData.map(feedback => ({
+        ...feedback,
+        profiles: profilesData?.find(profile => profile.id === feedback.submitter_id) || null
       }));
       
       console.log('Transformed feedback data:', transformedData);
