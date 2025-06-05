@@ -11,6 +11,7 @@ import {
   Zap,
   Briefcase,
   Bell,
+  Bug,
 } from "lucide-react";
 import {
   SidebarContent,
@@ -23,6 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useLocation, Link } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
+import { SubmitFeedbackModal } from "@/components/feedback/SubmitFeedbackModal";
 
 const navigationItems = [
   {
@@ -74,6 +76,11 @@ const adminItems = [
     icon: Users,
   },
   {
+    title: "Feedback Management",
+    url: "/feedback-management",
+    icon: Bug,
+  },
+  {
     title: "Webhooks",
     url: "/webhooks",
     icon: Zap,
@@ -118,6 +125,27 @@ export function SidebarNavigation() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+
+      {/* Feedback Section - Available to All Users */}
+      <SidebarGroup className="mt-6">
+        <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2">
+          Feedback
+        </SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SubmitFeedbackModal>
+                <SidebarMenuButton className="text-white/90 hover:text-white hover:bg-white/10 rounded-lg w-full justify-start">
+                  <div className="flex items-center gap-3 px-3 py-2 w-full">
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="font-medium">Submit Feedback</span>
+                  </div>
+                </SidebarMenuButton>
+              </SubmitFeedbackModal>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>

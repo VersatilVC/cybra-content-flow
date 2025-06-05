@@ -531,6 +531,54 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_submissions: {
+        Row: {
+          assigned_to: string | null
+          attachment_filename: string | null
+          attachment_url: string | null
+          category: Database["public"]["Enums"]["feedback_category"]
+          created_at: string
+          description: string
+          id: string
+          internal_notes: string | null
+          priority: Database["public"]["Enums"]["feedback_priority"]
+          status: Database["public"]["Enums"]["feedback_status"]
+          submitter_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          attachment_filename?: string | null
+          attachment_url?: string | null
+          category?: Database["public"]["Enums"]["feedback_category"]
+          created_at?: string
+          description: string
+          id?: string
+          internal_notes?: string | null
+          priority?: Database["public"]["Enums"]["feedback_priority"]
+          status?: Database["public"]["Enums"]["feedback_status"]
+          submitter_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          attachment_filename?: string | null
+          attachment_url?: string | null
+          category?: Database["public"]["Enums"]["feedback_category"]
+          created_at?: string
+          description?: string
+          id?: string
+          internal_notes?: string | null
+          priority?: Database["public"]["Enums"]["feedback_priority"]
+          status?: Database["public"]["Enums"]["feedback_status"]
+          submitter_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -793,6 +841,19 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "admin" | "creator"
+      feedback_category:
+        | "bug"
+        | "feature_request"
+        | "general_feedback"
+        | "improvement"
+      feedback_priority: "low" | "medium" | "high" | "critical"
+      feedback_status:
+        | "open"
+        | "in_review"
+        | "in_progress"
+        | "testing"
+        | "resolved"
+        | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -909,6 +970,21 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "admin", "creator"],
+      feedback_category: [
+        "bug",
+        "feature_request",
+        "general_feedback",
+        "improvement",
+      ],
+      feedback_priority: ["low", "medium", "high", "critical"],
+      feedback_status: [
+        "open",
+        "in_review",
+        "in_progress",
+        "testing",
+        "resolved",
+        "closed",
+      ],
     },
   },
 } as const
