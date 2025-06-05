@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -36,6 +35,8 @@ export function useFeedback() {
   const { data: feedbackList = [], isLoading, error } = useQuery({
     queryKey: ['feedback-submissions'],
     queryFn: async (): Promise<FeedbackSubmission[]> => {
+      console.log('Fetching feedback submissions...');
+      
       const { data, error } = await supabase
         .from('feedback_submissions')
         .select(`
@@ -52,7 +53,7 @@ export function useFeedback() {
           internal_notes,
           created_at,
           updated_at,
-          profiles!feedback_submissions_submitter_id_fkey (
+          profiles (
             first_name,
             last_name,
             email
@@ -60,14 +61,20 @@ export function useFeedback() {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching feedback:', error);
+        throw error;
+      }
       
-      // Transform the data to handle the potential null profiles
+      console.log('Raw feedback data:', data);
+      
+      // Transform the data to handle the profiles relationship
       const transformedData = (data || []).map(item => ({
         ...item,
-        profiles: Array.isArray(item.profiles) ? item.profiles[0] || null : item.profiles
+        profiles: item.profiles && !Array.isArray(item.profiles) ? item.profiles : null
       }));
       
+      console.log('Transformed feedback data:', transformedData);
       return transformedData as FeedbackSubmission[];
     },
   });

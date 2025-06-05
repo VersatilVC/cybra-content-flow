@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useFeedback } from '@/hooks/useFeedback';
 import { 
   Table, 
   TableBody, 
@@ -32,29 +31,6 @@ import {
   User
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { Database } from '@/integrations/supabase/types';
-
-type FeedbackCategory = Database['public']['Enums']['feedback_category'];
-type FeedbackPriority = Database['public']['Enums']['feedback_priority'];
-type FeedbackStatus = Database['public']['Enums']['feedback_status'];
-
-interface FeedbackSubmission {
-  id: string;
-  title: string;
-  description: string;
-  category: FeedbackCategory;
-  priority: FeedbackPriority;
-  status: FeedbackStatus;
-  submitter_id: string;
-  assigned_to: string | null;
-  created_at: string;
-  updated_at: string;
-  profiles?: {
-    first_name: string | null;
-    last_name: string | null;
-    email: string;
-  } | null;
-}
 
 const FeedbackManagement: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -62,81 +38,19 @@ const FeedbackManagement: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  const { data: feedbackList = [], isLoading, error } = useQuery({
-    queryKey: ['feedback-submissions'],
-    queryFn: async (): Promise<FeedbackSubmission[]> => {
-      console.log('Fetching feedback submissions...');
-      
-      const { data, error } = await supabase
-        .from('feedback_submissions')
-        .select(`
-          id,
-          title,
-          description,
-          category,
-          priority,
-          status,
-          submitter_id,
-          assigned_to,
-          created_at,
-          updated_at,
-          profiles!feedback_submissions_submitter_id_fkey (
-            first_name,
-            last_name,
-            email
-          )
-        `)
-        .order('created_at', { ascending: false });
+  const { 
+    feedbackList, 
+    isLoading, 
+    error, 
+    updateStatus, 
+    isUpdating 
+  } = useFeedback();
 
-      if (error) {
-        console.error('Error fetching feedback:', error);
-        throw error;
-      }
-      
-      console.log('Raw feedback data:', data);
-      
-      // Transform the data to handle the potential null profiles
-      const transformedData = (data || []).map(item => ({
-        ...item,
-        profiles: Array.isArray(item.profiles) ? item.profiles[0] || null : item.profiles
-      }));
-      
-      console.log('Transformed feedback data:', transformedData);
-      return transformedData as FeedbackSubmission[];
-    },
-  });
-
-  // Log any query errors
-  if (error) {
-    console.error('Query error:', error);
-  }
-
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase
-        .from('feedback_submissions')
-        .update({ status: status as FeedbackStatus })
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feedback-submissions'] });
-      toast({
-        title: 'Success',
-        description: 'Status updated successfully',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to update status',
-        variant: 'destructive',
-      });
-    },
-  });
+  // Log feedback data for debugging
+  console.log('Feedback Management - feedbackList:', feedbackList);
+  console.log('Feedback Management - isLoading:', isLoading);
+  console.log('Feedback Management - error:', error);
 
   const filteredFeedback = feedbackList.filter(item => {
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
@@ -185,6 +99,11 @@ const FeedbackManagement: React.FC = () => {
     open: feedbackList.filter(f => f.status === 'open').length,
     inProgress: feedbackList.filter(f => ['in_review', 'in_progress', 'testing'].includes(f.status)).length,
     resolved: feedbackList.filter(f => f.status === 'resolved').length,
+  };
+
+  const handleStatusUpdate = (id: string, status: string) => {
+    console.log('Updating status for feedback:', id, 'to:', status);
+    updateStatus({ id, status });
   };
 
   return (
@@ -320,6 +239,7 @@ const FeedbackManagement: React.FC = () => {
             ) : error ? (
               <div className="text-center py-8 text-red-500">
                 <p>Error loading feedback: {error.message}</p>
+                <p className="text-sm mt-2">Check console for more details</p>
               </div>
             ) : filteredFeedback.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -371,9 +291,8 @@ const FeedbackManagement: React.FC = () => {
                       <TableCell>
                         <Select
                           value={feedback.status}
-                          onValueChange={(value) => 
-                            updateStatusMutation.mutate({ id: feedback.id, status: value })
-                          }
+                          onValueChange={(value) => handleStatusUpdate(feedback.id, value)}
+                          disabled={isUpdating}
                         >
                           <SelectTrigger className="w-32">
                             <SelectValue />
