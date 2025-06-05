@@ -27,7 +27,9 @@ export function convertMarkdownToHtml(markdown: string): string {
       <ul style="margin: 0; padding-left: 20px; color: white; list-style-type: disc;">
         ${bullets}
       </ul>
-    </div>`;
+    </div>
+
+`;
     }
     
     return match;
