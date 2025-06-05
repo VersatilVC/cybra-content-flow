@@ -241,3 +241,22 @@ export function useFeedback() {
     isUpdating: updateStatusMutation.isPending || updatePriorityMutation.isPending || addInternalNoteMutation.isPending || deleteFeedbackMutation.isPending,
   };
 }
+
+export function useUnreadFeedbackCount() {
+  return useQuery({
+    queryKey: ['unread-feedback-count'],
+    queryFn: async (): Promise<number> => {
+      const { data, error } = await supabase
+        .from('feedback_submissions')
+        .select('id', { count: 'exact' })
+        .eq('status', 'open');
+
+      if (error) {
+        console.error('Error fetching unread feedback count:', error);
+        return 0;
+      }
+
+      return data?.length || 0;
+    },
+  });
+}

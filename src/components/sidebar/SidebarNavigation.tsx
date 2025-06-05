@@ -1,4 +1,3 @@
-
 import {
   Calendar,
   Database,
@@ -24,6 +23,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useLocation, Link } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
+import { useUnreadFeedbackCount } from "@/hooks/useFeedback";
 import { SubmitFeedbackModal } from "@/components/feedback/SubmitFeedbackModal";
 
 const navigationItems = [
@@ -95,6 +95,7 @@ const adminItems = [
 export function SidebarNavigation() {
   const location = useLocation();
   const { profile, loading } = useProfile();
+  const { data: unreadCount = 0 } = useUnreadFeedbackCount();
   const isAdmin = profile?.role === 'super_admin' || profile?.role === 'admin';
 
   console.log('SidebarNavigation render:', { 
@@ -164,9 +165,14 @@ export function SidebarNavigation() {
                     isActive={location.pathname === item.url}
                     className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
                   >
-                    <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
+                    <Link to={item.url} className="flex items-center gap-3 px-3 py-2 relative">
                       <item.icon className="w-4 h-4" />
                       <span className="font-medium">{item.title}</span>
+                      {item.title === "Feedback Management" && unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
