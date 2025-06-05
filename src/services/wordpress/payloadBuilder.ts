@@ -12,7 +12,7 @@ function getCallbackBaseUrl(): string {
 export function buildWordPressPayload(
   contentItem: ContentItem,
   userId: string,
-  derivatives?: ContentDerivative[]
+  derivatives?: any[]
 ): WordPressPublishPayload {
   // Convert markdown content to HTML
   const contentHtml = contentItem.content ? convertMarkdownToHtml(contentItem.content) : '';
@@ -24,6 +24,8 @@ export function buildWordPressPayload(
   const imageDerivatives = derivatives?.filter(d => 
     d.derivative_type === 'blog_image' || 
     d.derivative_type === 'featured_image' ||
+    d.derivative_type === 'blog_banner_image' ||
+    d.derivative_type === 'blog_internal_images' ||
     (d.metadata && typeof d.metadata === 'object' && d.metadata !== null && 
      (d.metadata as any).type === 'image')
   ) || [];
