@@ -291,6 +291,7 @@ export type Database = {
           updated_at: string
           user_id: string
           word_count: number | null
+          wordpress_url: string | null
         }
         Insert: {
           content?: string | null
@@ -308,6 +309,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           word_count?: number | null
+          wordpress_url?: string | null
         }
         Update: {
           content?: string | null
@@ -325,6 +327,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           word_count?: number | null
+          wordpress_url?: string | null
         }
         Relationships: [
           {

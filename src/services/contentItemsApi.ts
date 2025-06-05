@@ -15,6 +15,7 @@ export interface ContentItem {
   content_type: string;
   status: string;
   word_count: number | null;
+  wordpress_url: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -293,18 +293,54 @@ export async function handleAutoGenerationComplete(userId: string, status: strin
   }
 }
 
-export async function handleWordPressPublishingComplete(contentItemId: string, status: string, userId: string, title?: string, errorMessage?: string) {
+export async function handleWordPressPublishingComplete(contentItemId: string, status: string, userId: string, title?: string, errorMessage?: string, wordpressUrl?: string) {
   if (!contentItemId || !status || !userId) {
     throw new Error('content_item_id, status, and user_id are required for wordpress_publishing_complete');
   }
 
   try {
     if (status === 'completed') {
-      // Create success notification
+      // Update the content item with the WordPress URL if provided
+      if (wordpressUrl) {
+        const { error: updateError } = await supabase
+          .from('content_items')
+          .update({ 
+            status: 'published',
+            wordpress_url: wordpressUrl,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', contentItemId);
+
+        if (updateError) {
+          console.error('Error updating content item with WordPress URL:', updateError);
+        } else {
+          console.log(`Content item ${contentItemId} updated with WordPress URL: ${wordpressUrl}`);
+        }
+      } else {
+        // Update status only if no URL provided
+        const { error: updateError } = await supabase
+          .from('content_items')
+          .update({ 
+            status: 'published',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', contentItemId);
+
+        if (updateError) {
+          console.error('Error updating content item status:', updateError);
+        }
+      }
+
+      // Create success notification with WordPress link if URL is available
+      const baseMessage = `Content item "${title || 'Untitled'}" has been successfully published to WordPress.`;
+      const notificationMessage = wordpressUrl 
+        ? `${baseMessage} <a href="${wordpressUrl}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">View on WordPress →</a>`
+        : baseMessage;
+
       await createNotification({
         user_id: userId,
         title: 'WordPress Publishing Complete',
-        message: `Content item "${title || 'Untitled'}" has been successfully published to WordPress.`,
+        message: notificationMessage,
         type: 'success',
         related_entity_id: contentItemId,
         related_entity_type: 'content_item'

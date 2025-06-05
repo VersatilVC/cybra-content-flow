@@ -42,7 +42,8 @@ serve(async (req) => {
       content_item_id,
       workflow_type,
       submission_id,
-      error_message
+      error_message,
+      wordpress_url
     } = callbackData;
 
     // Accept either content_idea_id or source_id for flexibility
@@ -69,7 +70,7 @@ serve(async (req) => {
         return await handleAutoGenerationComplete(user_id, status, callbackData.generated_count, error_message);
       
       case 'wordpress_publishing_complete':
-        return await handleWordPressPublishingComplete(content_item_id, status, user_id, title, error_message);
+        return await handleWordPressPublishingComplete(content_item_id, status, user_id, title, error_message, wordpress_url);
       
       case 'content_item_fix_complete':
         return await handleContentItemFixComplete(content_item_id, status, user_id, title, error_message);
