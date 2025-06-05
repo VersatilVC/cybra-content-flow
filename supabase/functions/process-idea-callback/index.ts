@@ -1,90 +1,132 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { handleCorsPreflightRequest } from './cors.ts';
-import { createErrorResponse, createSuccessResponse } from './responses.ts';
-import {
-  handleContentSuggestionsReady,
-  handleBriefCompletion,
-  handleContentItemCompletion,
-  handleIdeaProcessingComplete,
-  handleKnowledgeBaseProcessingComplete,
-  handleAutoGenerationComplete,
-  handleWordPressPublishingComplete,
-  handleContentItemFixComplete,
-  handleDerivativeGenerationComplete
-} from './handlers.ts';
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders } from "./cors.ts";
+import { 
+  handleIdeaProcessingCallback, 
+  handleBriefCreationCallback, 
+  handleContentCreationCallback,
+  handleAutoGenerationCallback,
+  handleWordPressPublishingCallback,
+  handleDerivativeGenerationCallback,
+  handleContentItemFixCallback
+} from "./handlers.ts";
 
 serve(async (req) => {
   console.log('Enhanced callback function called with method:', req.method);
-  
+
   // Handle CORS preflight requests
-  const corsResponse = handleCorsPreflightRequest(req);
-  if (corsResponse) return corsResponse;
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
 
   try {
-    const body = await req.text();
-    console.log('Callback raw body:', body);
+    // Parse and validate the request body
+    const rawBody = await req.text();
+    console.log('Callback raw body:', rawBody);
     
-    const callbackData = JSON.parse(body);
-    console.log('Callback received:', callbackData);
-
-    const { 
-      type, 
-      content_idea_id, 
-      source_id, 
-      status, 
-      suggestions_count, 
-      brief_id, 
-      user_id, 
-      title, 
-      brief_type, 
-      target_audience,
-      content_item_id,
-      workflow_type,
-      submission_id,
-      error_message,
-      wordpress_url
-    } = callbackData;
-
-    // Accept either content_idea_id or source_id for flexibility
-    const ideaId = content_idea_id || source_id;
-
-    // Handle different types of workflow completions
-    switch (type) {
-      case 'content_suggestions_ready':
-        return await handleContentSuggestionsReady(ideaId, suggestions_count);
-      
-      case 'brief_completion':
-        return await handleBriefCompletion(ideaId, brief_id, status, user_id, title, error_message);
-      
-      case 'content_item_completion':
-        return await handleContentItemCompletion(content_item_id, submission_id, status, user_id, title, error_message);
-      
-      case 'idea_processing_complete':
-        return await handleIdeaProcessingComplete(ideaId, status, suggestions_count, error_message);
-      
-      case 'knowledge_base_processing_complete':
-        return await handleKnowledgeBaseProcessingComplete(submission_id, status, user_id, error_message);
-      
-      case 'auto_generation_complete':
-        return await handleAutoGenerationComplete(user_id, status, callbackData.generated_count, error_message);
-      
-      case 'wordpress_publishing_complete':
-        return await handleWordPressPublishingComplete(content_item_id, status, user_id, title, error_message, wordpress_url);
-      
-      case 'content_item_fix_complete':
-        return await handleContentItemFixComplete(content_item_id, status, user_id, title, error_message);
-      
-      case 'derivative_generation_complete':
-        return await handleDerivativeGenerationComplete(content_item_id, status, user_id, title, callbackData.derivative_count, error_message);
-      
-      default:
-        console.log('Unknown callback type:', type);
-        return createErrorResponse('Unknown callback type', `Callback type '${type}' is not supported`);
+    let body;
+    try {
+      body = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error('Failed to parse JSON:', parseError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
+    console.log('Callback received:', body);
+
+    // Basic validation - check for required type field
+    if (!body.type) {
+      return new Response(
+        JSON.stringify({ error: 'Missing type field in callback data' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Send immediate response to N8N to prevent timeout
+    const immediateResponse = new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Callback received and processing started',
+        type: body.type,
+        timestamp: new Date().toISOString()
+      }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+
+    // Process the callback in the background
+    EdgeRuntime.waitUntil(processCallbackInBackground(body));
+
+    return immediateResponse;
+
   } catch (error) {
-    console.error('Callback function error:', error);
-    return createErrorResponse('Internal server error', error.message);
+    console.error('Process idea callback error:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: 'Internal server error',
+        message: error.message 
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 });
+
+async function processCallbackInBackground(body: any) {
+  console.log('Starting background processing for callback type:', body.type);
+  
+  try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Route to appropriate handler based on callback type
+    switch (body.type) {
+      case 'idea_processing_complete':
+        await handleIdeaProcessingCallback(supabase, body);
+        break;
+      
+      case 'brief_completion':
+        await handleBriefCreationCallback(supabase, body);
+        break;
+      
+      case 'content_item_completion':
+        await handleContentCreationCallback(supabase, body);
+        break;
+      
+      case 'auto_generation_complete':
+        await handleAutoGenerationCallback(supabase, body);
+        break;
+      
+      case 'wordpress_publishing_complete':
+      case 'wordpress_publishing_failed':
+        await handleWordPressPublishingCallback(supabase, body);
+        break;
+      
+      case 'derivative_generation_complete':
+      case 'derivative_generation_failed':
+        await handleDerivativeGenerationCallback(supabase, body);
+        break;
+      
+      case 'content_item_fix_complete':
+      case 'content_item_fix_failed':
+        await handleContentItemFixCallback(supabase, body);
+        break;
+      
+      default:
+        console.warn('Unknown callback type received:', body.type);
+        break;
+    }
+
+    console.log('Background processing completed successfully for type:', body.type);
+  } catch (error) {
+    console.error('Background processing failed for type:', body.type, error);
+    // Log the error but don't throw - we've already responded to the client
+  }
+}

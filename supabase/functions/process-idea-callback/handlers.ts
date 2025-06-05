@@ -1,444 +1,394 @@
-import { supabase } from './supabaseClient.ts';
-import { createNotification } from './notifications.ts';
+import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-export async function handleContentSuggestionsReady(ideaId: string, suggestionsCount: number) {
-  if (!ideaId) {
-    throw new Error('idea_id is required for content_suggestions_ready');
+async function updateIdeaStatus(supabase: SupabaseClient, ideaId: string, status: string) {
+  try {
+    await supabase
+      .from('content_ideas')
+      .update({ status: status })
+      .eq('id', ideaId);
+    console.log(`Updated idea status to ${status}`);
+  } catch (error) {
+    console.error('Error updating idea status:', error);
   }
-
-  // Update the content idea status to processed
-  const { error: updateError } = await supabase
-    .from('content_ideas')
-    .update({ 
-      status: 'processed',
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', ideaId);
-
-  if (updateError) {
-    console.error('Error updating content idea status:', updateError);
-    throw updateError;
-  }
-
-  // Get the user_id for notification
-  const { data: idea, error: ideaError } = await supabase
-    .from('content_ideas')
-    .select('user_id, title')
-    .eq('id', ideaId)
-    .single();
-
-  if (ideaError) {
-    console.error('Error fetching idea for notification:', ideaError);
-    throw ideaError;
-  }
-
-  // Create notification
-  await createNotification({
-    user_id: idea.user_id,
-    title: 'Content Suggestions Ready',
-    message: `${suggestionsCount} content suggestions have been generated for "${idea.title}". Click to view and take action.`,
-    type: 'success',
-    related_entity_id: ideaId,
-    related_entity_type: 'idea'
-  });
-
-  console.log(`Successfully processed content suggestions for idea ${ideaId}`);
-  return { success: true, ideaId, suggestionsCount };
 }
 
-export async function handleBriefCompletion(sourceId: string, briefId: string, status: string, userId: string, title?: string, errorMessage?: string) {
-  if (!sourceId || !briefId || !status || !userId) {
-    throw new Error('source_id, brief_id, status, and user_id are required for brief_completion');
-  }
-
+async function updateBriefStatus(supabase: SupabaseClient, briefId: string, status: string) {
   try {
-    if (status === 'completed') {
-      // Get the brief to determine source type
-      const { data: brief, error: briefError } = await supabase
-        .from('content_briefs')
-        .select('source_type, source_id')
-        .eq('id', briefId)
-        .single();
+    await supabase
+      .from('content_briefs')
+      .update({ status: status })
+      .eq('id', briefId);
+    console.log(`Updated brief status to ${status}`);
+  } catch (error) {
+    console.error('Error updating brief status:', error);
+  }
+}
 
-      if (briefError) {
-        console.error('Error fetching brief:', briefError);
-        throw briefError;
-      }
+async function updateSubmissionStatus(supabase: SupabaseClient, submissionId: string, status: string) {
+  try {
+    await supabase
+      .from('content_submissions')
+      .update({ processing_status: status })
+      .eq('id', submissionId);
+    console.log(`Updated submission status to ${status}`);
+  } catch (error) {
+    console.error('Error updating submission status:', error);
+  }
+}
 
-      // Update the source entity status to 'brief_created' only if brief actually exists
-      if (brief.source_type === 'idea') {
-        const { error: updateError } = await supabase
-          .from('content_ideas')
-          .update({ 
-            status: 'brief_created',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', brief.source_id);
+async function updateContentItemWordPressUrl(supabase: SupabaseClient, contentItemId: string, wordpressUrl: string) {
+  try {
+    await supabase
+      .from('content_items')
+      .update({ wordpress_url: wordpressUrl })
+      .eq('id', contentItemId);
+    console.log(`Updated content item ${contentItemId} with WordPress URL: ${wordpressUrl}`);
+  } catch (error) {
+    console.error('Error updating content item with WordPress URL:', error);
+  }
+}
 
-        if (updateError) {
-          console.error('Error updating content idea status:', updateError);
-        }
-      }
+async function createIdeaCompletionNotification(supabase: SupabaseClient, userId: string, ideaId: string, ideaTitle: string) {
+  try {
+    await supabase
+      .from('notifications')
+      .insert({
+        user_id: userId,
+        title: 'Idea Processing Complete',
+        message: `Your content idea "${ideaTitle}" has been successfully processed.`,
+        type: 'success',
+        related_entity_id: ideaId,
+        related_entity_type: 'idea'
+      });
+    console.log('Idea completion notification created');
+  } catch (error) {
+    console.error('Error creating idea completion notification:', error);
+  }
+}
 
-      // Create success notification
-      await createNotification({
+async function createBriefCompletionNotification(supabase: SupabaseClient, userId: string, briefId: string, briefTitle: string) {
+  try {
+    await supabase
+      .from('notifications')
+      .insert({
         user_id: userId,
         title: 'Content Brief Ready',
-        message: `Your content brief "${title || 'Untitled'}" has been created and is ready for review.`,
+        message: `Your content brief "${briefTitle}" is ready.`,
         type: 'success',
         related_entity_id: briefId,
         related_entity_type: 'brief'
       });
-
-      console.log(`Brief completion handled successfully for brief ${briefId}`);
-    } else {
-      // Handle failure case
-      await createNotification({
-        user_id: userId,
-        title: 'Content Brief Creation Failed',
-        message: `Failed to create content brief: ${errorMessage || 'Unknown error occurred'}`,
-        type: 'error',
-        related_entity_id: sourceId,
-        related_entity_type: 'idea'
-      });
-
-      console.log(`Brief creation failed for source ${sourceId}: ${errorMessage}`);
-    }
-
-    return { success: true, briefId, status };
+    console.log('Brief completion notification created');
   } catch (error) {
-    console.error('Error in handleBriefCompletion:', error);
-    throw error;
+    console.error('Error creating brief completion notification:', error);
   }
 }
 
-export async function handleContentItemCompletion(contentItemId: string, submissionId: string, status: string, userId: string, title?: string, errorMessage?: string) {
-  if (!contentItemId || !status || !userId) {
-    throw new Error('content_item_id, status, and user_id are required for content_item_completion');
-  }
-
+async function createContentItemNotification(
+  supabase: SupabaseClient, 
+  userId: string, 
+  contentItemId: string, 
+  contentTitle: string,
+  type: 'success' | 'error' = 'success',
+  errorMessage?: string
+) {
   try {
-    if (status === 'completed') {
-      // Create success notification
-      await createNotification({
+    const title = type === 'success' ? 'Content Processing Complete' : 'Content Processing Failed';
+    const message = type === 'success'
+      ? `Your content item "${contentTitle}" has been successfully generated and is ready for review.`
+      : `Failed to process content item "${contentTitle}". ${errorMessage || 'Please try again.'}`;
+
+    await supabase
+      .from('notifications')
+      .insert({
         user_id: userId,
-        title: 'Content Processing Complete',
-        message: `Your content item "${title || 'Untitled'}" has been successfully generated and is ready for review.`,
-        type: 'success',
+        title: title,
+        message: message,
+        type: type,
         related_entity_id: contentItemId,
-        related_entity_type: 'content_item',
-        related_submission_id: submissionId
+        related_entity_type: 'content_item'
       });
-
-      console.log(`Content item completion handled successfully for content item ${contentItemId}`);
-    } else {
-      // Handle failure case
-      await createNotification({
-        user_id: userId,
-        title: 'Content Processing Failed',
-        message: `Failed to generate content item: ${errorMessage || 'Unknown error occurred'}`,
-        type: 'error',
-        related_entity_id: contentItemId,
-        related_entity_type: 'content_item',
-        related_submission_id: submissionId
-      });
-
-      console.log(`Content item generation failed for content item ${contentItemId}: ${errorMessage}`);
-    }
-
-    return { success: true, contentItemId, status };
+    console.log('Content item notification created');
   } catch (error) {
-    console.error('Error in handleContentItemCompletion:', error);
-    throw error;
+    console.error('Error creating content item notification:', error);
   }
 }
 
-export async function handleIdeaProcessingComplete(ideaId: string, status: string, suggestionsCount: number, errorMessage?: string) {
-  if (!ideaId || !status) {
-    throw new Error('idea_id and status are required for idea_processing_complete');
-  }
-
+async function createAutoGenerationNotification(supabase: SupabaseClient, userId: string, ideaId: string, ideaTitle: string) {
   try {
-    if (status === 'completed') {
-      // Get the user_id and title for notification
-      const { data: idea, error: ideaError } = await supabase
-        .from('content_ideas')
-        .select('user_id, title')
-        .eq('id', ideaId)
-        .single();
-
-      if (ideaError) {
-        console.error('Error fetching idea for notification:', ideaError);
-        throw ideaError;
-      }
-
-      // Create success notification
-      await createNotification({
-        user_id: idea.user_id,
-        title: 'Idea Processing Complete',
-        message: `${suggestionsCount} content suggestions have been generated for "${idea.title}". They are ready for your review.`,
+    await supabase
+      .from('notifications')
+      .insert({
+        user_id: userId,
+        title: 'Auto-Generation Complete',
+        message: `Content has been automatically generated for "${ideaTitle}".`,
         type: 'success',
         related_entity_id: ideaId,
         related_entity_type: 'idea'
       });
-
-      console.log(`Idea processing completed successfully for idea ${ideaId}`);
-    } else {
-      // Handle failure case
-      const { data: idea, error: ideaError } = await supabase
-        .from('content_ideas')
-        .select('user_id, title')
-        .eq('id', ideaId)
-        .single();
-
-      if (ideaError) {
-        console.error('Error fetching idea for notification:', ideaError);
-        throw ideaError;
-      }
-
-      await createNotification({
-        user_id: idea.user_id,
-        title: 'Idea Processing Failed',
-        message: `Failed to process content idea "${idea.title}": ${errorMessage || 'Unknown error occurred'}`,
-        type: 'error',
-        related_entity_id: ideaId,
-        related_entity_type: 'idea'
-      });
-
-      console.log(`Idea processing failed for idea ${ideaId}: ${errorMessage}`);
-    }
-
-    return { success: true, ideaId, status };
+    console.log('Auto-generation notification created');
   } catch (error) {
-    console.error('Error in handleIdeaProcessingComplete:', error);
-    throw error;
+    console.error('Error creating auto-generation notification:', error);
   }
 }
 
-export async function handleKnowledgeBaseProcessingComplete(submissionId: string, status: string, userId: string, errorMessage?: string) {
-  if (!submissionId || !status || !userId) {
-    throw new Error('submission_id, status, and user_id are required for knowledge_base_processing_complete');
-  }
-
+async function createWordPressPublishingNotification(
+  supabase: SupabaseClient,
+  userId: string,
+  contentItemId: string,
+  contentTitle: string,
+  isSuccess: boolean,
+  errorMessage?: string
+) {
   try {
-    if (status === 'completed') {
-      // Create success notification
-      await createNotification({
+    const title = isSuccess ? 'WordPress Publishing Complete' : 'WordPress Publishing Failed';
+    const message = isSuccess
+      ? `Your content item "${contentTitle}" has been successfully published to WordPress.`
+      : `Failed to publish content item "${contentTitle}" to WordPress. ${errorMessage || 'Please check your WordPress settings and try again.'}`;
+
+    await supabase
+      .from('notifications')
+      .insert({
         user_id: userId,
-        title: 'Knowledge Base Processing Complete',
-        message: 'Your knowledge base submission has been successfully processed and is now ready for use.',
-        type: 'success',
-        related_entity_id: submissionId,
-        related_entity_type: 'submission'
+        title: title,
+        message: message,
+        type: isSuccess ? 'success' : 'error',
+        related_entity_id: contentItemId,
+        related_entity_type: 'content_item'
       });
-
-      console.log(`Knowledge base processing completed successfully for submission ${submissionId}`);
-    } else {
-      // Handle failure case
-      await createNotification({
-        user_id: userId,
-        title: 'Knowledge Base Processing Failed',
-        message: `Failed to process knowledge base submission: ${errorMessage || 'Unknown error occurred'}`,
-        type: 'error',
-        related_entity_id: submissionId,
-        related_entity_type: 'submission'
-      });
-
-      console.log(`Knowledge base processing failed for submission ${submissionId}: ${errorMessage}`);
-    }
-
-    return { success: true, submissionId, status };
+    console.log('WordPress publishing notification created');
   } catch (error) {
-    console.error('Error in handleKnowledgeBaseProcessingComplete:', error);
-    throw error;
+    console.error('Error creating WordPress publishing notification:', error);
   }
 }
 
-export async function handleAutoGenerationComplete(userId: string, status: string, generatedCount: number, errorMessage?: string) {
-  if (!userId || !status) {
-    throw new Error('user_id and status are required for auto_generation_complete');
-  }
-
+async function createDerivativeGenerationNotification(
+  supabase: SupabaseClient,
+  userId: string,
+  contentItemId: string,
+  contentTitle: string,
+  isSuccess: boolean,
+  errorMessage?: string
+) {
   try {
-    if (status === 'completed') {
-      // Create success notification
-      await createNotification({
+    const title = isSuccess ? 'Content Derivatives Generated' : 'Derivative Generation Failed';
+    const message = isSuccess
+      ? `Content derivatives have been successfully generated for "${contentTitle}".`
+      : `Failed to generate content derivatives for "${contentTitle}". ${errorMessage || 'Please try again.'}`;
+
+    await supabase
+      .from('notifications')
+      .insert({
         user_id: userId,
-        title: 'Auto Generation Complete',
-        message: `${generatedCount} new content ideas have been automatically generated and added to your dashboard.`,
-        type: 'success',
-        related_entity_id: null,
-        related_entity_type: null
+        title: title,
+        message: message,
+        type: isSuccess ? 'success' : 'error',
+        related_entity_id: contentItemId,
+        related_entity_type: 'content_item'
       });
-
-      console.log(`Auto generation completed successfully for user ${userId}`);
-    } else {
-      // Handle failure case
-      await createNotification({
-        user_id: userId,
-        title: 'Auto Generation Failed',
-        message: `Failed to auto-generate content ideas: ${errorMessage || 'Unknown error occurred'}`,
-        type: 'error',
-        related_entity_id: null,
-        related_entity_type: null
-      });
-
-      console.log(`Auto generation failed for user ${userId}: ${errorMessage}`);
-    }
-
-    return { success: true, userId, status };
+    console.log('Derivative generation notification created');
   } catch (error) {
-    console.error('Error in handleAutoGenerationComplete:', error);
-    throw error;
+    console.error('Error creating derivative generation notification:', error);
   }
 }
 
-export async function handleWordPressPublishingComplete(contentItemId: string, status: string, userId: string, title?: string, errorMessage?: string, wordpressUrl?: string) {
-  if (!contentItemId || !status || !userId) {
-    throw new Error('content_item_id, status, and user_id are required for wordpress_publishing_complete');
-  }
-
+async function createContentItemFixNotification(
+  supabase: SupabaseClient,
+  userId: string,
+  contentItemId: string,
+  contentTitle: string,
+  isSuccess: boolean,
+  errorMessage?: string
+) {
   try {
-    if (status === 'completed') {
-      // Update the content item with the WordPress URL if provided
-      if (wordpressUrl) {
-        const { error: updateError } = await supabase
-          .from('content_items')
-          .update({ 
-            status: 'published',
-            wordpress_url: wordpressUrl,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', contentItemId);
+    const title = isSuccess ? 'AI Content Fix Complete' : 'AI Content Fix Failed';
+    const message = isSuccess
+      ? `Content item "${contentTitle}" has been successfully improved by AI.`
+      : `Failed to fix content item "${contentTitle}" with AI. ${errorMessage || 'Please try again.'}`;
 
-        if (updateError) {
-          console.error('Error updating content item with WordPress URL:', updateError);
-        } else {
-          console.log(`Content item ${contentItemId} updated with WordPress URL: ${wordpressUrl}`);
-        }
-      } else {
-        // Update status only if no URL provided
-        const { error: updateError } = await supabase
-          .from('content_items')
-          .update({ 
-            status: 'published',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', contentItemId);
-
-        if (updateError) {
-          console.error('Error updating content item status:', updateError);
-        }
-      }
-
-      // Create success notification with clean message (no HTML)
-      const cleanMessage = `Content item "${title || 'Untitled'}" has been successfully published to WordPress.`;
-
-      await createNotification({
+    await supabase
+      .from('notifications')
+      .insert({
         user_id: userId,
-        title: 'WordPress Publishing Complete',
-        message: cleanMessage,
-        type: 'success',
+        title: title,
+        message: message,
+        type: isSuccess ? 'success' : 'error',
         related_entity_id: contentItemId,
         related_entity_type: 'content_item'
       });
-
-      console.log(`WordPress publishing completed successfully for content item ${contentItemId}`);
-    } else {
-      // Handle failure case
-      await createNotification({
-        user_id: userId,
-        title: 'WordPress Publishing Failed',
-        message: `Failed to publish content item "${title || 'Untitled'}" to WordPress: ${errorMessage || 'Unknown error occurred'}`,
-        type: 'error',
-        related_entity_id: contentItemId,
-        related_entity_type: 'content_item'
-      });
-
-      console.log(`WordPress publishing failed for content item ${contentItemId}: ${errorMessage}`);
-    }
-
-    return { success: true, contentItemId, status };
+    console.log('Content item fix notification created');
   } catch (error) {
-    console.error('Error in handleWordPressPublishingComplete:', error);
-    throw error;
+    console.error('Error creating content item fix notification:', error);
   }
 }
 
-export async function handleContentItemFixComplete(contentItemId: string, status: string, userId: string, title?: string, errorMessage?: string) {
-  if (!contentItemId || !status || !userId) {
-    throw new Error('content_item_id, status, and user_id are required for content_item_fix_complete');
-  }
-
+export async function handleIdeaProcessingCallback(supabase: any, body: any) {
   try {
-    if (status === 'completed') {
-      // Create success notification
-      await createNotification({
-        user_id: userId,
-        title: 'AI Content Fix Complete',
-        message: `Content item "${title || 'Untitled'}" has been successfully improved by AI and is ready for review.`,
-        type: 'success',
-        related_entity_id: contentItemId,
-        related_entity_type: 'content_item'
-      });
-
-      console.log(`Content item fix completed successfully for content item ${contentItemId}`);
-    } else {
-      // Handle failure case
-      await createNotification({
-        user_id: userId,
-        title: 'AI Content Fix Failed',
-        message: `Failed to improve content item "${title || 'Untitled'}" by AI: ${errorMessage || 'Unknown error occurred'}`,
-        type: 'error',
-        related_entity_id: contentItemId,
-        related_entity_type: 'content_item'
-      });
-
-      console.log(`Content item fix failed for content item ${contentItemId}: ${errorMessage}`);
+    console.log('Processing idea completion callback');
+    
+    if (!body.content_idea_id || !body.user_id) {
+      console.error('Missing required fields for idea processing callback:', body);
+      return;
     }
 
-    return { success: true, contentItemId, status };
+    await updateIdeaStatus(supabase, body.content_idea_id, 'processed');
+    await createIdeaCompletionNotification(supabase, body.user_id, body.content_idea_id, body.title || 'Content Idea');
+    
+    console.log('Idea processing callback completed successfully');
   } catch (error) {
-    console.error('Error in handleContentItemFixComplete:', error);
-    throw error;
+    console.error('Error in handleIdeaProcessingCallback:', error);
   }
 }
 
-export async function handleDerivativeGenerationComplete(contentItemId: string, status: string, userId: string, title?: string, derivativeCount?: number, errorMessage?: string) {
-  if (!contentItemId || !status || !userId) {
-    throw new Error('content_item_id, status, and user_id are required for derivative_generation_complete');
-  }
-
+export async function handleBriefCreationCallback(supabase: any, body: any) {
   try {
-    if (status === 'completed') {
-      // Create success notification
-      await createNotification({
-        user_id: userId,
-        title: 'Content Derivatives Generated',
-        message: `${derivativeCount || 0} new content derivatives have been generated for "${title || 'Untitled'}". Check the Derivatives tab to view them.`,
-        type: 'success',
-        related_entity_id: contentItemId,
-        related_entity_type: 'content_item'
-      });
-
-      console.log(`Derivative generation completed successfully for content item ${contentItemId}`);
-    } else {
-      // Handle failure case
-      await createNotification({
-        user_id: userId,
-        title: 'Derivative Generation Failed',
-        message: `Failed to generate content derivatives for "${title || 'Untitled'}": ${errorMessage || 'Unknown error occurred'}`,
-        type: 'error',
-        related_entity_id: contentItemId,
-        related_entity_type: 'content_item'
-      });
-
-      console.log(`Derivative generation failed for content item ${contentItemId}: ${errorMessage}`);
+    console.log('Processing brief creation callback');
+    
+    if (!body.brief_id || !body.user_id) {
+      console.error('Missing required fields for brief creation callback:', body);
+      return;
     }
 
-    return { success: true, contentItemId, status };
+    await updateBriefStatus(supabase, body.brief_id, 'ready');
+    await createBriefCompletionNotification(supabase, body.user_id, body.brief_id, body.title || 'Content Brief');
+    
+    console.log('Brief creation callback completed successfully');
   } catch (error) {
-    console.error('Error in handleDerivativeGenerationComplete:', error);
-    throw error;
+    console.error('Error in handleBriefCreationCallback:', error);
+  }
+}
+
+export async function handleContentCreationCallback(supabase: any, body: any) {
+  try {
+    console.log('Processing content creation callback');
+    
+    if (!body.user_id) {
+      console.error('Missing user_id for content creation callback:', body);
+      return;
+    }
+
+    // Handle content item creation if provided
+    if (body.content_item_id) {
+      console.log('Content item created:', body.content_item_id);
+      await createContentItemNotification(
+        supabase, 
+        body.user_id, 
+        body.content_item_id, 
+        body.title || 'Content Item',
+        body.status === 'failed' ? 'error' : 'success',
+        body.error_message
+      );
+    }
+
+    // Update submission status if provided
+    if (body.submission_id) {
+      await updateSubmissionStatus(supabase, body.submission_id, body.status || 'completed');
+    }
+
+    console.log('Content creation callback completed successfully');
+  } catch (error) {
+    console.error('Error in handleContentCreationCallback:', error);
+  }
+}
+
+export async function handleAutoGenerationCallback(supabase: any, body: any) {
+  try {
+    console.log('Processing auto-generation callback');
+    
+    if (!body.content_idea_id || !body.user_id) {
+      console.error('Missing required fields for auto-generation callback:', body);
+      return;
+    }
+
+    await updateIdeaStatus(supabase, body.content_idea_id, 'processed');
+    await createAutoGenerationNotification(supabase, body.user_id, body.content_idea_id, body.title || 'Auto-Generated Content');
+    
+    console.log('Auto-generation callback completed successfully');
+  } catch (error) {
+    console.error('Error in handleAutoGenerationCallback:', error);
+  }
+}
+
+export async function handleWordPressPublishingCallback(supabase: any, body: any) {
+  try {
+    console.log('Processing WordPress publishing callback');
+    
+    if (!body.content_item_id || !body.user_id) {
+      console.error('Missing required fields for WordPress publishing callback:', body);
+      return;
+    }
+
+    const isSuccess = body.status === 'completed' && !body.error_message;
+    
+    // Update content item with WordPress URL if successful
+    if (isSuccess && body.wordpress_url) {
+      await updateContentItemWordPressUrl(supabase, body.content_item_id, body.wordpress_url);
+      console.log(`Content item ${body.content_item_id} updated with WordPress URL: ${body.wordpress_url}`);
+    }
+
+    await createWordPressPublishingNotification(
+      supabase,
+      body.user_id,
+      body.content_item_id,
+      body.title || 'Content Item',
+      isSuccess,
+      body.error_message
+    );
+
+    console.log('WordPress publishing completed successfully for content item', body.content_item_id);
+  } catch (error) {
+    console.error('Error in handleWordPressPublishingCallback:', error);
+  }
+}
+
+export async function handleDerivativeGenerationCallback(supabase: any, body: any) {
+  try {
+    console.log('Processing derivative generation callback');
+    
+    if (!body.content_item_id || !body.user_id) {
+      console.error('Missing required fields for derivative generation callback:', body);
+      return;
+    }
+
+    const isSuccess = body.status === 'completed' && !body.error_message;
+    
+    await createDerivativeGenerationNotification(
+      supabase,
+      body.user_id,
+      body.content_item_id,
+      body.title || 'Content Item',
+      isSuccess,
+      body.error_message
+    );
+
+    console.log('Derivative generation callback completed successfully');
+  } catch (error) {
+    console.error('Error in handleDerivativeGenerationCallback:', error);
+  }
+}
+
+export async function handleContentItemFixCallback(supabase: any, body: any) {
+  try {
+    console.log('Processing content item fix callback');
+    
+    if (!body.content_item_id || !body.user_id) {
+      console.error('Missing required fields for content item fix callback:', body);
+      return;
+    }
+
+    const isSuccess = body.status === 'completed' && !body.error_message;
+    
+    await createContentItemFixNotification(
+      supabase,
+      body.user_id,
+      body.content_item_id,
+      body.title || 'Content Item',
+      isSuccess,
+      body.error_message
+    );
+
+    console.log('Content item fix callback completed successfully');
+  } catch (error) {
+    console.error('Error in handleContentItemFixCallback:', error);
   }
 }
