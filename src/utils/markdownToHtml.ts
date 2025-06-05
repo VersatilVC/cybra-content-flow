@@ -34,8 +34,9 @@ export function convertMarkdownToHtml(markdown: string): string {
   });
   
   // 3. Convert headers (H2, H3 only - H1 already removed, TL;DR already processed)
-  html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
-  html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+  // Updated regex to handle headers that might have leading/trailing whitespace
+  html = html.replace(/^\s*### (.*)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^\s*## (.*)$/gm, '<h2>$1</h2>');
   
   // 4. Bold text
   html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
