@@ -21,7 +21,6 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
     ? text 
     : text.substring(0, maxLength) + '...';
 
-  // Enhanced logging for debugging truncation issues
   console.log('🔍 [ExpandableText] Processing text:', {
     originalLength: text.length,
     maxLength,
