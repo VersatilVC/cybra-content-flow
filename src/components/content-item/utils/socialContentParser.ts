@@ -46,16 +46,102 @@ export function parseSocialContent(content: string): ParsedSocialContent {
     if (contentString.includes('"linkedin"') || contentString.includes('"x"')) {
       console.log('🔄 [Social Parser] Attempting enhanced manual JSON extraction...');
       try {
-        // More robust regex patterns that handle multiline content and escaped characters
-        const linkedinMatch = contentString.match(/"linkedin"\s*:\s*"((?:[^"\\]|\\.|\\n|\\r|\\t)*?)"/s);
-        const xMatch = contentString.match(/"x"\s*:\s*"((?:[^"\\]|\\.|\\n|\\r|\\t)*?)"/s);
-        const twitterMatch = contentString.match(/"twitter"\s*:\s*"((?:[^"\\]|\\.|\\n|\\r|\\t)*?)"/s);
+        // More robust regex patterns that handle multiline content properly
+        // Use a greedy approach to capture everything until the closing quote and brace/comma
+        const linkedinMatch = contentString.match(/"linkedin"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
+        const xMatch = contentString.match(/"x"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
+        const twitterMatch = contentString.match(/"twitter"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
         
-        console.log('🔍 [Social Parser] Regex matches:', {
+        console.log('🔍 [Social Parser] Enhanced regex matches:', {
           linkedinMatch: !!linkedinMatch,
           xMatch: !!xMatch,
-          twitterMatch: !!twitterMatch
+          twitterMatch: !!twitterMatch,
+          linkedinContent: linkedinMatch ? linkedinMatch[1].substring(0, 100) + '...' : 'none',
+          contentPreview: contentString.substring(0, 200) + '...'
         });
+        
+        // If the simple regex doesn't work, try a more complex approach
+        if (!linkedinMatch && contentString.includes('"linkedin"')) {
+          console.log('🔄 [Social Parser] Trying alternative LinkedIn extraction...');
+          
+          // Find the start of the LinkedIn content
+          const linkedinStart = contentString.indexOf('"linkedin":"') + 12; // Length of '"linkedin":"'
+          if (linkedinStart > 11) { // Found the start
+            let content = '';
+            let i = linkedinStart;
+            let escapeNext = false;
+            
+            // Parse character by character to handle escaped quotes properly
+            while (i < contentString.length) {
+              const char = contentString[i];
+              
+              if (escapeNext) {
+                // Add the escaped character (convert common escape sequences)
+                if (char === 'n') content += '\n';
+                else if (char === 'r') content += '\r';
+                else if (char === 't') content += '\t';
+                else if (char === '"') content += '"';
+                else if (char === '\\') content += '\\';
+                else content += char;
+                escapeNext = false;
+              } else if (char === '\\') {
+                escapeNext = true;
+              } else if (char === '"') {
+                // Found the end of the string
+                break;
+              } else {
+                content += char;
+              }
+              i++;
+            }
+            
+            if (content.length > 0) {
+              console.log('✅ [Social Parser] Alternative LinkedIn extraction successful - length:', content.length);
+              console.log('🔍 [Social Parser] Alternative content preview:', content.substring(0, 200) + '...');
+              
+              const result: ParsedSocialContent = { linkedin: content };
+              
+              // Try to extract X/Twitter content with the same approach
+              const xStart = contentString.indexOf('"x":"') + 4;
+              const twitterStart = contentString.indexOf('"twitter":"') + 11;
+              
+              if (xStart > 3 || twitterStart > 10) {
+                const startPos = xStart > 3 ? xStart : twitterStart;
+                let xContent = '';
+                let j = startPos;
+                let escapeNext = false;
+                
+                while (j < contentString.length) {
+                  const char = contentString[j];
+                  
+                  if (escapeNext) {
+                    if (char === 'n') xContent += '\n';
+                    else if (char === 'r') xContent += '\r';
+                    else if (char === 't') xContent += '\t';
+                    else if (char === '"') xContent += '"';
+                    else if (char === '\\') xContent += '\\';
+                    else xContent += char;
+                    escapeNext = false;
+                  } else if (char === '\\') {
+                    escapeNext = true;
+                  } else if (char === '"') {
+                    break;
+                  } else {
+                    xContent += char;
+                  }
+                  j++;
+                }
+                
+                if (xContent.length > 0) {
+                  result.x = xContent;
+                  console.log('✅ [Social Parser] Alternative X extraction successful - length:', xContent.length);
+                }
+              }
+              
+              return result;
+            }
+          }
+        }
         
         if (linkedinMatch || xMatch || twitterMatch) {
           const result: ParsedSocialContent = {};

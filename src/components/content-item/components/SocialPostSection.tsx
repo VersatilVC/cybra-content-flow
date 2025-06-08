@@ -46,17 +46,26 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
   // LinkedIn posts can be much longer, X/Twitter has character limits
   const maxLength = platform === 'linkedin' ? 600 : 250;
 
-  // Always use the actual content length, not the provided characterCount if it seems wrong
+  // ALWAYS use the actual content length for display - this is the fix for the character count issue
   const actualCharacterCount = content.length;
-  const displayCharacterCount = characterCount || actualCharacterCount;
   
-  // Log discrepancies for debugging
+  // Log detailed information for debugging truncation issues
+  console.log(`🔍 [SocialPostSection] ${platformName} post processing:`, {
+    providedCharacterCount: characterCount,
+    actualContentLength: actualCharacterCount,
+    contentPreview: content.substring(0, 100) + '...',
+    platform,
+    hasDiscrepancy: characterCount && characterCount !== actualCharacterCount
+  });
+  
+  // Log discrepancies for debugging - this helps identify parsing issues
   if (characterCount && characterCount !== actualCharacterCount) {
-    console.log('⚠️ [SocialPostSection] Character count mismatch:', {
+    console.log(`⚠️ [SocialPostSection] ${platformName} character count mismatch:`, {
       provided: characterCount,
       actual: actualCharacterCount,
       platform,
-      contentPreview: content.substring(0, 100) + '...'
+      contentPreview: content.substring(0, 200) + '...',
+      fullContentLength: content.length
     });
   }
 

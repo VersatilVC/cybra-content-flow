@@ -25,7 +25,7 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   // At this point we know derivative.content is not null due to the check above
   const rawContent = derivative.content as string | object;
   
-  // Enhanced handling for different content types
+  // Enhanced handling for different content types with comprehensive debugging
   let parsedContent;
   
   if (typeof rawContent === 'object') {
@@ -51,8 +51,9 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
       parsedContent = parseSocialContent(stringified);
     }
   } else {
-    // Handle string content
+    // Handle string content with enhanced debugging
     console.log('🔄 [SocialContentPreview] Processing string content:', rawContent.length, 'chars');
+    console.log('🔍 [SocialContentPreview] Raw string preview:', rawContent.substring(0, 300) + '...');
     parsedContent = parseSocialContent(rawContent as string);
   }
   
@@ -60,17 +61,24 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
     hasLinkedIn: !!parsedContent.linkedin,
     hasX: !!parsedContent.x,
     linkedinLength: parsedContent.linkedin?.length || 0,
-    xLength: parsedContent.x?.length || 0
+    xLength: parsedContent.x?.length || 0,
+    linkedinPreview: parsedContent.linkedin ? parsedContent.linkedin.substring(0, 100) + '...' : 'none',
+    xPreview: parsedContent.x ? parsedContent.x.substring(0, 100) + '...' : 'none'
   });
 
-  // Add fallback error handling
+  // Enhanced fallback error handling with more debugging
   if (!parsedContent.linkedin && !parsedContent.x) {
-    console.log('⚠️ [SocialContentPreview] No content extracted, falling back to raw content');
+    console.log('⚠️ [SocialContentPreview] No content extracted, analyzing raw content...');
     const fallbackContent = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent);
+    console.log('🔍 [SocialContentPreview] Fallback content length:', fallbackContent.length);
+    console.log('🔍 [SocialContentPreview] Fallback content preview:', fallbackContent.substring(0, 200) + '...');
+    
     parsedContent = {
       linkedin: fallbackContent,
       x: fallbackContent
     };
+    
+    console.log('🛠️ [SocialContentPreview] Applied fallback content for both platforms');
   }
   
   return (

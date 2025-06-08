@@ -21,16 +21,19 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
     ? text 
     : text.substring(0, maxLength) + '...';
 
-  // Log information for debugging
+  // Enhanced logging for debugging truncation issues
   console.log('🔍 [ExpandableText] Processing text:', {
     originalLength: text.length,
     maxLength,
     shouldTruncate,
     displayLength: displayText.length,
-    isExpanded
+    isExpanded,
+    textPreview: text.substring(0, 100) + '...',
+    willShowReadMore: shouldTruncate && !isExpanded
   });
 
   if (!shouldTruncate) {
+    console.log('✅ [ExpandableText] Text is short enough, showing full content');
     return (
       <div className={`whitespace-pre-wrap ${className}`}>
         {text}
@@ -48,7 +51,10 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => {
+          console.log('🔄 [ExpandableText] Toggling expanded state:', { from: isExpanded, to: !isExpanded });
+          setIsExpanded(!isExpanded);
+        }}
         className="mt-2 h-auto p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors"
       >
         {isExpanded ? (
