@@ -17,26 +17,60 @@ export function parseSocialContent(content: string): ParsedSocialContent {
   // Ensure we're working with a string
   const contentString = typeof content === 'string' ? content : JSON.stringify(content);
   
-  // Try to parse as JSON first
+  // Try to parse as JSON first with better error handling
   try {
     console.log('🔄 [Social Parser] Attempting JSON parse...');
-    const parsed = JSON.parse(contentString);
-    console.log('✅ [Social Parser] JSON parse successful:', parsed);
     
-    if (parsed.linkedin || parsed.x || parsed.twitter) {
-      const result = {
-        linkedin: parsed.linkedin,
-        x: parsed.x || parsed.twitter
-      };
-      console.log('✅ [Social Parser] Found platform content:', {
-        hasLinkedIn: !!result.linkedin,
-        hasX: !!result.x,
-        linkedinLength: result.linkedin?.length || 0,
-        xLength: result.x?.length || 0
-      });
-      return result;
-    } else {
-      console.log('⚠️ [Social Parser] JSON parsed but no platform keys found');
+    // Clean the JSON string to handle special characters
+    let cleanedContent = contentString;
+    
+    // If it looks like JSON, try to parse it
+    if (cleanedContent.trim().startsWith('{') && cleanedContent.trim().endsWith('}')) {
+      // Try parsing with the original content first
+      let parsed;
+      try {
+        parsed = JSON.parse(cleanedContent);
+      } catch (firstError) {
+        console.log('🔄 [Social Parser] First parse failed, trying with cleaned content');
+        // If that fails, try to clean up common JSON issues
+        cleanedContent = cleanedContent
+          .replace(/\n/g, '\\n')  // Escape newlines
+          .replace(/\r/g, '\\r')  // Escape carriage returns
+          .replace(/\t/g, '\\t')  // Escape tabs
+          .replace(/"/g, '\\"')   // Escape quotes in content
+          .replace(/\\"/g, '"')   // But keep structural quotes
+          .replace(/^{/, '{"')    // Ensure proper JSON structure
+          .replace(/:/, '":"')
+          .replace(/}$/, '"}');
+        
+        // Try a more robust approach - extract the content manually
+        const jsonMatch = contentString.match(/\{"linkedin":"(.*?)"\}/s);
+        if (jsonMatch) {
+          const extractedContent = jsonMatch[1];
+          parsed = { linkedin: extractedContent };
+          console.log('✅ [Social Parser] Manually extracted LinkedIn content');
+        } else {
+          throw firstError;
+        }
+      }
+      
+      console.log('✅ [Social Parser] JSON parse successful:', parsed);
+      
+      if (parsed.linkedin || parsed.x || parsed.twitter) {
+        const result = {
+          linkedin: parsed.linkedin,
+          x: parsed.x || parsed.twitter
+        };
+        console.log('✅ [Social Parser] Found platform content:', {
+          hasLinkedIn: !!result.linkedin,
+          hasX: !!result.x,
+          linkedinLength: result.linkedin?.length || 0,
+          xLength: result.x?.length || 0
+        });
+        return result;
+      } else {
+        console.log('⚠️ [Social Parser] JSON parsed but no platform keys found');
+      }
     }
   } catch (parseError) {
     console.log('❌ [Social Parser] JSON parse failed, trying text-based parsing:', parseError);
