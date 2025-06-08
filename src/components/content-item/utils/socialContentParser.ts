@@ -17,7 +17,7 @@ export function parseSocialContent(content: string): ParsedSocialContent {
   // Ensure we're working with a string
   const contentString = typeof content === 'string' ? content : JSON.stringify(content);
   
-  // Try to parse as JSON first with better error handling
+  // Try to parse as JSON first with enhanced extraction for both platforms
   try {
     console.log('🔄 [Social Parser] Attempting JSON parse...');
     
@@ -26,42 +26,57 @@ export function parseSocialContent(content: string): ParsedSocialContent {
     
     // If it looks like JSON, try to parse it
     if (cleanedContent.trim().startsWith('{') && cleanedContent.trim().endsWith('}')) {
-      // Try parsing with the original content first
-      let parsed;
-      try {
-        parsed = JSON.parse(cleanedContent);
-      } catch (firstError) {
-        console.log('🔄 [Social Parser] First parse failed, trying with cleaned content');
-        // If that fails, try to clean up common JSON issues
-        cleanedContent = cleanedContent
-          .replace(/\n/g, '\\n')  // Escape newlines
-          .replace(/\r/g, '\\r')  // Escape carriage returns
-          .replace(/\t/g, '\\t')  // Escape tabs
-          .replace(/"/g, '\\"')   // Escape quotes in content
-          .replace(/\\"/g, '"')   // But keep structural quotes
-          .replace(/^{/, '{"')    // Ensure proper JSON structure
-          .replace(/:/, '":"')
-          .replace(/}$/, '"}');
-        
-        // Try a more robust approach - extract the content manually
-        const jsonMatch = contentString.match(/\{"linkedin":"(.*?)"\}/s);
-        if (jsonMatch) {
-          const extractedContent = jsonMatch[1];
-          parsed = { linkedin: extractedContent };
-          console.log('✅ [Social Parser] Manually extracted LinkedIn content');
-        } else {
-          throw firstError;
+      // Enhanced manual extraction patterns for both platforms
+      const multiPlatformMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\s*,\s*"x":"(.*?)"\}/s);
+      const linkedinFirstMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\s*,\s*"(?:x|twitter)":"(.*?)"\}/s);
+      const xFirstMatch = cleanedContent.match(/\{"(?:x|twitter)":"(.*?)"\s*,\s*"linkedin":"(.*?)"\}/s);
+      const linkedinOnlyMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\}/s);
+      const xOnlyMatch = cleanedContent.match(/\{"(?:x|twitter)":"(.*?)"\}/s);
+      
+      let parsed = null;
+      
+      if (multiPlatformMatch || linkedinFirstMatch) {
+        const match = multiPlatformMatch || linkedinFirstMatch;
+        console.log('✅ [Social Parser] Found multi-platform content (LinkedIn first)');
+        parsed = { 
+          linkedin: match[1], 
+          x: match[2] 
+        };
+      } else if (xFirstMatch) {
+        console.log('✅ [Social Parser] Found multi-platform content (X first)');
+        parsed = { 
+          linkedin: xFirstMatch[2], 
+          x: xFirstMatch[1] 
+        };
+      } else if (linkedinOnlyMatch) {
+        console.log('✅ [Social Parser] Found LinkedIn-only content');
+        parsed = { 
+          linkedin: linkedinOnlyMatch[1],
+          x: undefined
+        };
+      } else if (xOnlyMatch) {
+        console.log('✅ [Social Parser] Found X-only content');
+        parsed = { 
+          linkedin: undefined,
+          x: xOnlyMatch[1] 
+        };
+      } else {
+        // Fallback to standard JSON parse
+        try {
+          parsed = JSON.parse(cleanedContent);
+          console.log('✅ [Social Parser] Standard JSON parse successful');
+        } catch (standardParseError) {
+          console.log('❌ [Social Parser] Standard JSON parse also failed');
+          throw standardParseError;
         }
       }
       
-      console.log('✅ [Social Parser] JSON parse successful:', parsed);
-      
-      if (parsed.linkedin || parsed.x || parsed.twitter) {
+      if (parsed && (parsed.linkedin || parsed.x || parsed.twitter)) {
         const result = {
           linkedin: parsed.linkedin,
           x: parsed.x || parsed.twitter
         };
-        console.log('✅ [Social Parser] Found platform content:', {
+        console.log('✅ [Social Parser] Found platform content via JSON:', {
           hasLinkedIn: !!result.linkedin,
           hasX: !!result.x,
           linkedinLength: result.linkedin?.length || 0,

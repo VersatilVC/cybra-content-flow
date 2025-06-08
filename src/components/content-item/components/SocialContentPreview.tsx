@@ -41,25 +41,38 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
       xLength: parsedContent.x?.length || 0
     });
   } else if (typeof rawContent === 'string') {
-    // Handle string content - this is where our JSON issue is happening
+    // Handle string content - enhanced JSON parsing for both platforms
     console.log('🔄 [SocialContentPreview] Processing string content:', rawContent.length, 'chars');
     
     const trimmedContent = rawContent.trim();
     
-    // Try to parse as JSON first with better error handling
+    // Try to parse as JSON first with enhanced extraction
     if (trimmedContent.startsWith('{') && trimmedContent.endsWith('}')) {
       try {
         console.log('🔄 [SocialContentPreview] Attempting JSON parse...');
         
-        // Try manual extraction for common JSON pattern
-        const jsonMatch = trimmedContent.match(/\{"linkedin":"(.*?)"\}/s);
-        if (jsonMatch) {
-          const extractedLinkedInContent = jsonMatch[1];
-          console.log('✅ [SocialContentPreview] Manually extracted LinkedIn content');
-          
+        // Enhanced manual extraction for both platforms
+        const multiPlatformMatch = trimmedContent.match(/\{"linkedin":"(.*?)"\s*,\s*"x":"(.*?)"\}/s);
+        const linkedinOnlyMatch = trimmedContent.match(/\{"linkedin":"(.*?)"\}/s);
+        const xOnlyMatch = trimmedContent.match(/\{"x":"(.*?)"\}/s);
+        
+        if (multiPlatformMatch) {
+          console.log('✅ [SocialContentPreview] Found multi-platform content');
           parsedContent = {
-            linkedin: extractedLinkedInContent,
+            linkedin: multiPlatformMatch[1],
+            x: multiPlatformMatch[2]
+          };
+        } else if (linkedinOnlyMatch) {
+          console.log('✅ [SocialContentPreview] Found LinkedIn-only content');
+          parsedContent = {
+            linkedin: linkedinOnlyMatch[1],
             x: undefined
+          };
+        } else if (xOnlyMatch) {
+          console.log('✅ [SocialContentPreview] Found X-only content');
+          parsedContent = {
+            linkedin: undefined,
+            x: xOnlyMatch[1]
           };
         } else {
           // Fallback to standard JSON parse
