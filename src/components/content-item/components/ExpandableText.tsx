@@ -38,17 +38,17 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
         variant="ghost"
         size="sm"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="mt-2 h-auto p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+        className="mt-2 h-auto p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors"
       >
         {isExpanded ? (
           <>
-            <ChevronUp className="w-3 h-3 mr-1" />
+            <ChevronUp className="w-4 h-4 mr-1" />
             Show Less
           </>
         ) : (
           <>
-            <ChevronDown className="w-3 h-3 mr-1" />
-            Read More
+            <ChevronDown className="w-4 h-4 mr-1" />
+            Read More ({text.length - maxLength} more chars)
           </>
         )}
       </Button>

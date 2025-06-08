@@ -41,6 +41,10 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
   };
 
   const platformName = platform === 'linkedin' ? 'LinkedIn' : 'X';
+  
+  // Set different maxLength based on platform
+  // LinkedIn can be much longer, X/Twitter has character limits
+  const maxLength = platform === 'linkedin' ? 600 : 250;
 
   return (
     <>
@@ -80,7 +84,7 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
         
         <ExpandableText 
           text={content}
-          maxLength={150}
+          maxLength={maxLength}
           className="text-sm text-gray-700 leading-relaxed"
         />
       </div>
