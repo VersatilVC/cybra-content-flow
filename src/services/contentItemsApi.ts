@@ -38,10 +38,10 @@ export interface CreateContentItemData {
 export async function fetchContentItems(userId: string): Promise<ContentItem[]> {
   console.log('Fetching content items for user:', userId);
   
+  // With company-wide access, we fetch all content items (RLS will filter appropriately)
   const { data, error } = await supabase
     .from('content_items')
     .select('*')
-    .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
   if (error) {

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ContentBrief, ContentBriefFilters, CreateContentBriefData } from '@/types/contentBriefs';
 
@@ -16,15 +15,12 @@ export async function fetchContentBriefs(userId: string, filters?: ContentBriefF
   if (!session) {
     throw new Error('No active session found. Please log in again.');
   }
-  
-  if (session.user.id !== userId) {
-    throw new Error('Session user ID does not match requested user ID');
-  }
 
+  // With company-wide access, we don't need to filter by user_id anymore
+  // The RLS policies will handle access control based on company domain
   let query = supabase
     .from('content_briefs')
     .select('*')
-    .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
   if (filters?.briefType && filters.briefType !== 'All Brief Types') {

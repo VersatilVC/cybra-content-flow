@@ -1,10 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ContentIdea, ContentIdeaFilters, CreateContentIdeaData } from '@/types/contentIdeas';
 
 export const fetchContentIdeas = async (userId: string, filters?: ContentIdeaFilters): Promise<ContentIdea[]> => {
-  if (!userId) return [];
-  
+  // With company-wide access, we fetch all content ideas (RLS will filter appropriately)
   let query = supabase
     .from('content_ideas')
     .select('*')
