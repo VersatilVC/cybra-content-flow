@@ -20,7 +20,6 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
 
   console.log('🔄 [SocialContentPreview] Processing social content for derivative:', derivative.id);
   console.log('🔍 [SocialContentPreview] Raw derivative content type:', typeof derivative.content);
-  console.log('🔍 [SocialContentPreview] Raw derivative content length:', derivative.content?.length);
   
   const rawContent = derivative.content as string | object;
   let parsedContent;
@@ -28,6 +27,8 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   // Handle object content directly
   if (typeof rawContent === 'object' && rawContent !== null) {
     console.log('✅ [SocialContentPreview] Content is already an object');
+    console.log('🔍 [SocialContentPreview] Object content:', rawContent);
+    
     const contentObj = rawContent as any;
     parsedContent = {
       linkedin: contentObj.linkedin || undefined,
@@ -39,7 +40,7 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
       linkedinLength: parsedContent.linkedin?.length || 0,
       xLength: parsedContent.x?.length || 0
     });
-  } else {
+  } else if (typeof rawContent === 'string') {
     // Handle string content
     console.log('🔄 [SocialContentPreview] Processing string content:', rawContent.length, 'chars');
     
@@ -73,6 +74,10 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
       console.log('🔄 [SocialContentPreview] Content not JSON-like, using text parser');
       parsedContent = parseSocialContent(rawContent);
     }
+  } else {
+    // Fallback for unexpected types
+    console.log('⚠️ [SocialContentPreview] Unexpected content type, using empty result');
+    parsedContent = {};
   }
   
   console.log('✅ [SocialContentPreview] Final parsed content result:', {
