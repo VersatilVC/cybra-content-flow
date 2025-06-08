@@ -21,6 +21,15 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
     ? text 
     : text.substring(0, maxLength) + '...';
 
+  // Log information for debugging
+  console.log('🔍 [ExpandableText] Processing text:', {
+    originalLength: text.length,
+    maxLength,
+    shouldTruncate,
+    displayLength: displayText.length,
+    isExpanded
+  });
+
   if (!shouldTruncate) {
     return (
       <div className={`whitespace-pre-wrap ${className}`}>
@@ -28,6 +37,8 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
       </div>
     );
   }
+
+  const remainingChars = text.length - maxLength;
 
   return (
     <div className={className}>
@@ -48,7 +59,7 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
         ) : (
           <>
             <ChevronDown className="w-4 h-4 mr-1" />
-            Read More ({text.length - maxLength} more chars)
+            Read More ({remainingChars} more chars)
           </>
         )}
       </Button>

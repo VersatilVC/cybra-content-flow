@@ -18,72 +18,60 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
     return null;
   }
 
-  console.log('🔄 [SocialContentPreview] Parsing social content for derivative:', derivative.id);
-  console.log('🔍 [SocialContentPreview] Raw derivative content:', derivative.content);
+  console.log('🔄 [SocialContentPreview] Processing social content for derivative:', derivative.id);
+  console.log('🔍 [SocialContentPreview] Raw derivative content type:', typeof derivative.content);
+  console.log('🔍 [SocialContentPreview] Raw derivative content length:', derivative.content?.length);
   
   // At this point we know derivative.content is not null due to the check above
-  // Use non-null assertion and explicit typing to avoid TypeScript issues
   const rawContent = derivative.content as string | object;
   
-  // Check if content is already a parsed object
+  // Enhanced handling for different content types
+  let parsedContent;
+  
   if (typeof rawContent === 'object') {
     console.log('✅ [SocialContentPreview] Content is already an object:', rawContent);
-    // If it's already an object with linkedin/x properties, use it directly
+    
+    // Check if it's already in the expected format
     if ('linkedin' in rawContent || 'x' in rawContent) {
       const contentObj = rawContent as any;
-      const parsedContent = {
+      parsedContent = {
         linkedin: contentObj.linkedin || undefined,
         x: contentObj.x || contentObj.twitter || undefined
       };
-      console.log('✅ [SocialContentPreview] Using direct object content:', parsedContent);
-      
-      return (
-        <div className="space-y-4">
-          {parsedContent.linkedin && (
-            <SocialPostSection
-              platform="linkedin"
-              content={parsedContent.linkedin}
-              characterCount={parsedContent.linkedin.length}
-            />
-          )}
-          {parsedContent.x && (
-            <SocialPostSection
-              platform="x"
-              content={parsedContent.x}
-              characterCount={parsedContent.x.length}
-            />
-          )}
-        </div>
-      );
+      console.log('✅ [SocialContentPreview] Using direct object content:', {
+        hasLinkedIn: !!parsedContent.linkedin,
+        hasX: !!parsedContent.x,
+        linkedinLength: parsedContent.linkedin?.length || 0,
+        xLength: parsedContent.x?.length || 0
+      });
+    } else {
+      // If it's an object but not in expected format, stringify and parse
+      const stringified = JSON.stringify(rawContent);
+      console.log('🔄 [SocialContentPreview] Stringifying object for parsing:', stringified.length, 'chars');
+      parsedContent = parseSocialContent(stringified);
     }
-    // If it's an object but not in the expected format, stringify it for parsing
-    const contentToProcess = JSON.stringify(rawContent);
-    const parsedContent = parseSocialContent(contentToProcess);
-    console.log('✅ [SocialContentPreview] Parsed social content result:', parsedContent);
-    
-    return (
-      <div className="space-y-4">
-        {parsedContent.linkedin && (
-          <SocialPostSection
-            platform="linkedin"
-            content={parsedContent.linkedin}
-            characterCount={parsedContent.linkedin.length}
-          />
-        )}
-        {parsedContent.x && (
-          <SocialPostSection
-            platform="x"
-            content={parsedContent.x}
-            characterCount={parsedContent.x.length}
-          />
-        )}
-      </div>
-    );
+  } else {
+    // Handle string content
+    console.log('🔄 [SocialContentPreview] Processing string content:', rawContent.length, 'chars');
+    parsedContent = parseSocialContent(rawContent as string);
   }
   
-  // Handle string content
-  const parsedContent = parseSocialContent(rawContent as string);
-  console.log('✅ [SocialContentPreview] Parsed social content result:', parsedContent);
+  console.log('✅ [SocialContentPreview] Final parsed content result:', {
+    hasLinkedIn: !!parsedContent.linkedin,
+    hasX: !!parsedContent.x,
+    linkedinLength: parsedContent.linkedin?.length || 0,
+    xLength: parsedContent.x?.length || 0
+  });
+
+  // Add fallback error handling
+  if (!parsedContent.linkedin && !parsedContent.x) {
+    console.log('⚠️ [SocialContentPreview] No content extracted, falling back to raw content');
+    const fallbackContent = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent);
+    parsedContent = {
+      linkedin: fallbackContent,
+      x: fallbackContent
+    };
+  }
   
   return (
     <div className="space-y-4">

@@ -42,9 +42,23 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
 
   const platformName = platform === 'linkedin' ? 'LinkedIn' : 'X';
   
-  // Set different maxLength based on platform
-  // LinkedIn can be much longer, X/Twitter has character limits
+  // Set different maxLength based on platform - increased for better visibility
+  // LinkedIn posts can be much longer, X/Twitter has character limits
   const maxLength = platform === 'linkedin' ? 600 : 250;
+
+  // Always use the actual content length, not the provided characterCount if it seems wrong
+  const actualCharacterCount = content.length;
+  const displayCharacterCount = characterCount || actualCharacterCount;
+  
+  // Log discrepancies for debugging
+  if (characterCount && characterCount !== actualCharacterCount) {
+    console.log('⚠️ [SocialPostSection] Character count mismatch:', {
+      provided: characterCount,
+      actual: actualCharacterCount,
+      platform,
+      contentPreview: content.substring(0, 100) + '...'
+    });
+  }
 
   return (
     <>
@@ -52,11 +66,9 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
         <div className="flex items-center justify-between mb-3">
           <PlatformBadge platform={platform} />
           <div className="flex items-center gap-2">
-            {characterCount && (
-              <span className="text-xs text-gray-500">
-                {characterCount} chars
-              </span>
-            )}
+            <span className="text-xs text-gray-500">
+              {actualCharacterCount} chars
+            </span>
             <Button
               variant="ghost"
               size="sm"
