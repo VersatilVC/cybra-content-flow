@@ -10,13 +10,11 @@ import ViewFullPostModal from './ViewFullPostModal';
 interface SocialPostSectionProps {
   platform: 'linkedin' | 'x';
   content: string;
-  characterCount?: number;
 }
 
 const SocialPostSection: React.FC<SocialPostSectionProps> = ({ 
   platform, 
-  content, 
-  characterCount 
+  content
 }) => {
   const [copied, setCopied] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,16 +43,15 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
   // Set different maxLength based on platform for better readability
   const maxLength = platform === 'linkedin' ? 600 : 250;
 
-  // Always use the actual content length for accurate display
-  const actualCharacterCount = content.length;
+  // Use the actual content length for accurate display
+  const characterCount = content.length;
   
   console.log(`🔍 [SocialPostSection] ${platformName} post processing:`, {
-    providedCharacterCount: characterCount,
-    actualContentLength: actualCharacterCount,
+    actualContentLength: characterCount,
     contentPreview: content.substring(0, 150) + '...',
     platform,
     maxLength,
-    willShowExpandable: actualCharacterCount > maxLength
+    willShowExpandable: characterCount > maxLength
   });
 
   return (
@@ -64,7 +61,7 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
           <PlatformBadge platform={platform} />
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500">
-              {actualCharacterCount} chars
+              {characterCount} chars
             </span>
             <Button
               variant="ghost"

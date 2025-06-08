@@ -17,7 +17,7 @@ export function parseSocialContent(content: string): ParsedSocialContent {
   // Ensure we're working with a string
   const contentString = typeof content === 'string' ? content : JSON.stringify(content);
   
-  // Try to parse as JSON first with improved error handling
+  // Try to parse as JSON first
   try {
     console.log('🔄 [Social Parser] Attempting JSON parse...');
     const parsed = JSON.parse(contentString);
@@ -42,7 +42,7 @@ export function parseSocialContent(content: string): ParsedSocialContent {
     console.log('❌ [Social Parser] JSON parse failed, trying text-based parsing:', parseError);
   }
 
-  // Enhanced text-based content parsing
+  // Enhanced text-based content parsing for markdown-style content
   console.log('🔄 [Social Parser] Attempting text-based parsing...');
   
   // More flexible regex patterns for text-based content
@@ -90,8 +90,8 @@ export function parseSocialContent(content: string): ParsedSocialContent {
     console.log('✅ [Social Parser] X content extracted from text - length:', result.x.length);
   }
 
-  // If no specific platform content found, treat as generic social content for both platforms
-  if (!result.linkedin && !result.x && contentString.trim()) {
+  // Only use generic fallback if no platform-specific content found AND it's not JSON-like
+  if (!result.linkedin && !result.x && contentString.trim() && !contentString.trim().startsWith('{')) {
     console.log('⚠️ [Social Parser] No platform-specific content found, using as generic for both platforms');
     const cleanContent = contentString.trim();
     result.linkedin = cleanContent;

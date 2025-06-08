@@ -25,62 +25,51 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   const rawContent = derivative.content as string | object;
   let parsedContent;
   
-  // Simplified and more reliable parsing logic
-  if (typeof rawContent === 'object') {
+  // Handle object content directly
+  if (typeof rawContent === 'object' && rawContent !== null) {
     console.log('✅ [SocialContentPreview] Content is already an object');
-    
-    // Direct object handling - check if it has the expected structure
-    if ('linkedin' in rawContent || 'x' in rawContent) {
-      const contentObj = rawContent as any;
-      parsedContent = {
-        linkedin: contentObj.linkedin || undefined,
-        x: contentObj.x || contentObj.twitter || undefined
-      };
-      console.log('✅ [SocialContentPreview] Using direct object content:', {
-        hasLinkedIn: !!parsedContent.linkedin,
-        hasX: !!parsedContent.x,
-        linkedinLength: parsedContent.linkedin?.length || 0,
-        xLength: parsedContent.x?.length || 0
-      });
-    } else {
-      // Fallback: stringify and parse
-      const stringified = JSON.stringify(rawContent);
-      console.log('🔄 [SocialContentPreview] Stringifying object for parsing');
-      parsedContent = parseSocialContent(stringified);
-    }
+    const contentObj = rawContent as any;
+    parsedContent = {
+      linkedin: contentObj.linkedin || undefined,
+      x: contentObj.x || contentObj.twitter || undefined
+    };
+    console.log('✅ [SocialContentPreview] Using direct object content:', {
+      hasLinkedIn: !!parsedContent.linkedin,
+      hasX: !!parsedContent.x,
+      linkedinLength: parsedContent.linkedin?.length || 0,
+      xLength: parsedContent.x?.length || 0
+    });
   } else {
-    // Handle string content - try direct JSON parse first
+    // Handle string content
     console.log('🔄 [SocialContentPreview] Processing string content:', rawContent.length, 'chars');
     
-    // Check if it looks like JSON and try to parse it directly
     const trimmedContent = rawContent.trim();
+    
+    // Try to parse as JSON first
     if (trimmedContent.startsWith('{') && trimmedContent.endsWith('}')) {
       try {
-        console.log('🔄 [SocialContentPreview] Attempting direct JSON parse...');
+        console.log('🔄 [SocialContentPreview] Attempting JSON parse...');
         const directParsed = JSON.parse(trimmedContent);
-        console.log('✅ [SocialContentPreview] Direct JSON parse successful:', directParsed);
+        console.log('✅ [SocialContentPreview] JSON parse successful:', directParsed);
         
-        if (directParsed.linkedin || directParsed.x || directParsed.twitter) {
-          parsedContent = {
-            linkedin: directParsed.linkedin || undefined,
-            x: directParsed.x || directParsed.twitter || undefined
-          };
-          console.log('✅ [SocialContentPreview] Direct JSON extraction successful:', {
-            hasLinkedIn: !!parsedContent.linkedin,
-            hasX: !!parsedContent.x,
-            linkedinLength: parsedContent.linkedin?.length || 0,
-            xLength: parsedContent.x?.length || 0
-          });
-        } else {
-          console.log('⚠️ [SocialContentPreview] JSON parsed but no platform keys found, falling back to text parsing');
-          parsedContent = parseSocialContent(rawContent);
-        }
+        // Extract platform-specific content
+        parsedContent = {
+          linkedin: directParsed.linkedin || undefined,
+          x: directParsed.x || directParsed.twitter || undefined
+        };
+        
+        console.log('✅ [SocialContentPreview] Extracted platform content:', {
+          hasLinkedIn: !!parsedContent.linkedin,
+          hasX: !!parsedContent.x,
+          linkedinLength: parsedContent.linkedin?.length || 0,
+          xLength: parsedContent.x?.length || 0
+        });
       } catch (error) {
-        console.log('❌ [SocialContentPreview] Direct JSON parse failed, using text parser:', error);
+        console.log('❌ [SocialContentPreview] JSON parse failed, using text parser:', error);
         parsedContent = parseSocialContent(rawContent);
       }
     } else {
-      // Not JSON-like, use text parser
+      // Not JSON-like, use text parser for text-based content
       console.log('🔄 [SocialContentPreview] Content not JSON-like, using text parser');
       parsedContent = parseSocialContent(rawContent);
     }
@@ -90,36 +79,22 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
     hasLinkedIn: !!parsedContent.linkedin,
     hasX: !!parsedContent.x,
     linkedinLength: parsedContent.linkedin?.length || 0,
-    xLength: parsedContent.x?.length || 0,
-    linkedinPreview: parsedContent.linkedin ? parsedContent.linkedin.substring(0, 100) + '...' : 'none',
-    xPreview: parsedContent.x ? parsedContent.x.substring(0, 100) + '...' : 'none'
+    xLength: parsedContent.x?.length || 0
   });
 
-  // Enhanced fallback - if no content extracted, use the raw content
-  if (!parsedContent.linkedin && !parsedContent.x) {
-    console.log('⚠️ [SocialContentPreview] No content extracted, using raw content as fallback');
-    const fallbackContent = typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent);
-    parsedContent = {
-      linkedin: fallbackContent,
-      x: fallbackContent
-    };
-    console.log('🛠️ [SocialContentPreview] Applied fallback - content length:', fallbackContent.length);
-  }
-  
+  // Only show sections for platforms that have content
   return (
     <div className="space-y-4">
       {parsedContent.linkedin && (
         <SocialPostSection
           platform="linkedin"
           content={parsedContent.linkedin}
-          characterCount={parsedContent.linkedin.length}
         />
       )}
       {parsedContent.x && (
         <SocialPostSection
           platform="x"
           content={parsedContent.x}
-          characterCount={parsedContent.x.length}
         />
       )}
     </div>
