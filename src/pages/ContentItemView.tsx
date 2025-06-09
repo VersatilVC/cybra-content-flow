@@ -1,94 +1,35 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  ArrowLeft, 
-  XCircle, 
-  Calendar,
-  FileText,
-  Loader2
-} from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { useContentItems } from '@/hooks/useContentItems';
-import { supabase } from '@/integrations/supabase/client';
-import { ContentItem } from '@/services/contentItemsApi';
+import { XCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { useContentItemView } from '@/hooks/useContentItemView';
 import { RequestAIFixModal } from '@/components/content-item/RequestAIFixModal';
 import { EditContentModal } from '@/components/content-item/EditContentModal';
 import ContentItemActions from '@/components/content-item/ContentItemActions';
 import ContentItemTabs from '@/components/content-item/ContentItemTabs';
-import { getStatusInfo, formatDate } from '@/utils/contentItemStatus';
+import ContentItemHeader from '@/components/content-item/ContentItemHeader';
+import ContentItemStatus from '@/components/content-item/ContentItemStatus';
 
 const ContentItemView = () => {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { updateContentItem, isUpdating } = useContentItems();
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAIFixModalOpen, setIsAIFixModalOpen] = useState(false);
-
-  const { data: contentItem, isLoading, error, refetch } = useQuery({
-    queryKey: ['content-item', id],
-    queryFn: async () => {
-      if (!id) throw new Error('Content item ID is required');
-      
-      const { data, error } = await supabase
-        .from('content_items')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw new Error(`Failed to fetch content item: ${error.message}`);
-      return data as ContentItem;
-    },
-    enabled: !!id && !!user?.id,
-  });
-
-  const handleStatusUpdate = (newStatus: string) => {
-    if (!contentItem) return;
-    
-    updateContentItem({ 
-      id: contentItem.id, 
-      updates: { status: newStatus } 
-    });
-    
-    toast({
-      title: 'Status updated',
-      description: `Content item has been ${newStatus === 'approved' ? 'approved' : newStatus === 'discarded' ? 'discarded' : 'updated'}.`,
-    });
-  };
-
-  const handleEditContent = () => {
-    setIsEditModalOpen(true);
-  };
-
-  const handleSaveContent = (updates: Partial<ContentItem>) => {
-    if (!contentItem) return;
-    
-    updateContentItem({ 
-      id: contentItem.id, 
-      updates 
-    });
-    
-    setIsEditModalOpen(false);
-    refetch();
-  };
-
-  const handleRequestAIFix = () => {
-    setIsAIFixModalOpen(true);
-  };
-
-  const handleAIFixRequested = () => {
-    if (contentItem) {
-      updateContentItem({ 
-        id: contentItem.id, 
-        updates: { status: 'needs_revision' } 
-      });
-    }
-  };
+  const {
+    contentItem,
+    isLoading,
+    error,
+    refetch,
+    isUpdating,
+    user,
+    isEditModalOpen,
+    setIsEditModalOpen,
+    isAIFixModalOpen,
+    setIsAIFixModalOpen,
+    handleStatusUpdate,
+    handleEditContent,
+    handleSaveContent,
+    handleRequestAIFix,
+    handleAIFixRequested,
+  } = useContentItemView();
 
   if (isLoading) {
     return (
@@ -116,54 +57,12 @@ const ContentItemView = () => {
     );
   }
 
-  const statusInfo = getStatusInfo(contentItem.status);
-
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button 
-          onClick={() => navigate('/content-items')} 
-          variant="ghost" 
-          size="sm"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Content Items
-        </Button>
-        <div className="h-6 w-px bg-gray-300" />
-        <nav className="text-sm text-gray-500">
-          Content Items / {contentItem.title}
-        </nav>
-      </div>
+      <ContentItemHeader title={contentItem.title} />
+      
+      <ContentItemStatus contentItem={contentItem} />
 
-      {/* Title and Status */}
-      <div className="flex items-start justify-between mb-8">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{contentItem.title}</h1>
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-1">
-              <FileText className="w-4 h-4" />
-              <span>{contentItem.content_type}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="w-4 h-4" />
-              <span>Created {formatDate(contentItem.created_at)}</span>
-            </div>
-            {contentItem.word_count && (
-              <div className="flex items-center gap-1">
-                <span>{contentItem.word_count} words</span>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Badge className={`px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color}`}>
-            {statusInfo.label}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
       <ContentItemActions
         contentItem={contentItem}
         isUpdating={isUpdating}
@@ -174,10 +73,8 @@ const ContentItemView = () => {
         onRefetch={refetch}
       />
 
-      {/* Content Tabs */}
       <ContentItemTabs contentItem={contentItem} />
 
-      {/* Modals */}
       <EditContentModal
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
