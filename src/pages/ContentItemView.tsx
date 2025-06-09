@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -34,13 +33,12 @@ const ContentItemView = () => {
   const { data: contentItem, isLoading, error, refetch } = useQuery({
     queryKey: ['content-item', id],
     queryFn: async () => {
-      if (!id || !user?.id) throw new Error('Missing ID or user');
+      if (!id) throw new Error('Content item ID is required');
       
       const { data, error } = await supabase
         .from('content_items')
         .select('*')
         .eq('id', id)
-        .eq('user_id', user.id)
         .single();
 
       if (error) throw new Error(`Failed to fetch content item: ${error.message}`);
@@ -108,7 +106,7 @@ const ContentItemView = () => {
         <div className="text-center py-12">
           <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Content item not found</h3>
-          <p className="text-gray-600 mb-4">The content item you're looking for doesn't exist or you don't have access to it.</p>
+          <p className="text-gray-600 mb-4">The content item you're looking for doesn't exist or may have been deleted.</p>
           <Button onClick={() => navigate('/content-items')} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Content Items
