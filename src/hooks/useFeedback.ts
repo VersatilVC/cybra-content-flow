@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -244,15 +245,15 @@ export function useFeedback() {
 
 export function useUnreadFeedbackCount() {
   return useQuery({
-    queryKey: ['unread-feedback-count'],
+    queryKey: ['active-feedback-count'],
     queryFn: async (): Promise<number> => {
       const { data, error } = await supabase
         .from('feedback_submissions')
         .select('id', { count: 'exact' })
-        .eq('status', 'open');
+        .not('status', 'in', '(resolved,closed)');
 
       if (error) {
-        console.error('Error fetching unread feedback count:', error);
+        console.error('Error fetching active feedback count:', error);
         return 0;
       }
 
