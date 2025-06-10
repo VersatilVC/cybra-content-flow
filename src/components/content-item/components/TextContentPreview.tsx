@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ContentDerivative } from '@/services/contentDerivativesApi';
+import ExpandableText from './ExpandableText';
 
 interface TextContentPreviewProps {
   derivative: ContentDerivative;
@@ -13,9 +14,11 @@ const TextContentPreview: React.FC<TextContentPreviewProps> = ({ derivative }) =
 
   return (
     <div className="bg-gray-50 rounded-lg p-3">
-      <div className="text-sm text-gray-700 line-clamp-4 leading-relaxed">
-        {derivative.content}
-      </div>
+      <ExpandableText 
+        text={derivative.content}
+        maxLength={350}
+        className="text-sm text-gray-700 leading-relaxed"
+      />
     </div>
   );
 };
