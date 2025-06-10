@@ -1,57 +1,19 @@
+
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useFeedback } from '@/hooks/useFeedback';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { 
   Bug, 
   Lightbulb, 
   MessageSquare, 
   TrendingUp, 
-  Search,
-  Calendar,
-  User,
-  Eye,
-  Trash2,
   CheckCircle
 } from 'lucide-react';
-import { format } from 'date-fns';
+import FeedbackStatsCards from '@/components/feedback/FeedbackStatsCards';
+import FeedbackFilters from '@/components/feedback/FeedbackFilters';
+import FeedbackTable from '@/components/feedback/FeedbackTable';
 
 const FeedbackManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('active');
@@ -184,53 +146,7 @@ const FeedbackManagement: React.FC = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-5">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Feedback</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Items</CardTitle>
-              <Bug className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.active}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Open Issues</CardTitle>
-              <Bug className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.open}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.inProgress}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Resolved & Closed</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.resolved}</div>
-            </CardContent>
-          </Card>
-        </div>
+        <FeedbackStatsCards stats={stats} />
 
         {/* Tabs for Active vs Resolved Feedback */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
@@ -246,72 +162,17 @@ const FeedbackManagement: React.FC = () => {
           </TabsList>
 
           {/* Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Filters</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Search</label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search feedback..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getStatusOptions().map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Category</label>
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="bug">Bug Report</SelectItem>
-                      <SelectItem value="feature_request">Feature Request</SelectItem>
-                      <SelectItem value="improvement">Improvement</SelectItem>
-                      <SelectItem value="general_feedback">General Feedback</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Priority</label>
-                  <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Priorities</SelectItem>
-                      <SelectItem value="critical">Critical</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="low">Low</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <FeedbackFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            categoryFilter={categoryFilter}
+            setCategoryFilter={setCategoryFilter}
+            priorityFilter={priorityFilter}
+            setPriorityFilter={setPriorityFilter}
+            statusOptions={getStatusOptions()}
+          />
 
           <TabsContent value="active" className="space-y-4">
             {/* Active Feedback Table */}
@@ -340,207 +201,16 @@ const FeedbackManagement: React.FC = () => {
                     )}
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Priority</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Submitter</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredFeedback.map((feedback) => (
-                        <TableRow key={feedback.id}>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{feedback.title}</div>
-                              <div className="text-sm text-muted-foreground line-clamp-2">
-                                {feedback.description}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              {getCategoryIcon(feedback.category)}
-                              <span className="capitalize">
-                                {feedback.category.replace('_', ' ')}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant="secondary"
-                              className={`${getPriorityColor(feedback.priority)} text-white`}
-                            >
-                              {feedback.priority}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Select
-                              value={feedback.status}
-                              onValueChange={(value) => handleStatusUpdate(feedback.id, value)}
-                              disabled={isUpdating}
-                            >
-                              <SelectTrigger className="w-32">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="open">Open</SelectItem>
-                                <SelectItem value="in_review">In Review</SelectItem>
-                                <SelectItem value="in_progress">In Progress</SelectItem>
-                                <SelectItem value="testing">Testing</SelectItem>
-                                <SelectItem value="resolved">Resolved</SelectItem>
-                                <SelectItem value="closed">Closed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <User className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-sm">
-                                {feedback.profiles?.first_name && feedback.profiles?.last_name
-                                  ? `${feedback.profiles.first_name} ${feedback.profiles.last_name}`
-                                  : feedback.profiles?.email || 'Unknown'}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Calendar className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-sm">
-                                {format(new Date(feedback.created_at), 'MMM dd, yyyy')}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <Eye className="w-4 h-4 mr-1" />
-                                    View
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
-                                  <DialogHeader>
-                                    <DialogTitle>{feedback.title}</DialogTitle>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    <div>
-                                      <h4 className="font-medium mb-2">Description</h4>
-                                      <p className="text-sm text-muted-foreground">{feedback.description}</p>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <h4 className="font-medium mb-1">Category</h4>
-                                        <div className="flex items-center space-x-2">
-                                          {getCategoryIcon(feedback.category)}
-                                          <span className="text-sm capitalize">
-                                            {feedback.category.replace('_', ' ')}
-                                          </span>
-                                        </div>
-                                      </div>
-                                      <div>
-                                        <h4 className="font-medium mb-1">Priority</h4>
-                                        <Badge 
-                                          variant="secondary"
-                                          className={`${getPriorityColor(feedback.priority)} text-white`}
-                                        >
-                                          {feedback.priority}
-                                        </Badge>
-                                      </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <h4 className="font-medium mb-1">Status</h4>
-                                        <Badge 
-                                          variant="secondary"
-                                          className={`${getStatusColor(feedback.status)} text-white`}
-                                        >
-                                          {feedback.status.replace('_', ' ')}
-                                        </Badge>
-                                      </div>
-                                      <div>
-                                        <h4 className="font-medium mb-1">Submitter</h4>
-                                        <p className="text-sm">
-                                          {feedback.profiles?.first_name && feedback.profiles?.last_name
-                                            ? `${feedback.profiles.first_name} ${feedback.profiles.last_name}`
-                                            : feedback.profiles?.email || 'Unknown'}
-                                        </p>
-                                      </div>
-                                    </div>
-
-                                    <div>
-                                      <h4 className="font-medium mb-1">Created</h4>
-                                      <p className="text-sm">
-                                        {format(new Date(feedback.created_at), 'MMM dd, yyyy HH:mm')}
-                                      </p>
-                                    </div>
-
-                                    {feedback.internal_notes && (
-                                      <div>
-                                        <h4 className="font-medium mb-2">Internal Notes</h4>
-                                        <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
-                                          {feedback.internal_notes}
-                                        </p>
-                                      </div>
-                                    )}
-
-                                    {feedback.attachment_url && (
-                                      <div>
-                                        <h4 className="font-medium mb-2">Attachment</h4>
-                                        <a 
-                                          href={feedback.attachment_url} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 hover:underline text-sm"
-                                        >
-                                          {feedback.attachment_filename || 'Download attachment'}
-                                        </a>
-                                      </div>
-                                    )}
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
-
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                                    <Trash2 className="w-4 h-4 mr-1" />
-                                    Delete
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      This action cannot be undone. This will permanently delete the feedback submission
-                                      "{feedback.title}" and remove it from our servers.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDelete(feedback.id)}
-                                      className="bg-red-600 hover:bg-red-700"
-                                    >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <FeedbackTable
+                    feedback={filteredFeedback}
+                    onStatusUpdate={handleStatusUpdate}
+                    onDelete={handleDelete}
+                    getPriorityColor={getPriorityColor}
+                    getStatusColor={getStatusColor}
+                    getCategoryIcon={getCategoryIcon}
+                    isUpdating={isUpdating}
+                    showStatusSelect={true}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -564,196 +234,16 @@ const FeedbackManagement: React.FC = () => {
                     )}
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Priority</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Submitter</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredFeedback.map((feedback) => (
-                        <TableRow key={feedback.id}>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{feedback.title}</div>
-                              <div className="text-sm text-muted-foreground line-clamp-2">
-                                {feedback.description}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              {getCategoryIcon(feedback.category)}
-                              <span className="capitalize">
-                                {feedback.category.replace('_', ' ')}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant="secondary"
-                              className={`${getPriorityColor(feedback.priority)} text-white`}
-                            >
-                              {feedback.priority}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant="secondary"
-                              className={`${getStatusColor(feedback.status)} text-white`}
-                            >
-                              {feedback.status.replace('_', ' ')}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <User className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-sm">
-                                {feedback.profiles?.first_name && feedback.profiles?.last_name
-                                  ? `${feedback.profiles.first_name} ${feedback.profiles.last_name}`
-                                  : feedback.profiles?.email || 'Unknown'}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Calendar className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-sm">
-                                {format(new Date(feedback.created_at), 'MMM dd, yyyy')}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <Eye className="w-4 h-4 mr-1" />
-                                    View
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
-                                  <DialogHeader>
-                                    <DialogTitle>{feedback.title}</DialogTitle>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    <div>
-                                      <h4 className="font-medium mb-2">Description</h4>
-                                      <p className="text-sm text-muted-foreground">{feedback.description}</p>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <h4 className="font-medium mb-1">Category</h4>
-                                        <div className="flex items-center space-x-2">
-                                          {getCategoryIcon(feedback.category)}
-                                          <span className="text-sm capitalize">
-                                            {feedback.category.replace('_', ' ')}
-                                          </span>
-                                        </div>
-                                      </div>
-                                      <div>
-                                        <h4 className="font-medium mb-1">Priority</h4>
-                                        <Badge 
-                                          variant="secondary"
-                                          className={`${getPriorityColor(feedback.priority)} text-white`}
-                                        >
-                                          {feedback.priority}
-                                        </Badge>
-                                      </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <h4 className="font-medium mb-1">Status</h4>
-                                        <Badge 
-                                          variant="secondary"
-                                          className={`${getStatusColor(feedback.status)} text-white`}
-                                        >
-                                          {feedback.status.replace('_', ' ')}
-                                        </Badge>
-                                      </div>
-                                      <div>
-                                        <h4 className="font-medium mb-1">Submitter</h4>
-                                        <p className="text-sm">
-                                          {feedback.profiles?.first_name && feedback.profiles?.last_name
-                                            ? `${feedback.profiles.first_name} ${feedback.profiles.last_name}`
-                                            : feedback.profiles?.email || 'Unknown'}
-                                        </p>
-                                      </div>
-                                    </div>
-
-                                    <div>
-                                      <h4 className="font-medium mb-1">Created</h4>
-                                      <p className="text-sm">
-                                        {format(new Date(feedback.created_at), 'MMM dd, yyyy HH:mm')}
-                                      </p>
-                                    </div>
-
-                                    {feedback.internal_notes && (
-                                      <div>
-                                        <h4 className="font-medium mb-2">Internal Notes</h4>
-                                        <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
-                                          {feedback.internal_notes}
-                                        </p>
-                                      </div>
-                                    )}
-
-                                    {feedback.attachment_url && (
-                                      <div>
-                                        <h4 className="font-medium mb-2">Attachment</h4>
-                                        <a 
-                                          href={feedback.attachment_url} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 hover:underline text-sm"
-                                        >
-                                          {feedback.attachment_filename || 'Download attachment'}
-                                        </a>
-                                      </div>
-                                    )}
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
-
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                                    <Trash2 className="w-4 h-4 mr-1" />
-                                    Delete
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      This action cannot be undone. This will permanently delete the feedback submission
-                                      "{feedback.title}" and remove it from our servers.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDelete(feedback.id)}
-                                      className="bg-red-600 hover:bg-red-700"
-                                    >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <FeedbackTable
+                    feedback={filteredFeedback}
+                    onStatusUpdate={handleStatusUpdate}
+                    onDelete={handleDelete}
+                    getPriorityColor={getPriorityColor}
+                    getStatusColor={getStatusColor}
+                    getCategoryIcon={getCategoryIcon}
+                    isUpdating={isUpdating}
+                    showStatusSelect={false}
+                  />
                 )}
               </CardContent>
             </Card>
