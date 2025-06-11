@@ -41,7 +41,7 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
     <>
       <CoverPage contentItem={contentItem} formatDate={formatDate} />
       
-      {/* Summary and TL;DR Page */}
+      {/* Summary and TL;DR Page - Restructured as single cohesive unit */}
       <Page size="A4" style={pdfStyles.page}>
         {/* Header */}
         <View style={pdfStyles.header} fixed>
@@ -49,26 +49,29 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
           <Text style={pdfStyles.headerTitle}>{contentItem.title}</Text>
         </View>
 
-        {/* Summary Section */}
-        {contentItem.summary && (
-          <View>
-            <Text style={pdfStyles.sectionTitle}>Executive Summary</Text>
-            <Text style={pdfStyles.paragraph}>{contentItem.summary}</Text>
-          </View>
-        )}
+        {/* Combined Summary and TL;DR Section - Single View with strong break prevention */}
+        <View style={pdfStyles.summaryTldrContainer}>
+          {/* Summary Section */}
+          {contentItem.summary && (
+            <View>
+              <Text style={pdfStyles.sectionTitle}>Executive Summary</Text>
+              <Text style={pdfStyles.paragraph}>{contentItem.summary}</Text>
+            </View>
+          )}
 
-        {/* TL;DR Section - Using stronger break prevention */}
-        {tldrElements.map((element, index) => (
-          <View key={index} style={pdfStyles.tldrBox}>
-            <Text style={pdfStyles.tldrTitle}>TL;DR</Text>
-            {element.items?.map((item: string, itemIndex: number) => (
-              <View key={itemIndex} style={pdfStyles.tldrItem}>
-                <Text style={pdfStyles.tldrBullet}>•</Text>
-                <Text style={pdfStyles.listText}>{item}</Text>
-              </View>
-            ))}
-          </View>
-        ))}
+          {/* TL;DR Section - Rendered as single block */}
+          {tldrElements.length > 0 && (
+            <View style={pdfStyles.tldrBox}>
+              <Text style={pdfStyles.tldrTitle}>TL;DR</Text>
+              {tldrElements[0]?.items?.map((item: string, itemIndex: number) => (
+                <View key={itemIndex} style={pdfStyles.tldrItem}>
+                  <Text style={pdfStyles.tldrBullet}>•</Text>
+                  <Text style={pdfStyles.listText}>{item}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
 
         {/* Footer */}
         <View style={pdfStyles.footer} fixed>

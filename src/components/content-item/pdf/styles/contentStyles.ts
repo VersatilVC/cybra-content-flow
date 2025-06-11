@@ -1,4 +1,3 @@
-
 import { StyleSheet } from '@react-pdf/renderer';
 
 export const contentStyles = StyleSheet.create({
@@ -72,6 +71,15 @@ export const contentStyles = StyleSheet.create({
     paddingLeft: 15,
     backgroundColor: '#f8fafc',
     padding: 15,
+  },
+  // New container for Summary + TL;DR to keep them together
+  summaryTldrContainer: {
+    break: false,
+    wrap: false,
+    orphans: 999,
+    widows: 999,
+    breakInside: 'avoid',
+    minPresenceAhead: 200,
   },
   tldrBox: {
     backgroundColor: '#8B5CF6',
