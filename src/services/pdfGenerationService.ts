@@ -6,7 +6,8 @@ import ProfessionalPDFTemplate from '@/components/content-item/ProfessionalPDFTe
 
 export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> {
   try {
-    console.log('Generating professional PDF for content item:', contentItem.id);
+    console.log('pdfGenerationService: Generating professional PDF for content item:', contentItem.id);
+    console.log('pdfGenerationService: Using ProfessionalPDFTemplate');
     
     // Create the PDF document with Document wrapper
     const pdfDocument = React.createElement(
@@ -16,10 +17,10 @@ export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> 
     );
     const pdfBlob = await pdf(pdfDocument).toBlob();
     
-    console.log('Professional PDF generated successfully');
+    console.log('pdfGenerationService: Professional PDF generated successfully');
     return pdfBlob;
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('pdfGenerationService: Error generating PDF:', error);
     throw new Error('Failed to generate PDF. Please try again.');
   }
 }
@@ -35,9 +36,9 @@ export function downloadPDF(blob: Blob, filename: string) {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    console.log('PDF download initiated:', filename);
+    console.log('pdfGenerationService: PDF download initiated:', filename);
   } catch (error) {
-    console.error('Error downloading PDF:', error);
+    console.error('pdfGenerationService: Error downloading PDF:', error);
     throw new Error('Failed to download PDF. Please try again.');
   }
 }

@@ -13,6 +13,8 @@ interface ProfessionalPDFTemplateProps {
 }
 
 const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ contentItem }) => {
+  console.log('ProfessionalPDFTemplate: Rendering PDF for content item:', contentItem.id);
+  
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -31,6 +33,9 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
   // Separate TL;DR from main content
   const tldrElements = contentElements.filter(element => element.type === 'tldr');
   const mainContentElements = contentElements.filter(element => element.type !== 'tldr');
+
+  console.log('ProfessionalPDFTemplate: TL;DR elements found:', tldrElements.length);
+  console.log('ProfessionalPDFTemplate: Main content elements:', mainContentElements.length);
 
   return (
     <>
@@ -52,7 +57,7 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
           </View>
         )}
 
-        {/* TL;DR Section */}
+        {/* TL;DR Section - Using stronger break prevention */}
         {tldrElements.map((element, index) => (
           <View key={index} style={pdfStyles.tldrBox}>
             <Text style={pdfStyles.tldrTitle}>TL;DR</Text>
