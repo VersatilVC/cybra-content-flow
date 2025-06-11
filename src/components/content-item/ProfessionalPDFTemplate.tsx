@@ -5,7 +5,6 @@ import { ContentItem } from '@/services/contentItemsApi';
 import { addUTMToLinks } from '@/utils/utmGenerator';
 import { parseContent } from './pdf/contentParser';
 import { CoverPage } from './pdf/CoverPage';
-import { TableOfContents } from './pdf/TableOfContents';
 import { ContentPage } from './pdf/ContentPage';
 import { pdfStyles } from './pdf/pdfStyles';
 
@@ -36,7 +35,6 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
   return (
     <>
       <CoverPage contentItem={contentItem} formatDate={formatDate} />
-      <TableOfContents contentElements={contentElements} />
       
       {/* Summary and TL;DR Page */}
       <Page size="A4" style={pdfStyles.page}>
