@@ -61,41 +61,33 @@ const createPDFDocument = (contentItem: ContentItem) => {
     });
   };
 
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{contentItem.title}</Text>
-          <Text style={styles.subtitle}>
-            Created: {formatDate(contentItem.created_at)}
-          </Text>
-          <Text style={styles.subtitle}>
-            Type: {contentItem.content_type} | Status: {contentItem.status}
-          </Text>
-          {contentItem.word_count && (
-            <Text style={styles.subtitle}>
-              Word Count: {contentItem.word_count}
-            </Text>
-          )}
-        </View>
+  return React.createElement(Document, null,
+    React.createElement(Page, { size: "A4", style: styles.page },
+      React.createElement(View, { style: styles.header },
+        React.createElement(Text, { style: styles.title }, contentItem.title),
+        React.createElement(Text, { style: styles.subtitle }, 
+          `Created: ${formatDate(contentItem.created_at)}`
+        ),
+        React.createElement(Text, { style: styles.subtitle }, 
+          `Type: ${contentItem.content_type} | Status: ${contentItem.status}`
+        ),
+        contentItem.word_count && React.createElement(Text, { style: styles.subtitle }, 
+          `Word Count: ${contentItem.word_count}`
+        )
+      ),
+      
+      contentItem.summary && React.createElement(View, null,
+        React.createElement(Text, { style: styles.paragraph }, contentItem.summary)
+      ),
 
-        {contentItem.summary && (
-          <View>
-            <Text style={styles.paragraph}>{contentItem.summary}</Text>
-          </View>
-        )}
+      contentItem.content && React.createElement(View, null,
+        React.createElement(Text, { style: styles.content }, contentItem.content)
+      ),
 
-        {contentItem.content && (
-          <View>
-            <Text style={styles.content}>{contentItem.content}</Text>
-          </View>
-        )}
-
-        <Text style={styles.footer}>
-          Generated on {formatDate(new Date().toISOString())}
-        </Text>
-      </Page>
-    </Document>
+      React.createElement(Text, { style: styles.footer }, 
+        `Generated on ${formatDate(new Date().toISOString())}`
+      )
+    )
   );
 };
 
