@@ -7,7 +7,7 @@ export const contentPageStyles = StyleSheet.create({
     backgroundColor: '#ffffff',
     padding: 40,
     fontFamily: 'Helvetica',
-    paddingTop: 60,
+    paddingTop: 80,
     paddingBottom: 80,
   },
   header: {
