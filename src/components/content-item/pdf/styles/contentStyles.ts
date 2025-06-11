@@ -1,4 +1,3 @@
-
 import { StyleSheet } from '@react-pdf/renderer';
 
 export const contentStyles = StyleSheet.create({
@@ -73,7 +72,35 @@ export const contentStyles = StyleSheet.create({
     backgroundColor: '#f8fafc',
     padding: 15,
   },
-  // New container for Summary + TL;DR to keep them together
+  // New styles for simplified Summary/TL;DR page
+  summaryPage: {
+    padding: 40,
+    break: false,
+    wrap: false,
+    orphans: 999,
+    widows: 999,
+  },
+  summaryLogo: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  combinedSummaryTldr: {
+    fontSize: 12,
+    lineHeight: 1.8,
+    color: '#1f2937',
+    textAlign: 'left',
+    whiteSpace: 'pre-line',
+    break: false,
+    wrap: false,
+    orphans: 999,
+    widows: 999,
+    flex: 1,
+  },
+  summaryFooter: {
+    marginTop: 40,
+    alignItems: 'center',
+  },
+  // Legacy styles (keep for other components)
   summaryTldrContainer: {
     break: false,
     wrap: false,
@@ -106,7 +133,6 @@ export const contentStyles = StyleSheet.create({
     wrap: false,
     orphans: 999,
   },
-  // New single text style for flattened TL;DR content
   tldrText: {
     fontSize: 11,
     lineHeight: 1.5,
