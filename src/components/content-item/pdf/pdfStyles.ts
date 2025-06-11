@@ -16,8 +16,9 @@ export const pdfStyles = StyleSheet.create({
     marginBottom: 40,
   },
   logo: {
-    width: 120,
-    height: 40,
+    width: 150,
+    height: 'auto',
+    objectFit: 'contain',
   },
   coverContent: {
     flex: 1,
@@ -105,8 +106,9 @@ export const pdfStyles = StyleSheet.create({
     paddingBottom: 10,
   },
   headerLogo: {
-    width: 60,
-    height: 20,
+    width: 80,
+    height: 'auto',
+    objectFit: 'contain',
   },
   headerTitle: {
     fontSize: 10,
