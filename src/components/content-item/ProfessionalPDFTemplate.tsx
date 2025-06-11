@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image, Link } from '@react-pdf/renderer';
 import { ContentItem } from '@/services/contentItemsApi';
@@ -407,7 +406,7 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
     .map((el, idx) => ({ ...el, page: idx + 3 })); // Start after cover and TOC
 
   return (
-    <Document>
+    <>
       {/* Cover Page */}
       <Page size="A4" style={styles.coverPage}>
         <View style={styles.logoContainer}>
@@ -473,7 +472,7 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
           } />
         </View>
       </Page>
-    </Document>
+    </>
   );
 };
 

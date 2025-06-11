@@ -1,4 +1,5 @@
-import { pdf } from '@react-pdf/renderer';
+
+import { pdf, Document } from '@react-pdf/renderer';
 import { ContentItem } from '@/services/contentItemsApi';
 import React from 'react';
 import ProfessionalPDFTemplate from '@/components/content-item/ProfessionalPDFTemplate';
@@ -7,8 +8,13 @@ export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> 
   try {
     console.log('Generating professional PDF for content item:', contentItem.id);
     
-    // Create the PDF document using the template component
-    const pdfBlob = await pdf(React.createElement(ProfessionalPDFTemplate, { contentItem })).toBlob();
+    // Create the PDF document with Document wrapper
+    const pdfDocument = React.createElement(
+      Document,
+      {},
+      React.createElement(ProfessionalPDFTemplate, { contentItem })
+    );
+    const pdfBlob = await pdf(pdfDocument).toBlob();
     
     console.log('Professional PDF generated successfully');
     return pdfBlob;
