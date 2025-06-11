@@ -72,7 +72,51 @@ export const contentStyles = StyleSheet.create({
     backgroundColor: '#f8fafc',
     padding: 15,
   },
-  // New styles for simplified Summary/TL;DR page
+  // NEW UNBREAKABLE PAGE STYLES
+  unbreakablePage: {
+    padding: 30,
+    backgroundColor: '#ffffff',
+    fontFamily: 'Helvetica',
+    break: false,
+    wrap: false,
+    orphans: 999,
+    widows: 999,
+    minPresenceAhead: 999,
+  },
+  unbreakableContainer: {
+    break: false,
+    wrap: false,
+    orphans: 999,
+    widows: 999,
+    minPresenceAhead: 999,
+    breakInside: 'avoid',
+    keepTogether: true,
+    flex: 1,
+  },
+  compactLogo: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  singleTextBlock: {
+    fontSize: 11,
+    lineHeight: 1.6,
+    color: '#1f2937',
+    textAlign: 'left',
+    whiteSpace: 'pre-line',
+    break: false,
+    wrap: false,
+    orphans: 999,
+    widows: 999,
+    minPresenceAhead: 999,
+    breakInside: 'avoid',
+    keepTogether: true,
+    flex: 1,
+  },
+  compactFooter: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  // Legacy styles (keep for backwards compatibility)
   summaryPage: {
     padding: 40,
     break: false,
@@ -100,7 +144,6 @@ export const contentStyles = StyleSheet.create({
     marginTop: 40,
     alignItems: 'center',
   },
-  // Legacy styles (keep for other components)
   summaryTldrContainer: {
     break: false,
     wrap: false,

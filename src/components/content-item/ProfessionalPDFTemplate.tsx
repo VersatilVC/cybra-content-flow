@@ -38,46 +38,54 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
   console.log('ProfessionalPDFTemplate: Main content elements:', mainContentElements.length);
   console.log('ProfessionalPDFTemplate: TL;DR content structure:', tldrElements[0]?.items);
 
-  // Create combined Summary + TL;DR text block
+  // Create SINGLE text block with NO spacing between sections
   let combinedText = '';
   
   if (contentItem.summary) {
-    combinedText += `EXECUTIVE SUMMARY\n\n${contentItem.summary}\n\n`;
+    combinedText += `EXECUTIVE SUMMARY\n\n${contentItem.summary}`;
   }
   
   if (tldrElements.length > 0 && tldrElements[0]?.items) {
-    combinedText += `TL;DR\n\n`;
+    // Only add one newline if there's a summary, otherwise start fresh
+    if (combinedText) {
+      combinedText += `\n\nTL;DR\n`;
+    } else {
+      combinedText += `TL;DR\n`;
+    }
     tldrElements[0].items.forEach(item => {
       combinedText += `• ${item}\n`;
     });
   }
 
   console.log('ProfessionalPDFTemplate: Combined text length:', combinedText.length);
-  console.log('ProfessionalPDFTemplate: Combined text preview:', combinedText.substring(0, 200));
+  console.log('ProfessionalPDFTemplate: Combined text preview:', combinedText.substring(0, 300));
 
   return (
     <>
       <CoverPage contentItem={contentItem} formatDate={formatDate} />
       
-      {/* Summary and TL;DR Page - NO HEADER, single unbreakable block */}
-      <Page size="A4" style={pdfStyles.summaryPage} wrap={false}>
-        {/* Logo at top without header styling */}
-        <View style={pdfStyles.summaryLogo}>
-          <Image style={pdfStyles.headerLogo} src="/lovable-uploads/587a1505-0f54-4162-ba43-eff1c5c1287a.png" />
-        </View>
+      {/* Summary and TL;DR Page - ABSOLUTELY NO BREAKS */}
+      <Page size="A4" style={pdfStyles.unbreakablePage} wrap={false} break={false}>
+        {/* Minimal container for all content */}
+        <View style={pdfStyles.unbreakableContainer}>
+          {/* Logo */}
+          <View style={pdfStyles.compactLogo}>
+            <Image style={pdfStyles.headerLogo} src="/lovable-uploads/587a1505-0f54-4162-ba43-eff1c5c1287a.png" />
+          </View>
 
-        {/* Single Combined Text Block - Summary + TL;DR */}
-        {combinedText && (
-          <Text style={pdfStyles.combinedSummaryTldr}>
-            {combinedText}
-          </Text>
-        )}
+          {/* SINGLE Text block with ALL content */}
+          {combinedText && (
+            <Text style={pdfStyles.singleTextBlock}>
+              {combinedText}
+            </Text>
+          )}
 
-        {/* Simple footer without fixed positioning */}
-        <View style={pdfStyles.summaryFooter}>
-          <Text style={pdfStyles.footerText}>
-            Generated on {formatDate(new Date().toISOString())}
-          </Text>
+          {/* Minimal footer */}
+          <View style={pdfStyles.compactFooter}>
+            <Text style={pdfStyles.footerText}>
+              Generated on {formatDate(new Date().toISOString())}
+            </Text>
+          </View>
         </View>
       </Page>
 
