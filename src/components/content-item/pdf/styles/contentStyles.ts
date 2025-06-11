@@ -1,4 +1,3 @@
-
 import { StyleSheet } from '@react-pdf/renderer';
 
 export const contentStyles = StyleSheet.create({
@@ -87,6 +86,7 @@ export const contentStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#ffffff',
     marginBottom: 12,
+    break: false,
   },
   tldrItem: {
     fontSize: 11,
@@ -94,6 +94,7 @@ export const contentStyles = StyleSheet.create({
     color: '#ffffff',
     marginBottom: 6,
     flexDirection: 'row',
+    break: false,
   },
   tldrBullet: {
     width: 15,
