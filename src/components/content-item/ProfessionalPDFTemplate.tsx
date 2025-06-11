@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Page, Text, View } from '@react-pdf/renderer';
+import { Page, Text, View, Image } from '@react-pdf/renderer';
 import { ContentItem } from '@/services/contentItemsApi';
 import { addUTMToLinks } from '@/utils/utmGenerator';
 import { parseContent } from './pdf/contentParser';
