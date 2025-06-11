@@ -25,14 +25,6 @@ export const ContentPage: React.FC<ContentPageProps> = ({
         <Text style={pdfStyles.headerTitle}>{contentItem.title}</Text>
       </View>
 
-      {/* Summary Section */}
-      {contentItem.summary && (
-        <View>
-          <Text style={pdfStyles.sectionTitle}>Executive Summary</Text>
-          <Text style={pdfStyles.paragraph}>{contentItem.summary}</Text>
-        </View>
-      )}
-
       {/* Main Content */}
       <View>
         <ContentRenderer elements={contentElements} />
