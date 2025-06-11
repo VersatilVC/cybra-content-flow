@@ -1,0 +1,102 @@
+
+import { StyleSheet } from '@react-pdf/renderer';
+
+export const contentStyles = StyleSheet.create({
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginTop: 25,
+    marginBottom: 15,
+    borderLeft: 4,
+    borderLeftColor: '#8B5CF6',
+    paddingLeft: 15,
+  },
+  heading1: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginTop: 20,
+    marginBottom: 12,
+  },
+  heading2: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginTop: 16,
+    marginBottom: 10,
+  },
+  heading3: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#4b5563',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  paragraph: {
+    fontSize: 11,
+    lineHeight: 1.6,
+    color: '#374151',
+    marginBottom: 12,
+    textAlign: 'justify',
+  },
+  listContainer: {
+    marginBottom: 16,
+  },
+  listItem: {
+    fontSize: 11,
+    lineHeight: 1.6,
+    color: '#374151',
+    marginBottom: 6,
+    marginLeft: 15,
+    flexDirection: 'row',
+  },
+  listBullet: {
+    width: 15,
+    fontSize: 11,
+    color: '#8B5CF6',
+  },
+  listText: {
+    flex: 1,
+  },
+  blockquote: {
+    fontSize: 11,
+    lineHeight: 1.6,
+    color: '#6b7280',
+    fontStyle: 'italic',
+    marginLeft: 20,
+    marginRight: 20,
+    marginBottom: 12,
+    borderLeft: 3,
+    borderLeftColor: '#8B5CF6',
+    paddingLeft: 15,
+    backgroundColor: '#f8fafc',
+    padding: 15,
+  },
+  tldrBox: {
+    backgroundColor: '#8B5CF6',
+    color: '#ffffff',
+    padding: 20,
+    marginBottom: 20,
+    marginTop: 10,
+    borderRadius: 8,
+  },
+  tldrTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 12,
+  },
+  tldrItem: {
+    fontSize: 11,
+    lineHeight: 1.5,
+    color: '#ffffff',
+    marginBottom: 6,
+    flexDirection: 'row',
+  },
+  tldrBullet: {
+    width: 15,
+    fontSize: 11,
+    color: '#ffffff',
+  },
+});
