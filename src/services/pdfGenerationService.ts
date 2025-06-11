@@ -1,16 +1,13 @@
-
 import { pdf } from '@react-pdf/renderer';
 import { ContentItem } from '@/services/contentItemsApi';
 import GuidePDFTemplate from '@/components/content-item/GuidePDFTemplate';
-import { createElement } from 'react';
 
 export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> {
   try {
     console.log('Generating PDF for content item:', contentItem.id);
     
-    // Create the PDF document - GuidePDFTemplate already returns a Document component
-    const pdfDocument = createElement(GuidePDFTemplate, { contentItem });
-    const pdfBlob = await pdf(pdfDocument).toBlob();
+    // Create the PDF document - pass the template directly to pdf()
+    const pdfBlob = await pdf(<GuidePDFTemplate contentItem={contentItem} />).toBlob();
     
     console.log('PDF generated successfully');
     return pdfBlob;
