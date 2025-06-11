@@ -9,10 +9,12 @@ import {
   Share, 
   Globe,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Download
 } from 'lucide-react';
 import { ContentItem } from '@/services/contentItemsApi';
 import { publishToWordPress } from '@/services/wordpressPublishingService';
+import { generateGuidePDF, downloadPDF, sanitizeFilename } from '@/services/pdfGenerationService';
 import { useToast } from '@/hooks/use-toast';
 
 interface ContentItemActionsProps {
@@ -36,6 +38,7 @@ const ContentItemActions: React.FC<ContentItemActionsProps> = ({
 }) => {
   const { toast } = useToast();
   const [isPublishingToWordPress, setIsPublishingToWordPress] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const handlePublish = () => {
     onStatusUpdate('published');
@@ -67,6 +70,30 @@ const ContentItemActions: React.FC<ContentItemActionsProps> = ({
       });
     } finally {
       setIsPublishingToWordPress(false);
+    }
+  };
+
+  const handlePDFDownload = async () => {
+    setIsGeneratingPDF(true);
+    
+    try {
+      const pdfBlob = await generateGuidePDF(contentItem);
+      const filename = `${sanitizeFilename(contentItem.title)}_guide.pdf`;
+      downloadPDF(pdfBlob, filename);
+      
+      toast({
+        title: 'PDF Downloaded',
+        description: 'Your guide has been downloaded as a PDF.',
+      });
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      toast({
+        title: 'PDF Generation Failed',
+        description: error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -132,6 +159,23 @@ const ContentItemActions: React.FC<ContentItemActionsProps> = ({
         <Wand2 className="w-4 h-4 mr-2" />
         Request AI Fix
       </Button>
+
+      {/* PDF Download - only for guides */}
+      {contentItem.content_type === 'Guide' && (
+        <Button 
+          onClick={handlePDFDownload}
+          disabled={isGeneratingPDF || isUpdating}
+          variant="outline"
+          className="border-green-300 text-green-600 hover:bg-green-50"
+        >
+          {isGeneratingPDF ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4 mr-2" />
+          )}
+          {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}
+        </Button>
+      )}
 
       <Button 
         onClick={handleWordPressPublish}
