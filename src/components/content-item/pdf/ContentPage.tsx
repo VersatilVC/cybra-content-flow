@@ -21,7 +21,7 @@ export const ContentPage: React.FC<ContentPageProps> = ({
     <Page size="A4" style={pdfStyles.page}>
       {/* Header */}
       <View style={pdfStyles.header} fixed>
-        <Image style={pdfStyles.headerLogo} src="/cyabra-logo.png" />
+        <Image style={pdfStyles.headerLogo} src="/lovable-uploads/587a1505-0f54-4162-ba43-eff1c5c1287a.png" />
         <Text style={pdfStyles.headerTitle}>{contentItem.title}</Text>
       </View>
 

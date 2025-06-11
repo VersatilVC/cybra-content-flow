@@ -13,7 +13,7 @@ export const CoverPage: React.FC<CoverPageProps> = ({ contentItem, formatDate })
   return (
     <Page size="A4" style={pdfStyles.coverPage}>
       <View style={pdfStyles.logoContainer}>
-        <Image style={pdfStyles.logo} src="/cyabra-logo.png" />
+        <Image style={pdfStyles.logo} src="/lovable-uploads/587a1505-0f54-4162-ba43-eff1c5c1287a.png" />
       </View>
       
       <View style={pdfStyles.coverContent}>
