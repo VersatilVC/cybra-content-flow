@@ -1,4 +1,3 @@
-
 import { pdf } from '@react-pdf/renderer';
 import { ContentItem } from '@/services/contentItemsApi';
 import React from 'react';
@@ -8,9 +7,8 @@ export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> 
   try {
     console.log('Generating professional PDF for content item:', contentItem.id);
     
-    // Create the PDF document using React.createElement since this is a .ts file
-    const pdfDocument = React.createElement(ProfessionalPDFTemplate, { contentItem });
-    const pdfBlob = await pdf(pdfDocument).toBlob();
+    // Create the PDF document using the template component
+    const pdfBlob = await pdf(React.createElement(ProfessionalPDFTemplate, { contentItem })).toBlob();
     
     console.log('Professional PDF generated successfully');
     return pdfBlob;
