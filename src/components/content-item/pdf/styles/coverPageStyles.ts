@@ -24,21 +24,30 @@ export const coverPageStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     textAlign: 'center',
+    paddingHorizontal: 20, // Add horizontal padding for better text flow
   },
   coverTitle: {
-    fontSize: 32,
+    fontSize: 28, // Slightly reduced from 32 to allow more room for wrapping
     fontWeight: 'bold',
     color: '#1f2937',
     marginBottom: 20,
     textAlign: 'center',
-    lineHeight: 1.3,
+    lineHeight: 1.4, // Increased line height for better spacing
+    wordWrap: 'break-word', // Break words only when necessary
+    hyphens: 'none', // Disable hyphenation
+    overflow: 'hidden', // Prevent text overflow
+    maxWidth: '100%', // Ensure title doesn't exceed container width
   },
   coverSubtitle: {
-    fontSize: 16,
+    fontSize: 14, // Slightly reduced from 16 for better proportion
     color: '#6b7280',
     marginBottom: 40,
     textAlign: 'center',
-    lineHeight: 1.5,
+    lineHeight: 1.6, // Increased line height for better readability
+    wordWrap: 'break-word', // Break words only when necessary
+    hyphens: 'none', // Disable hyphenation
+    maxWidth: '100%', // Ensure subtitle doesn't exceed container width
+    paddingHorizontal: 10, // Add some padding for better text flow
   },
   coverFooter: {
     borderTop: 2,
