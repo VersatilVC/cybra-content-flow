@@ -80,6 +80,7 @@ export const contentStyles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 10,
     borderRadius: 8,
+    break: false,
   },
   tldrTitle: {
     fontSize: 16,
