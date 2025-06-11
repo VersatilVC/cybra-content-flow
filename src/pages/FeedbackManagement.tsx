@@ -28,6 +28,7 @@ const FeedbackManagement: React.FC = () => {
     isLoading, 
     error, 
     updateStatus, 
+    updatePriority,
     deleteFeedback,
     isUpdating 
   } = useFeedback();
@@ -130,6 +131,11 @@ const FeedbackManagement: React.FC = () => {
     updateStatus({ id, status });
   };
 
+  const handlePriorityUpdate = (id: string, priority: string) => {
+    console.log('Updating priority for feedback:', id, 'to:', priority);
+    updatePriority({ id, priority });
+  };
+
   const handleDelete = (id: string) => {
     console.log('Deleting feedback:', id);
     deleteFeedback(id);
@@ -204,6 +210,7 @@ const FeedbackManagement: React.FC = () => {
                   <FeedbackTable
                     feedback={filteredFeedback}
                     onStatusUpdate={handleStatusUpdate}
+                    onPriorityUpdate={handlePriorityUpdate}
                     onDelete={handleDelete}
                     getPriorityColor={getPriorityColor}
                     getStatusColor={getStatusColor}
@@ -237,6 +244,7 @@ const FeedbackManagement: React.FC = () => {
                   <FeedbackTable
                     feedback={filteredFeedback}
                     onStatusUpdate={handleStatusUpdate}
+                    onPriorityUpdate={handlePriorityUpdate}
                     onDelete={handleDelete}
                     getPriorityColor={getPriorityColor}
                     getStatusColor={getStatusColor}

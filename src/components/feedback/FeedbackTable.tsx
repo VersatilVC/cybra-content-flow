@@ -28,6 +28,7 @@ import FeedbackDeleteDialog from './FeedbackDeleteDialog';
 interface FeedbackTableProps {
   feedback: FeedbackSubmission[];
   onStatusUpdate: (id: string, status: string) => void;
+  onPriorityUpdate: (id: string, priority: string) => void;
   onDelete: (id: string) => void;
   getPriorityColor: (priority: string) => string;
   getStatusColor: (status: string) => string;
@@ -39,6 +40,7 @@ interface FeedbackTableProps {
 const FeedbackTable: React.FC<FeedbackTableProps> = ({
   feedback,
   onStatusUpdate,
+  onPriorityUpdate,
   onDelete,
   getPriorityColor,
   getStatusColor,
@@ -79,12 +81,30 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({
               </div>
             </TableCell>
             <TableCell>
-              <Badge 
-                variant="secondary"
-                className={`${getPriorityColor(item.priority)} text-white`}
-              >
-                {item.priority}
-              </Badge>
+              {showStatusSelect ? (
+                <Select
+                  value={item.priority}
+                  onValueChange={(value) => onPriorityUpdate(item.id, value)}
+                  disabled={isUpdating}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Badge 
+                  variant="secondary"
+                  className={`${getPriorityColor(item.priority)} text-white`}
+                >
+                  {item.priority}
+                </Badge>
+              )}
             </TableCell>
             <TableCell>
               {showStatusSelect ? (
