@@ -8,9 +8,9 @@ export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> 
   try {
     console.log('Generating PDF for content item:', contentItem.id);
     
-    // Create the PDF document
-    const pdfElement = createElement(GuidePDFTemplate, { contentItem });
-    const pdfBlob = await pdf(pdfElement).toBlob();
+    // Create the PDF document - GuidePDFTemplate already returns a Document component
+    const pdfDocument = createElement(GuidePDFTemplate, { contentItem });
+    const pdfBlob = await pdf(pdfDocument).toBlob();
     
     console.log('PDF generated successfully');
     return pdfBlob;
