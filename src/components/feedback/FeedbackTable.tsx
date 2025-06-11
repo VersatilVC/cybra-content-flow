@@ -18,7 +18,8 @@ import {
 } from '@/components/ui/select';
 import { 
   Calendar,
-  User
+  User,
+  Circle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { FeedbackSubmission } from '@/hooks/useFeedback';
@@ -48,6 +49,22 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({
   isUpdating,
   showStatusSelect = true
 }) => {
+  const getPriorityIcon = (priority: string) => {
+    const colorClass = getPriorityColor(priority).replace('bg-', 'text-');
+    return <Circle className={`w-3 h-3 fill-current ${colorClass}`} />;
+  };
+
+  const getPrioritySelectStyle = (priority: string) => {
+    const baseColor = getPriorityColor(priority);
+    const isLight = priority === 'medium';
+    
+    return {
+      backgroundColor: baseColor.replace('bg-', ''),
+      color: isLight ? '#000' : '#fff',
+      fontWeight: '500'
+    };
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -87,22 +104,60 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({
                   onValueChange={(value) => onPriorityUpdate(item.id, value)}
                   disabled={isUpdating}
                 >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
+                  <SelectTrigger className={`w-32 border-2 ${getPriorityColor(item.priority)} text-white font-medium`}>
+                    <div className="flex items-center gap-2">
+                      {getPriorityIcon(item.priority)}
+                      <SelectValue />
+                    </div>
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="critical">Critical</SelectItem>
+                  <SelectContent className="bg-background border border-border shadow-lg">
+                    <SelectItem 
+                      value="low" 
+                      className="bg-green-500 text-white font-medium hover:bg-green-600 focus:bg-green-600 mb-1 rounded"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Circle className="w-3 h-3 fill-current text-green-100" />
+                        Low
+                      </div>
+                    </SelectItem>
+                    <SelectItem 
+                      value="medium" 
+                      className="bg-yellow-500 text-black font-medium hover:bg-yellow-600 focus:bg-yellow-600 mb-1 rounded"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Circle className="w-3 h-3 fill-current text-yellow-100" />
+                        Medium
+                      </div>
+                    </SelectItem>
+                    <SelectItem 
+                      value="high" 
+                      className="bg-orange-500 text-white font-medium hover:bg-orange-600 focus:bg-orange-600 mb-1 rounded"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Circle className="w-3 h-3 fill-current text-orange-100" />
+                        High
+                      </div>
+                    </SelectItem>
+                    <SelectItem 
+                      value="critical" 
+                      className="bg-red-500 text-white font-medium hover:bg-red-600 focus:bg-red-600 rounded"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Circle className="w-3 h-3 fill-current text-red-100" />
+                        Critical
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
                 <Badge 
                   variant="secondary"
-                  className={`${getPriorityColor(item.priority)} text-white`}
+                  className={`${getPriorityColor(item.priority)} text-white font-medium border-0 px-3 py-1`}
                 >
-                  {item.priority}
+                  <div className="flex items-center gap-1">
+                    {getPriorityIcon(item.priority)}
+                    <span className="capitalize">{item.priority}</span>
+                  </div>
                 </Badge>
               )}
             </TableCell>
