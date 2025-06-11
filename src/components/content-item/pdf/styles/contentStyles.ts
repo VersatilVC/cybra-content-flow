@@ -1,3 +1,4 @@
+
 import { StyleSheet } from '@react-pdf/renderer';
 
 export const contentStyles = StyleSheet.create({
@@ -80,6 +81,7 @@ export const contentStyles = StyleSheet.create({
     widows: 999,
     breakInside: 'avoid',
     minPresenceAhead: 200,
+    keepTogether: true,
   },
   tldrBox: {
     backgroundColor: '#8B5CF6',
@@ -93,6 +95,7 @@ export const contentStyles = StyleSheet.create({
     orphans: 999,
     widows: 999,
     breakInside: 'avoid',
+    keepTogether: true,
   },
   tldrTitle: {
     fontSize: 16,
@@ -102,6 +105,17 @@ export const contentStyles = StyleSheet.create({
     break: false,
     wrap: false,
     orphans: 999,
+  },
+  // New single text style for flattened TL;DR content
+  tldrText: {
+    fontSize: 11,
+    lineHeight: 1.5,
+    color: '#ffffff',
+    break: false,
+    wrap: false,
+    orphans: 999,
+    widows: 999,
+    whiteSpace: 'pre-line',
   },
   tldrItem: {
     fontSize: 11,

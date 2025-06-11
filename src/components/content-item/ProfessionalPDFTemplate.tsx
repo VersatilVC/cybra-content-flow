@@ -36,12 +36,17 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
 
   console.log('ProfessionalPDFTemplate: TL;DR elements found:', tldrElements.length);
   console.log('ProfessionalPDFTemplate: Main content elements:', mainContentElements.length);
+  console.log('ProfessionalPDFTemplate: TL;DR content structure:', tldrElements[0]?.items);
+
+  // Flatten TL;DR items into a single text string
+  const tldrText = tldrElements[0]?.items?.map(item => `• ${item}`).join('\n') || '';
+  console.log('ProfessionalPDFTemplate: Flattened TL;DR text:', tldrText);
 
   return (
     <>
       <CoverPage contentItem={contentItem} formatDate={formatDate} />
       
-      {/* Summary and TL;DR Page - Restructured as single cohesive unit */}
+      {/* Summary and TL;DR Page - Single cohesive unit */}
       <Page size="A4" style={pdfStyles.page}>
         {/* Header */}
         <View style={pdfStyles.header} fixed>
@@ -49,7 +54,7 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
           <Text style={pdfStyles.headerTitle}>{contentItem.title}</Text>
         </View>
 
-        {/* Combined Summary and TL;DR Section - Single View with strong break prevention */}
+        {/* Combined Summary and TL;DR Section - Single indivisible block */}
         <View style={pdfStyles.summaryTldrContainer}>
           {/* Summary Section */}
           {contentItem.summary && (
@@ -59,16 +64,11 @@ const ProfessionalPDFTemplate: React.FC<ProfessionalPDFTemplateProps> = ({ conte
             </View>
           )}
 
-          {/* TL;DR Section - Rendered as single block */}
-          {tldrElements.length > 0 && (
+          {/* TL;DR Section - Single Text component to prevent breaks */}
+          {tldrElements.length > 0 && tldrText && (
             <View style={pdfStyles.tldrBox}>
               <Text style={pdfStyles.tldrTitle}>TL;DR</Text>
-              {tldrElements[0]?.items?.map((item: string, itemIndex: number) => (
-                <View key={itemIndex} style={pdfStyles.tldrItem}>
-                  <Text style={pdfStyles.tldrBullet}>•</Text>
-                  <Text style={pdfStyles.listText}>{item}</Text>
-                </View>
-              ))}
+              <Text style={pdfStyles.tldrText}>{tldrText}</Text>
             </View>
           )}
         </View>
