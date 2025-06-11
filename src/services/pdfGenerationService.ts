@@ -1,15 +1,110 @@
 
-import { pdf } from '@react-pdf/renderer';
+import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { ContentItem } from '@/services/contentItemsApi';
-import GuidePDFTemplate from '@/components/content-item/GuidePDFTemplate';
 import React from 'react';
+
+// Move the PDF template logic directly into this service
+const createPDFDocument = (contentItem: ContentItem) => {
+  const styles = StyleSheet.create({
+    page: {
+      flexDirection: 'column',
+      backgroundColor: '#ffffff',
+      padding: 40,
+      fontFamily: 'Helvetica',
+    },
+    header: {
+      marginBottom: 30,
+      borderBottom: 2,
+      borderBottomColor: '#8B5CF6',
+      paddingBottom: 20,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: '#1f2937',
+      marginBottom: 10,
+    },
+    subtitle: {
+      fontSize: 12,
+      color: '#6b7280',
+      marginBottom: 5,
+    },
+    content: {
+      fontSize: 11,
+      lineHeight: 1.6,
+      color: '#374151',
+      textAlign: 'justify',
+    },
+    paragraph: {
+      fontSize: 11,
+      lineHeight: 1.6,
+      color: '#374151',
+      marginBottom: 12,
+      textAlign: 'justify',
+    },
+    footer: {
+      position: 'absolute',
+      bottom: 30,
+      left: 40,
+      right: 40,
+      textAlign: 'center',
+      fontSize: 9,
+      color: '#9ca3af',
+    },
+  });
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <Text style={styles.title}>{contentItem.title}</Text>
+          <Text style={styles.subtitle}>
+            Created: {formatDate(contentItem.created_at)}
+          </Text>
+          <Text style={styles.subtitle}>
+            Type: {contentItem.content_type} | Status: {contentItem.status}
+          </Text>
+          {contentItem.word_count && (
+            <Text style={styles.subtitle}>
+              Word Count: {contentItem.word_count}
+            </Text>
+          )}
+        </View>
+
+        {contentItem.summary && (
+          <View>
+            <Text style={styles.paragraph}>{contentItem.summary}</Text>
+          </View>
+        )}
+
+        {contentItem.content && (
+          <View>
+            <Text style={styles.content}>{contentItem.content}</Text>
+          </View>
+        )}
+
+        <Text style={styles.footer}>
+          Generated on {formatDate(new Date().toISOString())}
+        </Text>
+      </Page>
+    </Document>
+  );
+};
 
 export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> {
   try {
     console.log('Generating PDF for content item:', contentItem.id);
     
-    // Create the PDF document using React.createElement since this is a .ts file
-    const pdfBlob = await pdf(React.createElement(GuidePDFTemplate, { contentItem })).toBlob();
+    // Create the PDF document directly
+    const pdfBlob = await pdf(createPDFDocument(contentItem)).toBlob();
     
     console.log('PDF generated successfully');
     return pdfBlob;
