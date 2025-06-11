@@ -17,6 +17,13 @@ export const ContentPage: React.FC<ContentPageProps> = ({
   contentElements, 
   formatDate 
 }) => {
+  // Separate TL;DR from other content elements for special rendering
+  const tldrElements = contentElements.filter(element => element.type === 'tldr');
+  const otherElements = contentElements.filter(element => element.type !== 'tldr');
+
+  console.log('ContentPage: TL;DR elements to render:', tldrElements.length);
+  console.log('ContentPage: Other content elements:', otherElements.length);
+
   return (
     <Page size="A4" style={pdfStyles.page}>
       {/* Header */}
@@ -27,7 +34,13 @@ export const ContentPage: React.FC<ContentPageProps> = ({
 
       {/* Main Content */}
       <View>
-        <ContentRenderer elements={contentElements} />
+        {/* Render TL;DR first if available */}
+        {tldrElements.length > 0 && (
+          <ContentRenderer elements={tldrElements} />
+        )}
+        
+        {/* Then render the rest of the content */}
+        <ContentRenderer elements={otherElements} />
       </View>
 
       {/* Footer */}
