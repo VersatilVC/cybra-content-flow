@@ -1,104 +1,18 @@
 
-import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
 import { ContentItem } from '@/services/contentItemsApi';
 import React from 'react';
-
-// Move the PDF template logic directly into this service
-const createPDFDocument = (contentItem: ContentItem) => {
-  const styles = StyleSheet.create({
-    page: {
-      flexDirection: 'column',
-      backgroundColor: '#ffffff',
-      padding: 40,
-      fontFamily: 'Helvetica',
-    },
-    header: {
-      marginBottom: 30,
-      borderBottom: 2,
-      borderBottomColor: '#8B5CF6',
-      paddingBottom: 20,
-    },
-    title: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: '#1f2937',
-      marginBottom: 10,
-    },
-    subtitle: {
-      fontSize: 12,
-      color: '#6b7280',
-      marginBottom: 5,
-    },
-    content: {
-      fontSize: 11,
-      lineHeight: 1.6,
-      color: '#374151',
-      textAlign: 'justify',
-    },
-    paragraph: {
-      fontSize: 11,
-      lineHeight: 1.6,
-      color: '#374151',
-      marginBottom: 12,
-      textAlign: 'justify',
-    },
-    footer: {
-      position: 'absolute',
-      bottom: 30,
-      left: 40,
-      right: 40,
-      textAlign: 'center',
-      fontSize: 9,
-      color: '#9ca3af',
-    },
-  });
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  return React.createElement(Document, null,
-    React.createElement(Page, { size: "A4", style: styles.page },
-      React.createElement(View, { style: styles.header },
-        React.createElement(Text, { style: styles.title }, contentItem.title),
-        React.createElement(Text, { style: styles.subtitle }, 
-          `Created: ${formatDate(contentItem.created_at)}`
-        ),
-        React.createElement(Text, { style: styles.subtitle }, 
-          `Type: ${contentItem.content_type} | Status: ${contentItem.status}`
-        ),
-        contentItem.word_count && React.createElement(Text, { style: styles.subtitle }, 
-          `Word Count: ${contentItem.word_count}`
-        )
-      ),
-      
-      contentItem.summary && React.createElement(View, null,
-        React.createElement(Text, { style: styles.paragraph }, contentItem.summary)
-      ),
-
-      contentItem.content && React.createElement(View, null,
-        React.createElement(Text, { style: styles.content }, contentItem.content)
-      ),
-
-      React.createElement(Text, { style: styles.footer }, 
-        `Generated on ${formatDate(new Date().toISOString())}`
-      )
-    )
-  );
-};
+import ProfessionalPDFTemplate from '@/components/content-item/ProfessionalPDFTemplate';
 
 export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> {
   try {
-    console.log('Generating PDF for content item:', contentItem.id);
+    console.log('Generating professional PDF for content item:', contentItem.id);
     
-    // Create the PDF document directly
-    const pdfBlob = await pdf(createPDFDocument(contentItem)).toBlob();
+    // Create the PDF document with the professional template
+    const pdfDocument = React.createElement(ProfessionalPDFTemplate, { contentItem });
+    const pdfBlob = await pdf(pdfDocument).toBlob();
     
-    console.log('PDF generated successfully');
+    console.log('Professional PDF generated successfully');
     return pdfBlob;
   } catch (error) {
     console.error('Error generating PDF:', error);
