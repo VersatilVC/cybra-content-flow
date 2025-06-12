@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -37,12 +36,11 @@ const ContentItemView = () => {
   const handleNavigateToDerivatives = () => {
     console.log('Attempting to navigate to derivatives tab');
     
-    // Try multiple selectors to find the derivatives tab
+    // Try multiple valid selectors to find the derivatives tab
     const selectors = [
       'button[value="derivatives"]',
       '[data-value="derivatives"]',
-      '.derivatives-tab',
-      'button:contains("Derivatives")'
+      '.derivatives-tab'
     ];
     
     let derivativesTabTrigger: HTMLElement | null = null;
