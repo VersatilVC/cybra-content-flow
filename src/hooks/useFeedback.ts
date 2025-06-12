@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -119,6 +118,42 @@ export function useFeedback() {
     },
   });
 
+  const editFeedbackMutation = useMutation({
+    mutationFn: async ({ id, title, description, category }: { 
+      id: string; 
+      title: string; 
+      description: string; 
+      category: string; 
+    }) => {
+      const { error } = await supabase
+        .from('feedback_submissions')
+        .update({ 
+          title,
+          description,
+          category: category as FeedbackCategory,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback-submissions'] });
+      toast({
+        title: 'Success',
+        description: 'Feedback updated successfully',
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating feedback:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update feedback',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
@@ -234,12 +269,13 @@ export function useFeedback() {
     isLoading,
     error,
     submitFeedback: submitFeedbackMutation.mutate,
+    editFeedback: editFeedbackMutation.mutate,
     updateStatus: updateStatusMutation.mutate,
     updatePriority: updatePriorityMutation.mutate,
     addInternalNote: addInternalNoteMutation.mutate,
     deleteFeedback: deleteFeedbackMutation.mutate,
     isSubmitting: submitFeedbackMutation.isPending,
-    isUpdating: updateStatusMutation.isPending || updatePriorityMutation.isPending || addInternalNoteMutation.isPending || deleteFeedbackMutation.isPending,
+    isUpdating: updateStatusMutation.isPending || updatePriorityMutation.isPending || addInternalNoteMutation.isPending || deleteFeedbackMutation.isPending || editFeedbackMutation.isPending,
   };
 }
 

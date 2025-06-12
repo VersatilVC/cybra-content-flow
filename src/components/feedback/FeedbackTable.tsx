@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Table, 
@@ -16,10 +15,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { 
   Calendar,
   User,
-  Circle
+  Circle,
+  Pencil
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { FeedbackSubmission } from '@/hooks/useFeedback';
@@ -30,6 +31,7 @@ interface FeedbackTableProps {
   feedback: FeedbackSubmission[];
   onStatusUpdate: (id: string, status: string) => void;
   onPriorityUpdate: (id: string, priority: string) => void;
+  onEdit: (feedback: FeedbackSubmission) => void;
   onDelete: (id: string) => void;
   getPriorityColor: (priority: string) => string;
   getStatusColor: (status: string) => string;
@@ -42,6 +44,7 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({
   feedback,
   onStatusUpdate,
   onPriorityUpdate,
+  onEdit,
   onDelete,
   getPriorityColor,
   getStatusColor,
@@ -209,6 +212,14 @@ const FeedbackTable: React.FC<FeedbackTableProps> = ({
             </TableCell>
             <TableCell>
               <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(item)}
+                  disabled={isUpdating}
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
                 <FeedbackDetailsModal
                   feedback={item}
                   getPriorityColor={getPriorityColor}

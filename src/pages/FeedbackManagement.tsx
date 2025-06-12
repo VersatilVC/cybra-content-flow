@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useFeedback } from '@/hooks/useFeedback';
+import { useFeedback, FeedbackSubmission } from '@/hooks/useFeedback';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -14,6 +13,7 @@ import {
 import FeedbackStatsCards from '@/components/feedback/FeedbackStatsCards';
 import FeedbackFilters from '@/components/feedback/FeedbackFilters';
 import FeedbackTable from '@/components/feedback/FeedbackTable';
+import EditFeedbackModal from '@/components/feedback/EditFeedbackModal';
 
 const FeedbackManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('active');
@@ -21,12 +21,15 @@ const FeedbackManagement: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingFeedback, setEditingFeedback] = useState<FeedbackSubmission | null>(null);
   const { toast } = useToast();
 
   const { 
     feedbackList, 
     isLoading, 
     error, 
+    editFeedback,
     updateStatus, 
     updatePriority,
     deleteFeedback,
@@ -136,6 +139,17 @@ const FeedbackManagement: React.FC = () => {
     updatePriority({ id, priority });
   };
 
+  const handleEdit = (feedback: FeedbackSubmission) => {
+    console.log('Editing feedback:', feedback);
+    setEditingFeedback(feedback);
+    setEditModalOpen(true);
+  };
+
+  const handleEditSave = (data: { id: string; title: string; description: string; category: string }) => {
+    console.log('Saving feedback edit:', data);
+    editFeedback(data);
+  };
+
   const handleDelete = (id: string) => {
     console.log('Deleting feedback:', id);
     deleteFeedback(id);
@@ -211,6 +225,7 @@ const FeedbackManagement: React.FC = () => {
                     feedback={filteredFeedback}
                     onStatusUpdate={handleStatusUpdate}
                     onPriorityUpdate={handlePriorityUpdate}
+                    onEdit={handleEdit}
                     onDelete={handleDelete}
                     getPriorityColor={getPriorityColor}
                     getStatusColor={getStatusColor}
@@ -245,6 +260,7 @@ const FeedbackManagement: React.FC = () => {
                     feedback={filteredFeedback}
                     onStatusUpdate={handleStatusUpdate}
                     onPriorityUpdate={handlePriorityUpdate}
+                    onEdit={handleEdit}
                     onDelete={handleDelete}
                     getPriorityColor={getPriorityColor}
                     getStatusColor={getStatusColor}
@@ -257,6 +273,15 @@ const FeedbackManagement: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Edit Feedback Modal */}
+        <EditFeedbackModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          feedback={editingFeedback}
+          onSave={handleEditSave}
+          isUpdating={isUpdating}
+        />
       </div>
     </div>
   );
