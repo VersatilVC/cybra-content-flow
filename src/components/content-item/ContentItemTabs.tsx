@@ -4,8 +4,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, Layers, Settings } from 'lucide-react';
 import { ContentItem } from '@/services/contentItemsApi';
 import { useToast } from '@/hooks/use-toast';
-import EditableContentSection from './EditableContentSection';
-import DerivativeTabContent from './DerivativeTabContent';
 
 interface ContentItemTabsProps {
   contentItem: ContentItem;
@@ -46,12 +44,35 @@ const ContentItemTabs: React.FC<ContentItemTabsProps> = ({
 
       <TabsContent value="overview" className="mt-6">
         <div className="space-y-6">
-          <EditableContentSection contentItem={contentItem} />
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Content Overview</h3>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-2">Title</h4>
+                <p className="text-gray-700">{contentItem.title}</p>
+              </div>
+              {contentItem.content && (
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-2">Content</h4>
+                  <div className="text-gray-700 whitespace-pre-wrap bg-white p-4 rounded border">
+                    {contentItem.content}
+                  </div>
+                </div>
+              )}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-2">Status</h4>
+                <p className="text-gray-700 capitalize">{contentItem.status}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </TabsContent>
 
       <TabsContent value="derivatives" className="mt-6">
-        <DerivativeTabContent contentItem={contentItem} />
+        <div className="bg-gray-50 rounded-lg p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Content Derivatives</h3>
+          <p className="text-gray-600">Derivative content generation and management coming soon.</p>
+        </div>
       </TabsContent>
 
       <TabsContent value="settings" className="mt-6">
