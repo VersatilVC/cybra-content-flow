@@ -33,11 +33,14 @@ const ContentItemView = () => {
   } = useContentItemView();
 
   const handleNavigateToDerivatives = () => {
-    // Scroll to the derivatives tab and activate it
-    const derivativesTabTrigger = document.querySelector('[data-value="derivatives"]') as HTMLElement;
+    // Find the derivatives tab trigger by its value attribute and click it
+    const derivativesTabTrigger = document.querySelector('button[value="derivatives"]') as HTMLElement;
     if (derivativesTabTrigger) {
       derivativesTabTrigger.click();
-      derivativesTabTrigger.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Scroll to the tab area smoothly
+      setTimeout(() => {
+        derivativesTabTrigger.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
     }
   };
 
