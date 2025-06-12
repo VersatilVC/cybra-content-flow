@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -38,12 +37,6 @@ const ContentItemView = () => {
   const handleNavigateToDerivatives = () => {
     console.log('Navigating to derivatives tab using React state');
     setActiveTab('derivatives');
-    
-    // Show success toast
-    toast({
-      title: 'Navigated to derivatives',
-      description: 'Showing all derivatives for this content item',
-    });
   };
 
   if (isLoading) {
