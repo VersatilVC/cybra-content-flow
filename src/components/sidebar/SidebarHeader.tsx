@@ -15,7 +15,7 @@ export function SidebarHeader() {
             {!logoError ? <img src="/lovable-uploads/587a1505-0f54-4162-ba43-eff1c5c1287a.png" alt="Marko Logo" className="w-10 h-10 object-contain" onError={handleLogoError} onLoad={() => console.log("Logo loaded successfully")} /> : <Brain className="w-8 h-8 text-white" />}
           </div>
           <div>
-            <h2 className="font-semibold text-white text-lg">Marko</h2>
+            <h2 className="font-semibold text-white text-2xl">Marko</h2>
             <p className="text-xs text-white/70"></p>
           </div>
         </div>
