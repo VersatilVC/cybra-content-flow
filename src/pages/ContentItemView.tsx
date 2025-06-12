@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { XCircle, ArrowLeft, Loader2 } from 'lucide-react';
@@ -15,6 +16,7 @@ import FloatingDerivativeIndicator from '@/components/content-item/FloatingDeriv
 const ContentItemView = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('content');
   const {
     contentItem,
     isLoading,
@@ -34,60 +36,14 @@ const ContentItemView = () => {
   } = useContentItemView();
 
   const handleNavigateToDerivatives = () => {
-    console.log('Attempting to navigate to derivatives tab');
+    console.log('Navigating to derivatives tab using React state');
+    setActiveTab('derivatives');
     
-    // Try multiple valid selectors to find the derivatives tab
-    const selectors = [
-      'button[value="derivatives"]',
-      '[data-value="derivatives"]',
-      '.derivatives-tab'
-    ];
-    
-    let derivativesTabTrigger: HTMLElement | null = null;
-    
-    for (const selector of selectors) {
-      derivativesTabTrigger = document.querySelector(selector) as HTMLElement;
-      if (derivativesTabTrigger) {
-        console.log(`Found derivatives tab with selector: ${selector}`);
-        break;
-      }
-    }
-    
-    if (derivativesTabTrigger) {
-      try {
-        derivativesTabTrigger.click();
-        console.log('Clicked derivatives tab successfully');
-        
-        // Scroll to the tab area smoothly
-        setTimeout(() => {
-          derivativesTabTrigger?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
-        
-        // Show success toast
-        toast({
-          title: 'Navigated to derivatives',
-          description: 'Showing all derivatives for this content item',
-        });
-      } catch (error) {
-        console.error('Error clicking derivatives tab:', error);
-        toast({
-          title: 'Navigation failed',
-          description: 'Could not navigate to derivatives tab',
-          variant: 'destructive',
-        });
-      }
-    } else {
-      console.error('Could not find derivatives tab');
-      // Try to find all available tabs for debugging
-      const allTabs = document.querySelectorAll('[role="tab"], button[value]');
-      console.log('Available tabs:', Array.from(allTabs).map(tab => tab.getAttribute('value') || tab.textContent));
-      
-      toast({
-        title: 'Tab not found',
-        description: 'Could not locate the derivatives tab. Please try refreshing the page.',
-        variant: 'destructive',
-      });
-    }
+    // Show success toast
+    toast({
+      title: 'Navigated to derivatives',
+      description: 'Showing all derivatives for this content item',
+    });
   };
 
   if (isLoading) {
@@ -132,7 +88,11 @@ const ContentItemView = () => {
         onRefetch={refetch}
       />
 
-      <ContentItemTabs contentItem={contentItem} />
+      <ContentItemTabs 
+        contentItem={contentItem} 
+        value={activeTab}
+        onValueChange={setActiveTab}
+      />
 
       {/* Floating derivative indicator */}
       <FloatingDerivativeIndicator

@@ -19,9 +19,15 @@ import ReactMarkdown from 'react-markdown';
 
 interface ContentItemTabsProps {
   contentItem: ContentItem;
+  value?: string;
+  onValueChange?: (value: string) => void;
 }
 
-const ContentItemTabs: React.FC<ContentItemTabsProps> = ({ contentItem }) => {
+const ContentItemTabs: React.FC<ContentItemTabsProps> = ({ 
+  contentItem, 
+  value = "content", 
+  onValueChange 
+}) => {
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
 
@@ -48,7 +54,7 @@ const ContentItemTabs: React.FC<ContentItemTabsProps> = ({ contentItem }) => {
   };
 
   return (
-    <Tabs defaultValue="content" className="w-full">
+    <Tabs value={value} onValueChange={onValueChange} className="w-full">
       <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="content">Content</TabsTrigger>
         <TabsTrigger value="metadata">Metadata</TabsTrigger>
