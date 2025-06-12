@@ -10,6 +10,7 @@ import ContentItemActions from '@/components/content-item/ContentItemActions';
 import ContentItemTabs from '@/components/content-item/ContentItemTabs';
 import ContentItemHeader from '@/components/content-item/ContentItemHeader';
 import ContentItemStatus from '@/components/content-item/ContentItemStatus';
+import FloatingDerivativeIndicator from '@/components/content-item/FloatingDerivativeIndicator';
 
 const ContentItemView = () => {
   const navigate = useNavigate();
@@ -30,6 +31,15 @@ const ContentItemView = () => {
     handleRequestAIFix,
     handleAIFixRequested,
   } = useContentItemView();
+
+  const handleNavigateToDerivatives = () => {
+    // Scroll to the derivatives tab and activate it
+    const derivativesTabTrigger = document.querySelector('[data-value="derivatives"]') as HTMLElement;
+    if (derivativesTabTrigger) {
+      derivativesTabTrigger.click();
+      derivativesTabTrigger.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -58,7 +68,7 @@ const ContentItemView = () => {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-8 max-w-7xl mx-auto relative">
       <ContentItemHeader title={contentItem.title} />
       
       <ContentItemStatus contentItem={contentItem} />
@@ -74,6 +84,12 @@ const ContentItemView = () => {
       />
 
       <ContentItemTabs contentItem={contentItem} />
+
+      {/* Floating derivative indicator */}
+      <FloatingDerivativeIndicator
+        contentItemId={contentItem.id}
+        onNavigateToDerivatives={handleNavigateToDerivatives}
+      />
 
       <EditContentModal
         open={isEditModalOpen}
