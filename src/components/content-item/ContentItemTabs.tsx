@@ -5,7 +5,6 @@ import { FileText, Layers, Settings } from 'lucide-react';
 import { ContentItem } from '@/services/contentItemsApi';
 import { useToast } from '@/hooks/use-toast';
 import ContentDerivativesSection from './ContentDerivativesSection';
-import EditableContentSection from './EditableContentSection';
 
 interface ContentItemTabsProps {
   contentItem: ContentItem;
@@ -45,13 +44,41 @@ const ContentItemTabs: React.FC<ContentItemTabsProps> = ({
       </TabsList>
 
       <TabsContent value="overview" className="mt-6">
-        <EditableContentSection 
-          contentItem={contentItem}
-          onSave={() => {}}
-          isEditing={false}
-          onEdit={() => {}}
-          onCancel={() => {}}
-        />
+        <div className="bg-white rounded-lg border p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Content Overview</h3>
+          {contentItem.content ? (
+            <div className="prose max-w-none">
+              <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+                {contentItem.content}
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-500 italic">No content available</p>
+          )}
+          
+          {contentItem.summary && (
+            <div className="mt-6 pt-6 border-t">
+              <h4 className="font-semibold text-gray-800 mb-2">Summary</h4>
+              <p className="text-gray-700">{contentItem.summary}</p>
+            </div>
+          )}
+          
+          {contentItem.tags && contentItem.tags.length > 0 && (
+            <div className="mt-4">
+              <h4 className="font-semibold text-gray-800 mb-2">Tags</h4>
+              <div className="flex flex-wrap gap-2">
+                {contentItem.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </TabsContent>
 
       <TabsContent value="derivatives" className="mt-6">
@@ -90,10 +117,10 @@ const ContentItemTabs: React.FC<ContentItemTabsProps> = ({
             <div>
               <h4 className="font-semibold text-gray-800 mb-2">Content Details</h4>
               <div className="space-y-3">
-                {contentItem.brief_id && (
+                {contentItem.content_brief_id && (
                   <div>
                     <span className="text-sm font-medium text-gray-600">Brief ID:</span>
-                    <p className="text-gray-900 font-mono text-sm">{contentItem.brief_id}</p>
+                    <p className="text-gray-900 font-mono text-sm">{contentItem.content_brief_id}</p>
                   </div>
                 )}
                 <div>
@@ -106,6 +133,16 @@ const ContentItemTabs: React.FC<ContentItemTabsProps> = ({
                   <span className="text-sm font-medium text-gray-600">User ID:</span>
                   <p className="text-gray-900 font-mono text-sm">{contentItem.user_id}</p>
                 </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-600">Content Type:</span>
+                  <p className="text-gray-900">{contentItem.content_type}</p>
+                </div>
+                {contentItem.word_count && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">Word Count:</span>
+                    <p className="text-gray-900">{contentItem.word_count} words</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
