@@ -20,7 +20,7 @@ export function SidebarHeader() {
             {!logoError ? (
               <img 
                 src="/lovable-uploads/587a1505-0f54-4162-ba43-eff1c5c1287a.png"
-                alt="Cyabra Logo" 
+                alt="Marko Logo" 
                 className="w-10 h-10 object-contain"
                 onError={handleLogoError}
                 onLoad={() => console.log("Logo loaded successfully")}
@@ -30,7 +30,7 @@ export function SidebarHeader() {
             )}
           </div>
           <div>
-            <h2 className="font-semibold text-white text-lg">Cyabra CMS</h2>
+            <h2 className="font-semibold text-white text-lg">Marko</h2>
             <p className="text-xs text-white/70">Content Management</p>
           </div>
         </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -104,7 +103,7 @@ const Auth = () => {
               <Brain className="w-8 h-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Cyabra CMS</CardTitle>
+          <CardTitle className="text-2xl">Marko</CardTitle>
           <CardDescription>Sign in to your account or create a new one</CardDescription>
         </CardHeader>
         <CardContent>
