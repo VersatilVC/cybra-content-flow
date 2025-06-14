@@ -36,7 +36,7 @@ export const fetchGeneralContent = async (filters: {
     throw new Error('Failed to fetch general content');
   }
 
-  return data || [];
+  return (data || []) as GeneralContentItem[];
 };
 
 export const createGeneralContent = async (data: CreateGeneralContentRequest): Promise<GeneralContentItem> => {
@@ -54,7 +54,7 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
     throw new Error('Failed to create general content');
   }
 
-  return result;
+  return result as GeneralContentItem;
 };
 
 export const updateGeneralContent = async (id: string, data: Partial<CreateGeneralContentRequest>): Promise<GeneralContentItem> => {
@@ -70,7 +70,7 @@ export const updateGeneralContent = async (id: string, data: Partial<CreateGener
     throw new Error('Failed to update general content');
   }
 
-  return result;
+  return result as GeneralContentItem;
 };
 
 export const deleteGeneralContent = async (id: string): Promise<void> => {
