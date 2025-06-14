@@ -61,7 +61,7 @@ export const secureUrlSchema = z.string()
   }, 'Invalid or potentially unsafe URL');
 
 // File validation utilities
-export const validateFileType = (file: File, allowedTypes: string[]): boolean => {
+export const validateFileType = async (file: File, allowedTypes: string[]): Promise<boolean> => {
   // Check MIME type
   if (!allowedTypes.includes(file.type)) {
     return false;
