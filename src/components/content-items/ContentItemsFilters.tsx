@@ -40,11 +40,12 @@ const ContentItemsFilters: React.FC<ContentItemsFiltersProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
             <SelectItem value="ready_for_review">Ready for Review</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="needs_revision">Needs Revision</SelectItem>
+            <SelectItem value="derivatives_created">Derivatives Created</SelectItem>
             <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="discarded">Discarded</SelectItem>
+            <SelectItem value="needs_revision">Needs Revision</SelectItem>
+            <SelectItem value="needs_fix">Needs Fix</SelectItem>
           </SelectContent>
         </Select>
         <Select value={typeFilter} onValueChange={onTypeFilterChange}>

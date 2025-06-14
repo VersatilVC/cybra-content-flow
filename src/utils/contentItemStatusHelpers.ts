@@ -1,37 +1,43 @@
 
-import { FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { FileText, CheckCircle, AlertCircle, Clock, XCircle, Wrench } from 'lucide-react';
 
 export const getStatusInfo = (status: string) => {
   switch (status) {
     case 'ready_for_review':
       return { 
         color: 'bg-yellow-100 text-yellow-800',
-        icon: AlertCircle,
+        icon: Clock,
         label: 'Ready for Review'
       };
-    case 'approved':
+    case 'derivatives_created':
       return {
         color: 'bg-green-100 text-green-800',
         icon: CheckCircle,
-        label: 'Approved'
-      };
-    case 'needs_revision':
-      return {
-        color: 'bg-red-100 text-red-800',
-        icon: AlertCircle,
-        label: 'Needs Revision'
-      };
-    case 'draft':
-      return {
-        color: 'bg-gray-100 text-gray-800',
-        icon: FileText,
-        label: 'Draft'
+        label: 'Derivatives Created'
       };
     case 'published':
       return {
         color: 'bg-blue-100 text-blue-800',
         icon: CheckCircle,
         label: 'Published'
+      };
+    case 'discarded':
+      return {
+        color: 'bg-red-100 text-red-800',
+        icon: XCircle,
+        label: 'Discarded'
+      };
+    case 'needs_revision':
+      return {
+        color: 'bg-orange-100 text-orange-800',
+        icon: AlertCircle,
+        label: 'Needs Revision'
+      };
+    case 'needs_fix':
+      return {
+        color: 'bg-purple-100 text-purple-800',
+        icon: Wrench,
+        label: 'Needs Fix'
       };
     default:
       return {

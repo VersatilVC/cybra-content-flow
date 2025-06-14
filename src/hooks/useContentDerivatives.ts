@@ -8,8 +8,9 @@ import {
   updateContentDerivative, 
   deleteContentDerivative,
   ContentDerivative,
-  CreateContentDerivativeData
+  CreateContentDerivativeData 
 } from '@/services/contentDerivativesApi';
+import { updateContentItem } from '@/services/contentItemsApi';
 
 export function useContentDerivatives(contentItemId: string) {
   const { user } = useAuth();
@@ -20,27 +21,43 @@ export function useContentDerivatives(contentItemId: string) {
     queryKey: ['content-derivatives', contentItemId],
     queryFn: () => fetchContentDerivatives(contentItemId),
     enabled: !!contentItemId && !!user?.id,
-    retry: (failureCount, error) => {
-      if (failureCount < 2 && !error.message.includes('auth') && !error.message.includes('JWT')) {
-        return true;
-      }
-      return false;
-    },
   });
 
   const createMutation = useMutation({
     mutationFn: createContentDerivative,
-    onSuccess: () => {
+    onSuccess: async (newDerivative) => {
+      // Update the content item status to derivatives_created if it's not already
+      try {
+        const contentItemResponse = await queryClient.fetchQuery({
+          queryKey: ['content-item', contentItemId],
+          queryFn: async () => {
+            const { data } = await import('@/integrations/supabase/client').then(mod => 
+              mod.supabase.from('content_items').select('*').eq('id', contentItemId).single()
+            );
+            return data;
+          }
+        });
+
+        if (contentItemResponse && contentItemResponse.status === 'ready_for_review') {
+          await updateContentItem(contentItemId, { status: 'derivatives_created' });
+          // Invalidate content item queries to reflect the status change
+          queryClient.invalidateQueries({ queryKey: ['content-item', contentItemId] });
+          queryClient.invalidateQueries({ queryKey: ['content-items'] });
+        }
+      } catch (error) {
+        console.error('Failed to update content item status:', error);
+      }
+
       queryClient.invalidateQueries({ queryKey: ['content-derivatives', contentItemId] });
       toast({
-        title: 'Content derivative created',
+        title: 'Derivative created',
         description: 'Your content derivative has been created successfully.',
       });
     },
     onError: (error: Error) => {
-      console.error('Create content derivative error:', error);
+      console.error('Create derivative error:', error);
       toast({
-        title: 'Failed to create content derivative',
+        title: 'Failed to create derivative',
         description: error.message,
         variant: 'destructive',
       });
@@ -53,14 +70,14 @@ export function useContentDerivatives(contentItemId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['content-derivatives', contentItemId] });
       toast({
-        title: 'Content derivative updated',
+        title: 'Derivative updated',
         description: 'Your content derivative has been updated successfully.',
       });
     },
     onError: (error: Error) => {
-      console.error('Update content derivative error:', error);
+      console.error('Update derivative error:', error);
       toast({
-        title: 'Failed to update content derivative',
+        title: 'Failed to update derivative',
         description: error.message,
         variant: 'destructive',
       });
@@ -72,14 +89,14 @@ export function useContentDerivatives(contentItemId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['content-derivatives', contentItemId] });
       toast({
-        title: 'Content derivative deleted',
+        title: 'Derivative deleted',
         description: 'Your content derivative has been deleted successfully.',
       });
     },
     onError: (error: Error) => {
-      console.error('Delete content derivative error:', error);
+      console.error('Delete derivative error:', error);
       toast({
-        title: 'Failed to delete content derivative',
+        title: 'Failed to delete derivative',
         description: error.message,
         variant: 'destructive',
       });
