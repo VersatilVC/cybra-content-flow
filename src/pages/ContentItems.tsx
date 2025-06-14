@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FileText, Eye, CheckCircle, AlertCircle, Search, Filter, Loader2 } from 'lucide-react';
 import { useContentItems } from '@/hooks/useContentItems';
 import { ContentItem } from '@/services/contentItemsApi';
+import InlineDerivativeIndicator from '@/components/content-item/InlineDerivativeIndicator';
 
 const ContentItems = () => {
   const navigate = useNavigate();
@@ -78,8 +78,16 @@ const ContentItems = () => {
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  const handleViewItem = (itemId: string) => {
-    navigate(`/content-items/${itemId}`);
+  const handleViewItem = (itemId: string, activeTab?: string) => {
+    if (activeTab) {
+      navigate(`/content-items/${itemId}?tab=${activeTab}`);
+    } else {
+      navigate(`/content-items/${itemId}`);
+    }
+  };
+
+  const handleNavigateToDerivatives = (itemId: string) => {
+    handleViewItem(itemId, 'derivatives');
   };
 
   if (isLoading) {
@@ -209,6 +217,10 @@ const ContentItems = () => {
                           <Badge className={`px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color}`}>
                             {statusInfo.label}
                           </Badge>
+                          <InlineDerivativeIndicator 
+                            contentItemId={item.id}
+                            onNavigate={() => handleNavigateToDerivatives(item.id)}
+                          />
                         </div>
                       </div>
                     </div>
