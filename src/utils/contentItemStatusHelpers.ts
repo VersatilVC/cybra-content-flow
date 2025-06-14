@@ -1,0 +1,54 @@
+
+import { FileText, CheckCircle, AlertCircle } from 'lucide-react';
+
+export const getStatusInfo = (status: string) => {
+  switch (status) {
+    case 'ready_for_review':
+      return { 
+        color: 'bg-yellow-100 text-yellow-800',
+        icon: AlertCircle,
+        label: 'Ready for Review'
+      };
+    case 'approved':
+      return {
+        color: 'bg-green-100 text-green-800',
+        icon: CheckCircle,
+        label: 'Approved'
+      };
+    case 'needs_revision':
+      return {
+        color: 'bg-red-100 text-red-800',
+        icon: AlertCircle,
+        label: 'Needs Revision'
+      };
+    case 'draft':
+      return {
+        color: 'bg-gray-100 text-gray-800',
+        icon: FileText,
+        label: 'Draft'
+      };
+    case 'published':
+      return {
+        color: 'bg-blue-100 text-blue-800',
+        icon: CheckCircle,
+        label: 'Published'
+      };
+    default:
+      return {
+        color: 'bg-gray-100 text-gray-800',
+        icon: FileText,
+        label: status.charAt(0).toUpperCase() + status.slice(1)
+      };
+  }
+};
+
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+  
+  if (diffInHours < 1) return 'Just now';
+  if (diffInHours < 24) return `${diffInHours} hours ago`;
+  if (diffInHours < 48) return '1 day ago';
+  return `${Math.floor(diffInHours / 24)} days ago`;
+};
