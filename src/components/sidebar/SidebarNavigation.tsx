@@ -1,3 +1,4 @@
+
 import {
   Calendar,
   Database,
@@ -11,6 +12,7 @@ import {
   Briefcase,
   Bell,
   Bug,
+  PenTool,
 } from "lucide-react";
 import {
   SidebarContent,
@@ -58,9 +60,9 @@ const navigationItems = [
     icon: FileText,
   },
   {
-    title: "Content Calendar",
-    url: "/content-calendar",
-    icon: Calendar,
+    title: "General Content",
+    url: "/general-content",
+    icon: PenTool,
   },
   {
     title: "Notifications",

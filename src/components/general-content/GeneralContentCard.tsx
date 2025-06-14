@@ -1,0 +1,114 @@
+
+import React from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { MoreHorizontal, Trash2, Edit } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { GeneralContentItem } from '@/types/generalContent';
+import { getStatusInfo, formatDate } from '@/utils/contentItemStatusHelpers';
+import { derivativeTypes, getContentTypeIcon } from '@/components/content-item/derivativeTypes';
+
+interface GeneralContentCardProps {
+  item: GeneralContentItem;
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+}
+
+const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
+  item,
+  onDelete,
+  isDeleting
+}) => {
+  const statusInfo = getStatusInfo(item.status);
+  const StatusIcon = statusInfo.icon;
+
+  // Find the derivative type info
+  const allDerivativeTypes = [
+    ...derivativeTypes.General,
+    ...derivativeTypes.Social,
+    ...derivativeTypes.Ads
+  ];
+  const typeInfo = allDerivativeTypes.find(t => t.type === item.derivative_type);
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'General':
+        return 'bg-blue-100 text-blue-800';
+      case 'Social':
+        return 'bg-green-100 text-green-800';
+      case 'Ads':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="font-semibold text-gray-900 line-clamp-2 mb-2">
+              {item.title}
+            </h3>
+            <div className="flex items-center gap-2 mb-2">
+              <Badge className={getCategoryColor(item.category)}>
+                {item.category}
+              </Badge>
+              {typeInfo && (
+                <Badge variant="outline" className="text-xs">
+                  {getContentTypeIcon(typeInfo.content_type)} {typeInfo.title}
+                </Badge>
+              )}
+            </div>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreHorizontal className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => onDelete(item.id)}
+                disabled={isDeleting}
+                className="text-red-600"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {item.content && (
+            <p className="text-sm text-gray-600 line-clamp-3">
+              {item.content}
+            </p>
+          )}
+          
+          <div className="flex items-center gap-2">
+            <StatusIcon className="w-4 h-4" />
+            <span className={`text-xs px-2 py-1 rounded-full ${statusInfo.color}`}>
+              {statusInfo.label}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <span>{item.target_audience}</span>
+            <span>{formatDate(item.created_at)}</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default GeneralContentCard;

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,7 +18,7 @@ import ContentIdeas from "./pages/ContentIdeas";
 import ContentBriefs from "./pages/ContentBriefs";
 import ContentItems from "./pages/ContentItems";
 import ContentItemView from "./pages/ContentItemView";
-import ContentCalendar from "./pages/ContentCalendar";
+import GeneralContent from "./pages/GeneralContent";
 import NotificationCenter from "./pages/NotificationCenter";
 import UserManagement from "./pages/UserManagement";
 import Webhooks from "./pages/Webhooks";
@@ -113,11 +112,11 @@ const App = () => (
                 } 
               />
               <Route 
-                path="/content-calendar" 
+                path="/general-content" 
                 element={
                   <ProtectedRoute>
                     <AppLayout>
-                      <ContentCalendar />
+                      <GeneralContent />
                     </AppLayout>
                   </ProtectedRoute>
                 } 

@@ -579,6 +579,72 @@ export type Database = {
         }
         Relationships: []
       }
+      general_content_items: {
+        Row: {
+          category: string
+          content: string | null
+          content_type: string
+          created_at: string
+          derivative_type: string
+          file_path: string | null
+          file_size: string | null
+          file_url: string | null
+          id: string
+          metadata: Json | null
+          mime_type: string | null
+          source_data: Json | null
+          source_type: string
+          status: string
+          target_audience: string
+          title: string
+          updated_at: string
+          user_id: string
+          word_count: number | null
+        }
+        Insert: {
+          category: string
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          derivative_type: string
+          file_path?: string | null
+          file_size?: string | null
+          file_url?: string | null
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          source_data?: Json | null
+          source_type?: string
+          status?: string
+          target_audience: string
+          title: string
+          updated_at?: string
+          user_id: string
+          word_count?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          derivative_type?: string
+          file_path?: string | null
+          file_size?: string | null
+          file_url?: string | null
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          source_data?: Json | null
+          source_type?: string
+          status?: string
+          target_audience?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          word_count?: number | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
