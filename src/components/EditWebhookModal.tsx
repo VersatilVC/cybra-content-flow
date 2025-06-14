@@ -7,7 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useWebhookModal } from '@/hooks/useWebhookModal';
 import { webhookTypes, getWebhookDefaults } from '@/components/webhooks/webhookTypes';
 import { WebhookTypeAlerts } from '@/components/webhooks/WebhookTypeAlerts';
-import { WebhookFormFields } from '@/components/webhooks/WebhookFormFields';
+import { SecureWebhookFormFields } from '@/components/webhooks/SecureWebhookFormFields';
 
 interface WebhookConfig {
   id: string;
@@ -81,7 +81,7 @@ export function EditWebhookModal({ open, onOpenChange, onWebhookUpdated, webhook
         </DialogHeader>
 
         <div className="space-y-4">
-          <WebhookFormFields
+          <SecureWebhookFormFields
             name={name}
             setName={setName}
             webhookType={webhookType}
