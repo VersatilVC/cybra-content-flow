@@ -42,13 +42,11 @@ export default function ContentBriefCard({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ready':
+      case 'ready_for_review':
         return 'bg-green-100 text-green-800';
-      case 'draft':
+      case 'processing_content_item':
         return 'bg-yellow-100 text-yellow-800';
-      case 'approved':
-        return 'bg-blue-100 text-blue-800';
-      case 'content_created':
+      case 'content_item_created':
         return 'bg-purple-100 text-purple-800';
       case 'discarded':
         return 'bg-red-100 text-red-800';
@@ -59,15 +57,21 @@ export default function ContentBriefCard({
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'content_created':
-        return 'Content Created';
+      case 'ready_for_review':
+        return 'Ready for Review';
+      case 'processing_content_item':
+        return 'Processing Content Item';
+      case 'content_item_created':
+        return 'Content Item Created';
+      case 'discarded':
+        return 'Discarded';
       default:
         return status.charAt(0).toUpperCase() + status.slice(1);
     }
   };
 
-  const canCreateContent = brief.status === 'ready' || brief.status === 'approved';
-  const hasContentCreated = brief.status === 'content_created';
+  const canCreateContent = brief.status === 'ready_for_review';
+  const hasContentCreated = brief.status === 'content_item_created';
 
   return (
     <Card className="hover:shadow-md transition-shadow">

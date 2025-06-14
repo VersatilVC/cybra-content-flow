@@ -35,7 +35,7 @@ export default function IdeaSuggestionsSection({
       description: suggestion.description,
       content_type: suggestion.content_type as 'Blog Post' | 'Guide',
       target_audience: idea.target_audience, // Use parent's target audience
-      status: 'processed' as const,
+      status: 'ready' as const,
       source_type: suggestion.source_url ? 'url' : 'file',
       source_data: suggestion.source_url ? { url: suggestion.source_url } : {},
       created_at: suggestion.created_at,

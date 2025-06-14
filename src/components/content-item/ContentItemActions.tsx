@@ -111,7 +111,7 @@ const ContentItemActions: React.FC<ContentItemActionsProps> = ({
       {contentItem.status === 'ready_for_review' && (
         <>
           <Button 
-            onClick={() => onStatusUpdate('approved')}
+            onClick={() => onStatusUpdate('derivatives_created')}
             disabled={isUpdating}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
@@ -130,7 +130,7 @@ const ContentItemActions: React.FC<ContentItemActionsProps> = ({
         </>
       )}
       
-      {contentItem.status === 'approved' && (
+      {contentItem.status === 'derivatives_created' && (
         <Button 
           onClick={handlePublish}
           disabled={isUpdating}

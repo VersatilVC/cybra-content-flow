@@ -38,12 +38,12 @@ export const useContentItemView = () => {
     
     updateContentItem({ 
       id: contentItem.id, 
-      updates: { status: newStatus } 
+      updates: { status: newStatus as ContentItem['status'] } 
     });
     
     toast({
       title: 'Status updated',
-      description: `Content item has been ${newStatus === 'approved' ? 'approved' : newStatus === 'discarded' ? 'discarded' : 'updated'}.`,
+      description: `Content item has been ${newStatus === 'derivatives_created' ? 'approved' : newStatus === 'discarded' ? 'discarded' : 'updated'}.`,
     });
   };
 

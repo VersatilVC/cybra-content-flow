@@ -25,8 +25,8 @@ export default function IdeaCardActions({
     }
   };
 
-  // Show suggestions button for both processed and brief_created statuses
-  const showSuggestionsButton = idea.status === 'processed' || idea.status === 'brief_created';
+  // Show suggestions button for both ready and brief_created statuses
+  const showSuggestionsButton = idea.status === 'ready' || idea.status === 'brief_created';
 
   return (
     <div className="flex items-center justify-between pt-4 border-t">

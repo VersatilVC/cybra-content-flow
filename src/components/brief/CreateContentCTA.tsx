@@ -16,7 +16,7 @@ export default function CreateContentCTA({ brief, onCreateContentItem }: CreateC
   const { user } = useAuth();
   const { toast } = useToast();
   const [isCreating, setIsCreating] = useState(false);
-  const canCreateContent = brief.status === 'ready' || brief.status === 'approved';
+  const canCreateContent = brief.status === 'ready_for_review';
 
   if (!canCreateContent) return null;
 

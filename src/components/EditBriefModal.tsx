@@ -40,7 +40,7 @@ export default function EditBriefModal({ brief, open, onClose, onSave, isUpdatin
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
   const [structuredContent, setStructuredContent] = useState<BriefContentData>({});
-  const [status, setStatus] = useState<'draft' | 'ready' | 'approved' | 'discarded' | 'content_created'>('draft');
+  const [status, setStatus] = useState<'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded'>('ready_for_review');
   const [briefType, setBriefType] = useState<'Blog Post' | 'Guide'>('Blog Post');
   const [targetAudience, setTargetAudience] = useState<'Private Sector' | 'Government Sector'>('Private Sector');
   const [activeTab, setActiveTab] = useState('basic');
@@ -184,15 +184,14 @@ export default function EditBriefModal({ brief, open, onClose, onSave, isUpdatin
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Status
               </label>
-              <Select value={status} onValueChange={(value: 'draft' | 'ready' | 'approved' | 'discarded' | 'content_created') => setStatus(value)}>
+              <Select value={status} onValueChange={(value: 'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded') => setStatus(value)}>
                 <SelectTrigger className="w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="ready">Ready</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="content_created">Content Created</SelectItem>
+                  <SelectItem value="ready_for_review">Ready for Review</SelectItem>
+                  <SelectItem value="processing_content_item">Processing Content Item</SelectItem>
+                  <SelectItem value="content_item_created">Content Item Created</SelectItem>
                   <SelectItem value="discarded">Discarded</SelectItem>
                 </SelectContent>
               </Select>
