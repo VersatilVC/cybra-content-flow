@@ -25,7 +25,7 @@ export default function IdeaCardActions({
     }
   };
 
-  // Show suggestions button for both ready and brief_created statuses
+  // Show suggestions button for ready and brief_created statuses
   const showSuggestionsButton = idea.status === 'ready' || idea.status === 'brief_created';
 
   return (

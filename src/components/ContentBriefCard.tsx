@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Edit, Trash2, Plus, Eye, Calendar, User } from 'lucide-react';
 import { ContentBrief } from '@/types/contentBriefs';
+import { useContentItemByBrief } from '@/hooks/useContentItemByBrief';
 
 interface ContentBriefCardProps {
   brief: ContentBrief;
@@ -22,6 +23,7 @@ export default function ContentBriefCard({
   onView 
 }: ContentBriefCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { data: contentItem } = useContentItemByBrief(brief.id);
   
   const MAX_DESCRIPTION_LENGTH = 150;
   const needsTruncation = brief.description && brief.description.length > MAX_DESCRIPTION_LENGTH;
@@ -71,7 +73,13 @@ export default function ContentBriefCard({
   };
 
   const canCreateContent = brief.status === 'ready_for_review';
-  const hasContentCreated = brief.status === 'content_item_created';
+  const hasContentCreated = brief.status === 'content_item_created' && contentItem;
+
+  const handleViewContent = () => {
+    if (contentItem) {
+      window.location.href = `/content-items/${contentItem.id}`;
+    }
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -128,7 +136,7 @@ export default function ContentBriefCard({
           <div className="flex gap-2">
             {hasContentCreated && (
               <Button
-                onClick={() => window.location.href = '/content-items'}
+                onClick={handleViewContent}
                 size="sm"
                 className="bg-purple-600 hover:bg-purple-700 text-white"
               >
