@@ -40,22 +40,22 @@ const InlineDerivativeIndicator: React.FC<InlineDerivativeIndicatorProps> = ({
     switch (category) {
       case 'General':
         return { 
-          label: 'G', 
+          label: 'General', 
           color: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
         };
       case 'Social':
         return { 
-          label: 'S', 
+          label: 'Social', 
           color: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
         };
       case 'Ads':
         return { 
-          label: 'A', 
+          label: 'Ads', 
           color: 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100'
         };
       default:
         return { 
-          label: category.charAt(0).toUpperCase(), 
+          label: category, 
           color: 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
         };
     }
@@ -85,7 +85,7 @@ const InlineDerivativeIndicator: React.FC<InlineDerivativeIndicatorProps> = ({
                 <div key={category} className="relative">
                   <Badge 
                     variant="outline" 
-                    className={`${badgeInfo.color} transition-colors`}
+                    className={`${badgeInfo.color} transition-colors px-2 py-0.5`}
                   >
                     <div className="flex items-center gap-1">
                       <span className="text-xs font-medium">{badgeInfo.label}</span>
