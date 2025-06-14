@@ -20,8 +20,50 @@ const InlineDerivativeIndicator: React.FC<InlineDerivativeIndicatorProps> = ({
     return null;
   }
 
-  const approvedCount = derivatives.filter(d => d.status === 'approved').length;
-  const publishedCount = derivatives.filter(d => d.status === 'published').length;
+  // Group derivatives by category
+  const categoryCounts = derivatives.reduce((acc, derivative) => {
+    const category = derivative.category;
+    if (!acc[category]) {
+      acc[category] = {
+        total: 0,
+        approved: 0,
+        published: 0
+      };
+    }
+    acc[category].total++;
+    if (derivative.status === 'approved') acc[category].approved++;
+    if (derivative.status === 'published') acc[category].published++;
+    return acc;
+  }, {} as Record<string, { total: number; approved: number; published: number }>);
+
+  const getCategoryBadgeInfo = (category: string) => {
+    switch (category) {
+      case 'General':
+        return { 
+          label: 'G', 
+          color: 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
+        };
+      case 'Social':
+        return { 
+          label: 'S', 
+          color: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
+        };
+      case 'Ads':
+        return { 
+          label: 'A', 
+          color: 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100'
+        };
+      default:
+        return { 
+          label: category.charAt(0).toUpperCase(), 
+          color: 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+        };
+    }
+  };
+
+  const hasApprovedOrPublished = Object.values(categoryCounts).some(
+    category => category.approved > 0 || category.published > 0
+  );
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -34,41 +76,59 @@ const InlineDerivativeIndicator: React.FC<InlineDerivativeIndicatorProps> = ({
         <TooltipTrigger asChild>
           <div 
             onClick={handleClick}
-            className="relative cursor-pointer inline-flex"
+            className="relative cursor-pointer inline-flex items-center gap-1"
           >
-            <Badge 
-              variant="outline" 
-              className="bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100 transition-colors"
-            >
-              <div className="flex items-center gap-1">
-                <Layers className="w-3 h-3" />
-                <span className="text-xs font-medium">{derivatives.length}</span>
-              </div>
-            </Badge>
-            {(approvedCount > 0 || publishedCount > 0) && (
+            <Layers className="w-3 h-3 text-purple-600" />
+            {Object.entries(categoryCounts).map(([category, counts]) => {
+              const badgeInfo = getCategoryBadgeInfo(category);
+              return (
+                <div key={category} className="relative">
+                  <Badge 
+                    variant="outline" 
+                    className={`${badgeInfo.color} transition-colors`}
+                  >
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs font-medium">{badgeInfo.label}</span>
+                      <span className="text-xs">{counts.total}</span>
+                    </div>
+                  </Badge>
+                  {(counts.approved > 0 || counts.published > 0) && (
+                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                  )}
+                </div>
+              );
+            })}
+            {hasApprovedOrPublished && Object.keys(categoryCounts).length > 1 && (
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
             )}
           </div>
         </TooltipTrigger>
         <TooltipContent side="top" className="bg-white border shadow-lg">
-          <div className="space-y-1 text-xs">
-            <div className="font-medium">Content Derivatives</div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Total:</span>
-              <span className="font-medium">{derivatives.length}</span>
-            </div>
-            {publishedCount > 0 && (
-              <div className="flex justify-between">
-                <span className="text-green-600">Published:</span>
-                <span className="font-medium text-green-600">{publishedCount}</span>
+          <div className="space-y-2 text-xs">
+            <div className="font-medium">Content Derivatives by Category</div>
+            {Object.entries(categoryCounts).map(([category, counts]) => (
+              <div key={category} className="space-y-1">
+                <div className="font-medium text-gray-800">{category}:</div>
+                <div className="ml-2 space-y-0.5">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Total:</span>
+                    <span className="font-medium">{counts.total}</span>
+                  </div>
+                  {counts.published > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-green-600">Published:</span>
+                      <span className="font-medium text-green-600">{counts.published}</span>
+                    </div>
+                  )}
+                  {counts.approved > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-blue-600">Approved:</span>
+                      <span className="font-medium text-blue-600">{counts.approved}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-            {approvedCount > 0 && (
-              <div className="flex justify-between">
-                <span className="text-blue-600">Approved:</span>
-                <span className="font-medium text-blue-600">{approvedCount}</span>
-              </div>
-            )}
+            ))}
             <div className="text-gray-500 italic pt-1 border-t">
               Click to view derivatives
             </div>
