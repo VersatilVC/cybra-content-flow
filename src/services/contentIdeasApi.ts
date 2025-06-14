@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ContentIdea, ContentIdeaFilters, CreateContentIdeaData } from '@/types/contentIdeas';
 
@@ -35,11 +36,12 @@ export const fetchContentIdeas = async (userId: string, filters?: ContentIdeaFil
     description: item.description,
     content_type: item.content_type as 'Blog Post' | 'Guide',
     target_audience: item.target_audience as 'Private Sector' | 'Government Sector',
-    status: item.status as 'processing' | 'processed' | 'brief_created' | 'discarded',
-    source_type: item.source_type as 'manual' | 'file' | 'url',
+    status: item.status as 'processing' | 'ready' | 'brief_created' | 'discarded',
+    source_type: item.source_type as 'manual' | 'file' | 'url' | 'auto_generated',
     source_data: item.source_data,
     created_at: item.created_at,
     updated_at: item.updated_at,
+    idea_research_summary: item.idea_research_summary,
   }));
 };
 

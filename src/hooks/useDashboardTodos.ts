@@ -21,34 +21,34 @@ export function useDashboardTodos() {
     queryFn: async (): Promise<TodoSections> => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      // Fetch content ideas that need review (processed status)
+      // Fetch content ideas that need review (ready status)
       const { data: ideasData, error: ideasError } = await supabase
         .from('content_ideas')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'processed')
+        .eq('status', 'ready')
         .order('created_at', { ascending: false })
         .limit(5);
 
       if (ideasError) throw ideasError;
 
-      // Fetch content briefs that need review (ready or draft status)
+      // Fetch content briefs that need review (ready_for_review status)
       const { data: briefsData, error: briefsError } = await supabase
         .from('content_briefs')
         .select('*')
         .eq('user_id', user.id)
-        .in('status', ['ready', 'draft'])
+        .eq('status', 'ready_for_review')
         .order('created_at', { ascending: false })
         .limit(5);
 
       if (briefsError) throw briefsError;
 
-      // Fetch content items that need review (pending or needs_fix status)
+      // Fetch content items that need review (ready_for_review or needs_revision status)
       const { data: itemsData, error: itemsError } = await supabase
         .from('content_items')
         .select('*')
         .eq('user_id', user.id)
-        .in('status', ['pending', 'needs_fix'])
+        .in('status', ['ready_for_review', 'needs_revision', 'needs_fix'])
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -61,11 +61,12 @@ export function useDashboardTodos() {
         description: item.description,
         content_type: item.content_type as 'Blog Post' | 'Guide',
         target_audience: item.target_audience as 'Private Sector' | 'Government Sector',
-        status: item.status as 'processing' | 'processed' | 'brief_created' | 'discarded',
-        source_type: item.source_type as 'manual' | 'file' | 'url',
+        status: item.status as 'processing' | 'ready' | 'brief_created' | 'discarded',
+        source_type: item.source_type as 'manual' | 'file' | 'url' | 'auto_generated',
         source_data: item.source_data,
         created_at: item.created_at,
         updated_at: item.updated_at,
+        idea_research_summary: item.idea_research_summary,
       }));
 
       const briefs: ContentBrief[] = (briefsData || []).map(item => ({
@@ -73,7 +74,7 @@ export function useDashboardTodos() {
         title: item.title,
         description: item.description,
         content: item.content,
-        status: item.status as 'draft' | 'ready' | 'approved' | 'discarded' | 'content_created',
+        status: item.status as 'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded',
         source_type: item.source_type as 'idea' | 'suggestion',
         source_id: item.source_id,
         brief_type: item.brief_type as 'Blog Post' | 'Guide',
@@ -88,7 +89,7 @@ export function useDashboardTodos() {
         title: item.title,
         content: item.content,
         content_type: item.content_type,
-        status: item.status,
+        status: item.status as 'ready_for_review' | 'derivatives_created' | 'published' | 'discarded' | 'needs_revision' | 'needs_fix',
         summary: item.summary,
         word_count: item.word_count,
         tags: item.tags,

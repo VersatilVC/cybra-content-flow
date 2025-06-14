@@ -13,7 +13,7 @@ export interface ContentItem {
   resources: string[] | null;
   multimedia_suggestions: string | null;
   content_type: string;
-  status: string;
+  status: 'ready_for_review' | 'derivatives_created' | 'published' | 'discarded' | 'needs_revision' | 'needs_fix';
   word_count: number | null;
   wordpress_url: string | null;
   created_at: string;
@@ -31,7 +31,7 @@ export interface CreateContentItemData {
   resources?: string[];
   multimedia_suggestions?: string;
   content_type: string;
-  status?: string;
+  status?: 'ready_for_review' | 'derivatives_created' | 'published' | 'discarded' | 'needs_revision' | 'needs_fix';
   word_count?: number;
 }
 

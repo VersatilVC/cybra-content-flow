@@ -5,11 +5,12 @@ export interface ContentIdea {
   description: string | null;
   content_type: 'Blog Post' | 'Guide';
   target_audience: 'Private Sector' | 'Government Sector';
-  status: 'processing' | 'processed' | 'brief_created' | 'discarded';
+  status: 'processing' | 'ready' | 'brief_created' | 'discarded';
   source_type: 'manual' | 'file' | 'url' | 'auto_generated';
   source_data: any;
   created_at: string;
   updated_at: string;
+  idea_research_summary?: string;
 }
 
 export interface ContentIdeaFilters {
@@ -24,7 +25,7 @@ export interface CreateContentIdeaData {
   description: string | null;
   content_type: 'Blog Post' | 'Guide';
   target_audience: 'Private Sector' | 'Government Sector';
-  status: 'processing' | 'processed' | 'brief_created' | 'discarded';
+  status: 'processing' | 'ready' | 'brief_created' | 'discarded';
   source_type: 'manual' | 'file' | 'url' | 'auto_generated';
   source_data: any;
 }
