@@ -6,6 +6,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChatSessions } from '@/hooks/useChatSessions';
 import { MessageSquare, Plus, Trash2, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { EditableChatTitle } from '@/components/chat/EditableChatTitle';
+import { DeleteChatConfirmDialog } from '@/components/chat/DeleteChatConfirmDialog';
 
 interface ChatSidebarProps {
   selectedSessionId: string | null;
@@ -14,8 +16,10 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar({ selectedSessionId, onSessionSelect, onNewChat }: ChatSidebarProps) {
-  const { sessions, isLoading, createSessionAsync, deleteSession, isCreating } = useChatSessions();
+  const { sessions, isLoading, createSessionAsync, updateSession, deleteSession, isCreating, isUpdating, isDeleting } = useChatSessions();
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<{ id: string; title: string } | null>(null);
 
   const filteredSessions = sessions.filter(session =>
     session.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -33,6 +37,27 @@ export function ChatSidebar({ selectedSessionId, onSessionSelect, onNewChat }: C
   const handleStartFirstChat = () => {
     onSessionSelect(null);
     onNewChat();
+  };
+
+  const handleDeleteClick = (sessionId: string, title: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSessionToDelete({ id: sessionId, title });
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (sessionToDelete) {
+      deleteSession(sessionToDelete.id);
+      if (selectedSessionId === sessionToDelete.id) {
+        onSessionSelect(null);
+      }
+    }
+    setDeleteConfirmOpen(false);
+    setSessionToDelete(null);
+  };
+
+  const handleUpdateTitle = (sessionId: string, newTitle: string) => {
+    updateSession({ sessionId, title: newTitle });
   };
 
   return (
@@ -92,10 +117,14 @@ export function ChatSidebar({ selectedSessionId, onSessionSelect, onNewChat }: C
                 onClick={() => onSessionSelect(session.id)}
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 truncate">
-                      {session.title}
-                    </h3>
+                  <div className="flex-1 min-w-0 mr-2">
+                    <div className="font-medium text-gray-900">
+                      <EditableChatTitle
+                        title={session.title}
+                        onSave={(newTitle) => handleUpdateTitle(session.id, newTitle)}
+                        isUpdating={isUpdating}
+                      />
+                    </div>
                     <p className="text-xs text-gray-500 mt-1">
                       {new Date(session.updated_at).toLocaleDateString()}
                     </p>
@@ -103,13 +132,11 @@ export function ChatSidebar({ selectedSessionId, onSessionSelect, onNewChat }: C
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteSession(session.id);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 p-1 h-auto"
+                    onClick={(e) => handleDeleteClick(session.id, session.title, e)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto text-red-500 hover:text-red-600"
+                    disabled={isDeleting}
                   >
-                    <Trash2 className="w-3 h-3 text-red-500" />
+                    <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>
               </div>
@@ -117,6 +144,14 @@ export function ChatSidebar({ selectedSessionId, onSessionSelect, onNewChat }: C
           )}
         </div>
       </ScrollArea>
+
+      <DeleteChatConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={handleDeleteConfirm}
+        chatTitle={sessionToDelete?.title || ''}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

@@ -63,6 +63,27 @@ export function useChatSessions() {
     },
   });
 
+  const updateSessionMutation = useMutation({
+    mutationFn: async ({ sessionId, title }: { sessionId: string; title: string }) => {
+      const { error } = await supabase
+        .from('chat_sessions')
+        .update({ title })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat-sessions'] });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Failed to update chat session',
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const deleteSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
       const { error } = await supabase
@@ -95,8 +116,10 @@ export function useChatSessions() {
     isLoading,
     createSession: createSessionMutation.mutate,
     createSessionAsync,
+    updateSession: updateSessionMutation.mutate,
     deleteSession: deleteSessionMutation.mutate,
     isCreating: createSessionMutation.isPending,
+    isUpdating: updateSessionMutation.isPending,
     isDeleting: deleteSessionMutation.isPending,
   };
 }

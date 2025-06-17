@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { useChatSessions } from '@/hooks/useChatSessions';
-import { Send, Bot, User, MessageSquare } from 'lucide-react';
+import { Send, Bot, MessageSquare } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { ChatMessage } from '@/components/chat/ChatMessage';
 
 interface ChatInterfaceProps {
   sessionId: string | null;
@@ -16,7 +17,7 @@ interface ChatInterfaceProps {
 export function ChatInterface({ sessionId, onSessionCreated }: ChatInterfaceProps) {
   const [inputMessage, setInputMessage] = useState('');
   const { messages, isLoading, sendMessage, isSending } = useChatMessages(sessionId);
-  const { createSession, isCreating } = useChatSessions();
+  const { createSessionAsync, isCreating } = useChatSessions();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,27 +39,11 @@ export function ChatInterface({ sessionId, onSessionCreated }: ChatInterfaceProp
         : messageContent;
       
       try {
-        // Wait for session creation to complete
-        const newSession = await new Promise<any>((resolve, reject) => {
-          const originalCreateSession = createSession;
-          
-          // Override the createSession to get the result
-          createSession(title);
-          
-          // We need to wait for the session to be created
-          // This is a simplified approach - in production you'd want better error handling
-          setTimeout(() => {
-            // The session should be created by now, but we need to get the ID
-            // For now, we'll need to modify the hook to return the created session
-            reject(new Error('Session creation timeout'));
-          }, 5000);
-        });
-        
+        const newSession = await createSessionAsync(title);
         onSessionCreated(newSession.id);
         sendMessage({ content: messageContent, sessionId: newSession.id });
       } catch (error) {
         console.error('Failed to create session and send message:', error);
-        // For now, show error to user - they can try again
         return;
       }
     } else {
@@ -142,35 +127,14 @@ export function ChatInterface({ sessionId, onSessionCreated }: ChatInterfaceProp
             </div>
           ) : (
             messages.map((message) => (
-              <div key={message.id} className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}>
-                {message.role === 'assistant' && (
-                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-4 h-4 text-purple-600" />
-                  </div>
-                )}
-                <div className={`max-w-2xl ${message.role === 'user' ? 'order-first' : ''}`}>
-                  <div className={`p-4 rounded-lg ${
-                    message.role === 'user' 
-                      ? 'bg-purple-600 text-white ml-auto' 
-                      : 'bg-gray-100'
-                  }`}>
-                    <p className="whitespace-pre-wrap">{message.content}</p>
-                    {message.sources && message.sources.length > 0 && (
-                      <div className="text-xs opacity-75 mt-2">
-                        <strong>Sources:</strong> {message.sources.join(', ')}
-                      </div>
-                    )}
-                  </div>
-                  <p className={`text-xs text-gray-500 mt-1 ${message.role === 'user' ? 'text-right' : ''}`}>
-                    {new Date(message.created_at).toLocaleTimeString()}
-                  </p>
-                </div>
-                {message.role === 'user' && (
-                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-gray-600" />
-                  </div>
-                )}
-              </div>
+              <ChatMessage
+                key={message.id}
+                id={message.id}
+                role={message.role}
+                content={message.content}
+                sources={message.sources}
+                created_at={message.created_at}
+              />
             ))
           )}
           
