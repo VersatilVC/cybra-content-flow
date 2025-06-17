@@ -31,6 +31,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('AuthContext: Error getting initial session:', error);
         } else {
           console.log('AuthContext: Initial session:', initialSession ? 'found' : 'not found');
+          if (initialSession) {
+            console.log('AuthContext: Initial session user email:', initialSession.user?.email);
+          }
           setSession(initialSession);
           setUser(initialSession?.user ?? null);
         }
@@ -48,6 +51,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         console.log('AuthContext: Auth state change:', event, session ? 'session exists' : 'no session');
         
+        if (session) {
+          console.log('AuthContext: Session user email:', session.user?.email);
+          console.log('AuthContext: Session providers:', session.user?.app_metadata?.providers);
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -55,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Handle specific auth events
         switch (event) {
           case 'SIGNED_IN':
-            console.log('AuthContext: User signed in');
+            console.log('AuthContext: User signed in, checking for account linking...');
             // Account linking will be handled by useAccountLinking hook
             break;
           case 'SIGNED_OUT':
@@ -104,10 +112,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     try {
       console.log('AuthContext: Signing in with Google');
+      const redirectUrl = `${window.location.origin}/dashboard`;
+      console.log('AuthContext: Google OAuth redirect URL:', redirectUrl);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: redirectUrl,
         },
       });
       
@@ -126,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
       console.log('AuthContext: Signing up user with email:', email);
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/dashboard`;
       
       const { error } = await supabase.auth.signUp({
         email,
