@@ -56,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         switch (event) {
           case 'SIGNED_IN':
             console.log('AuthContext: User signed in');
+            // Account linking will be handled by useAccountLinking hook
             break;
           case 'SIGNED_OUT':
             console.log('AuthContext: User signed out');

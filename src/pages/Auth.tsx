@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAccountLinking } from '@/hooks/useAccountLinking';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +11,7 @@ import { AuthLoadingScreen } from '@/components/auth/AuthLoadingScreen';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { AccountLinkingInfo } from '@/components/auth/AccountLinkingInfo';
 
 const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,6 +20,9 @@ const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Initialize account linking detection
+  useAccountLinking();
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -91,6 +96,8 @@ const Auth = () => {
   return (
     <AuthLayout>
       <div className="space-y-4">
+        <AccountLinkingInfo />
+        
         <GoogleSignInButton 
           onClick={handleGoogleSignIn} 
           isLoading={isGoogleLoading}
