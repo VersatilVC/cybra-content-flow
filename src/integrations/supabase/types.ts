@@ -450,16 +450,19 @@ export type Database = {
       documents: {
         Row: {
           content: string | null
+          embedding: string | null
           id: number
           metadata: Json | null
         }
         Insert: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
         Update: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
@@ -468,16 +471,19 @@ export type Database = {
       documents_competitor: {
         Row: {
           content: string | null
+          embedding: string | null
           id: number
           metadata: Json | null
         }
         Insert: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
         Update: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
@@ -486,16 +492,19 @@ export type Database = {
       documents_industry: {
         Row: {
           content: string | null
+          embedding: string | null
           id: number
           metadata: Json | null
         }
         Insert: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
         Update: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
@@ -504,16 +513,19 @@ export type Database = {
       documents_news: {
         Row: {
           content: string | null
+          embedding: string | null
           id: number
           metadata: Json | null
         }
         Insert: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
         Update: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
