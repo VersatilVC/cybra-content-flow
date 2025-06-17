@@ -231,7 +231,7 @@ export async function handleIdeaProcessingCallback(supabase: any, body: any) {
       return;
     }
 
-    await updateIdeaStatus(supabase, body.content_idea_id, 'processed');
+    await updateIdeaStatus(supabase, body.content_idea_id, 'ready');
     await createIdeaCompletionNotification(supabase, body.user_id, body.content_idea_id, body.title || 'Content Idea');
     
     console.log('Idea processing callback completed successfully');
@@ -300,7 +300,7 @@ export async function handleAutoGenerationCallback(supabase: any, body: any) {
       return;
     }
 
-    await updateIdeaStatus(supabase, body.content_idea_id, 'processed');
+    await updateIdeaStatus(supabase, body.content_idea_id, 'ready');
     await createAutoGenerationNotification(supabase, body.user_id, body.content_idea_id, body.title || 'Auto-Generated Content');
     
     console.log('Auto-generation callback completed successfully');
