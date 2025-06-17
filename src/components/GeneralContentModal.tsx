@@ -2,17 +2,11 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { FileUp, Link as LinkIcon, PenTool } from 'lucide-react';
 import { useGeneralContent } from '@/hooks/useGeneralContent';
-import { derivativeTypes, getContentTypeIcon } from '@/components/content-item/derivativeTypes';
 import { handleFileUpload } from '@/lib/fileUploadHandler';
+import { BasicFormFields } from '@/components/general-content/BasicFormFields';
+import { InputSourceSection } from '@/components/general-content/InputSourceSection';
+import { ContentTypeSelection } from '@/components/general-content/ContentTypeSelection';
 
 interface GeneralContentModalProps {
   isOpen: boolean;
@@ -105,14 +99,6 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
     }));
   };
 
-  const allDerivativeTypes = [
-    ...derivativeTypes.General,
-    ...derivativeTypes.Social,
-    ...derivativeTypes.Ads
-  ];
-
-  const selectedTypeInfo = allDerivativeTypes.find(t => t.type === formData.derivative_type);
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -122,153 +108,28 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="title">Content Title *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter content title"
-                required
-              />
-            </div>
+            <BasicFormFields
+              title={formData.title}
+              targetAudience={formData.target_audience}
+              onTitleChange={(value) => setFormData(prev => ({ ...prev, title: value }))}
+              onTargetAudienceChange={(value) => setFormData(prev => ({ ...prev, target_audience: value }))}
+            />
 
-            <div>
-              <Label htmlFor="target_audience">Target Audience *</Label>
-              <Select 
-                value={formData.target_audience} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, target_audience: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Private Sector">Private Sector</SelectItem>
-                  <SelectItem value="Government Sector">Government Sector</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <InputSourceSection
+              sourceType={formData.source_type}
+              content={formData.content}
+              url={formData.url}
+              file={formData.file}
+              onSourceTypeChange={(value) => setFormData(prev => ({ ...prev, source_type: value }))}
+              onContentChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+              onUrlChange={(value) => setFormData(prev => ({ ...prev, url: value }))}
+              onFileChange={(file) => setFormData(prev => ({ ...prev, file }))}
+            />
 
-            <div>
-              <Label>Input Source</Label>
-              <Tabs 
-                value={formData.source_type} 
-                onValueChange={(value) => setFormData(prev => ({ 
-                  ...prev, 
-                  source_type: value as 'manual' | 'url' | 'file' 
-                }))}
-                className="mt-2"
-              >
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="manual" className="flex items-center gap-2">
-                    <PenTool className="w-4 h-4" />
-                    Manual Entry
-                  </TabsTrigger>
-                  <TabsTrigger value="url" className="flex items-center gap-2">
-                    <LinkIcon className="w-4 h-4" />
-                    URL
-                  </TabsTrigger>
-                  <TabsTrigger value="file" className="flex items-center gap-2">
-                    <FileUp className="w-4 h-4" />
-                    File Upload
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="manual" className="mt-4">
-                  <div>
-                    <Label htmlFor="content">Content Description</Label>
-                    <Textarea
-                      id="content"
-                      value={formData.content}
-                      onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                      placeholder="Describe the content you want to create..."
-                      rows={4}
-                    />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="url" className="mt-4">
-                  <div>
-                    <Label htmlFor="url">URL *</Label>
-                    <Input
-                      id="url"
-                      type="url"
-                      value={formData.url}
-                      onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
-                      placeholder="https://example.com"
-                      required={formData.source_type === 'url'}
-                    />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="file" className="mt-4">
-                  <div>
-                    <Label htmlFor="file">File Upload *</Label>
-                    <Input
-                      id="file"
-                      type="file"
-                      onChange={(e) => setFormData(prev => ({ 
-                        ...prev, 
-                        file: e.target.files?.[0] || null 
-                      }))}
-                      accept=".pdf,.doc,.docx,.txt"
-                      required={formData.source_type === 'file'}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Supported formats: PDF, DOC, DOCX, TXT
-                    </p>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-
-            <div>
-              <Label>Content Type *</Label>
-              <div className="mt-2 space-y-4">
-                {Object.entries(derivativeTypes).map(([category, types]) => (
-                  <div key={category}>
-                    <h4 className="font-medium text-sm text-gray-700 mb-2">{category}</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {types.map((typeInfo) => (
-                        <Card 
-                          key={typeInfo.type}
-                          className={`cursor-pointer transition-all hover:shadow-md ${
-                            formData.derivative_type === typeInfo.type 
-                              ? 'ring-2 ring-purple-500 bg-purple-50' 
-                              : 'hover:bg-gray-50'
-                          }`}
-                          onClick={() => handleDerivativeTypeSelect(typeInfo.type, category)}
-                        >
-                          <CardContent className="p-3">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-sm">{getContentTypeIcon(typeInfo.content_type)}</span>
-                                  <h5 className="font-medium text-sm text-gray-900">
-                                    {typeInfo.title}
-                                  </h5>
-                                  <Badge variant="secondary" className="text-xs">
-                                    {typeInfo.content_type}
-                                  </Badge>
-                                </div>
-                                <p className="text-xs text-gray-600">
-                                  {typeInfo.description}
-                                </p>
-                              </div>
-                              {formData.derivative_type === typeInfo.type && (
-                                <Badge className="ml-2 bg-purple-600 text-white">
-                                  Selected
-                                </Badge>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ContentTypeSelection
+              selectedType={formData.derivative_type}
+              onTypeSelect={handleDerivativeTypeSelect}
+            />
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
