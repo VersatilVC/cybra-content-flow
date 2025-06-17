@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ContentDerivative } from '@/services/contentDerivativesApi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Download, Expand, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from '@/components/ui/carousel';
 import { downloadImageCarouselZip } from '@/services/imageCarouselService';
 import { useToast } from '@/hooks/use-toast';
 
@@ -24,6 +24,7 @@ const ImageCarouselPreview: React.FC<ImageCarouselPreviewProps> = ({ derivative 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [api, setApi] = useState<CarouselApi>();
   const { toast } = useToast();
 
   // Parse the JSON content to extract carousel data
@@ -57,6 +58,28 @@ const ImageCarouselPreview: React.FC<ImageCarouselPreviewProps> = ({ derivative 
 
   const slides = parseCarouselData();
 
+  // Connect to carousel API and listen for slide changes
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    const updateCurrentSlide = () => {
+      setCurrentSlide(api.selectedScrollSnap());
+    };
+
+    // Set initial slide
+    updateCurrentSlide();
+
+    // Listen for slide changes
+    api.on('select', updateCurrentSlide);
+
+    // Cleanup
+    return () => {
+      api.off('select', updateCurrentSlide);
+    };
+  }, [api]);
+
   const handleDownloadZip = async () => {
     if (slides.length === 0) {
       toast({
@@ -88,6 +111,12 @@ const ImageCarouselPreview: React.FC<ImageCarouselPreviewProps> = ({ derivative 
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
+  };
+
+  const goToSlide = (index: number) => {
+    if (api) {
+      api.scrollTo(index);
+    }
   };
 
   if (slides.length === 0) {
@@ -140,7 +169,7 @@ const ImageCarouselPreview: React.FC<ImageCarouselPreviewProps> = ({ derivative 
 
       <Card className={`${isFullscreen ? 'bg-transparent border-none' : ''}`}>
         <CardContent className={`${isFullscreen ? 'p-0' : 'p-4'}`}>
-          <Carousel className="w-full" opts={{ loop: true }}>
+          <Carousel className="w-full" opts={{ loop: true }} setApi={setApi}>
             <CarouselContent>
               {slides.map((slide, index) => (
                 <CarouselItem key={`slide-${slide.slide_number}-${index}`}>
@@ -190,7 +219,7 @@ const ImageCarouselPreview: React.FC<ImageCarouselPreviewProps> = ({ derivative 
                 className={`w-2 h-2 rounded-full transition-colors ${
                   index === currentSlide ? 'bg-purple-600' : 'bg-gray-300'
                 }`}
-                onClick={() => setCurrentSlide(index)}
+                onClick={() => goToSlide(index)}
               />
             ))}
           </div>
