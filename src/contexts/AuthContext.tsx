@@ -1,196 +1,29 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
-  signOut: () => Promise<void>;
-}
+import React, { createContext, useContext } from 'react';
+import { AuthContextType } from './auth/types';
+import { useAuthState } from './auth/useAuthState';
+import { authService } from './auth/authService';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        console.log('AuthContext: Getting initial session');
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('AuthContext: Error getting initial session:', error);
-        } else {
-          console.log('AuthContext: Initial session:', initialSession ? 'found' : 'not found');
-          if (initialSession) {
-            console.log('AuthContext: Initial session user email:', initialSession.user?.email);
-          }
-          setSession(initialSession);
-          setUser(initialSession?.user ?? null);
-        }
-      } catch (error) {
-        console.error('AuthContext: Unexpected error getting initial session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('AuthContext: Auth state change:', event, session ? 'session exists' : 'no session');
-        
-        if (session) {
-          console.log('AuthContext: Session user email:', session.user?.email);
-          console.log('AuthContext: Session providers:', session.user?.app_metadata?.providers);
-        }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-
-        // Handle specific auth events
-        switch (event) {
-          case 'SIGNED_IN':
-            console.log('AuthContext: User signed in, checking for account linking...');
-            // Account linking will be handled by useAccountLinking hook
-            break;
-          case 'SIGNED_OUT':
-            console.log('AuthContext: User signed out');
-            // Only redirect after successful sign out
-            if (window.location.pathname !== '/auth') {
-              window.location.href = '/auth';
-            }
-            break;
-          case 'TOKEN_REFRESHED':
-            console.log('AuthContext: Token refreshed');
-            break;
-          case 'USER_UPDATED':
-            console.log('AuthContext: User updated');
-            break;
-        }
-      }
-    );
-
-    return () => {
-      console.log('AuthContext: Cleaning up auth subscription');
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      console.log('AuthContext: Signing in user with email:', email);
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) {
-        console.error('AuthContext: Sign in error:', error);
-        throw error;
-      }
-      
-      console.log('AuthContext: Successfully signed in');
-    } catch (error) {
-      console.error('AuthContext: Sign in failed:', error);
-      throw error;
-    }
-  };
-
-  const signInWithGoogle = async () => {
-    try {
-      console.log('AuthContext: Signing in with Google');
-      const redirectUrl = `${window.location.origin}/`;
-      console.log('AuthContext: Google OAuth redirect URL:', redirectUrl);
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-        },
-      });
-      
-      if (error) {
-        console.error('AuthContext: Google sign in error:', error);
-        throw error;
-      }
-      
-      console.log('AuthContext: Google sign in initiated');
-    } catch (error) {
-      console.error('AuthContext: Google sign in failed:', error);
-      throw error;
-    }
-  };
-
-  const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
-    try {
-      console.log('AuthContext: Signing up user with email:', email);
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-          },
-        },
-      });
-      
-      if (error) {
-        console.error('AuthContext: Sign up error:', error);
-        throw error;
-      }
-      
-      console.log('AuthContext: Successfully signed up');
-    } catch (error) {
-      console.error('AuthContext: Sign up failed:', error);
-      throw error;
-    }
-  };
+  const { user, session, loading } = useAuthState();
 
   const signOut = async () => {
-    try {
-      console.log('AuthContext: Signing out user');
-      
-      // Clear local state first to prevent UI flickering
-      setUser(null);
-      setSession(null);
-      
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('AuthContext: Error signing out:', error);
-        // Even if signOut fails, clear local state and redirect
-        // This handles cases where the session is already invalid
-      }
-      
-      console.log('AuthContext: Successfully signed out');
-      
-    } catch (error) {
-      console.error('AuthContext: Sign out failed:', error);
-      // Clear local state even on error to prevent being stuck
-      setUser(null);
-      setSession(null);
-    }
+    // Clear local state first to prevent UI flickering
+    await authService.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signInWithGoogle, signUp, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      loading, 
+      signIn: authService.signIn,
+      signInWithGoogle: authService.signInWithGoogle,
+      signUp: authService.signUp,
+      signOut 
+    }}>
       {children}
     </AuthContext.Provider>
   );
