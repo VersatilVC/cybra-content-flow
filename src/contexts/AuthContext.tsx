@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     try {
       console.log('AuthContext: Signing in with Google');
-      const redirectUrl = `${window.location.origin}/dashboard`;
+      const redirectUrl = `${window.location.origin}/`;
       console.log('AuthContext: Google OAuth redirect URL:', redirectUrl);
       
       const { error } = await supabase.auth.signInWithOAuth({
@@ -137,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
       console.log('AuthContext: Signing up user with email:', email);
-      const redirectUrl = `${window.location.origin}/dashboard`;
+      const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
         email,
