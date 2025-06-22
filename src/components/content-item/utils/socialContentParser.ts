@@ -157,12 +157,14 @@ export function parseSocialContent(content: string): ParsedSocialContent {
 
   if (linkedinMatch && linkedinMatch[1]) {
     result.linkedin = linkedinMatch[1].trim();
-    console.log('✅ [Social Parser] LinkedIn content extracted from text - length:', result.linkedin.length);
+    console.log('✅ [Social Parser] LinkedIn content extracted from text - length:', 
+      typeof result.linkedin === 'string' ? result.linkedin.length : result.linkedin.text.length);
   }
 
   if (xMatch && xMatch[1]) {
     result.x = xMatch[1].trim();
-    console.log('✅ [Social Parser] X content extracted from text - length:', result.x.length);
+    console.log('✅ [Social Parser] X content extracted from text - length:', 
+      typeof result.x === 'string' ? result.x.length : result.x.text.length);
   }
 
   // Only use generic fallback if no platform-specific content found AND it's not JSON-like
