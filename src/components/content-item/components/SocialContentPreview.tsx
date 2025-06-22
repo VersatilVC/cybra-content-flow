@@ -2,6 +2,7 @@
 import React from 'react';
 import { ContentDerivative } from '@/services/contentDerivativesApi';
 import { parseSocialContent, isSocialDerivative } from '../utils/socialContentParser';
+import { processObjectContent, validatePlatformContent } from '../utils/contentValidator';
 import SocialPostSection from './SocialPostSection';
 
 interface SocialContentPreviewProps {
@@ -31,25 +32,7 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   
   // Handle object content directly (new composite format)
   if (typeof rawContent === 'object' && rawContent !== null) {
-    console.log('✅ [SocialContentPreview] Content is already an object');
-    console.log('🔍 [SocialContentPreview] Object content structure:', rawContent);
-    
-    const contentObj = rawContent as any;
-    parsedContent = {
-      linkedin: contentObj.linkedin || undefined,
-      x: contentObj.x || contentObj.twitter || undefined
-    };
-    
-    console.log('✅ [SocialContentPreview] Direct object parsing result:', {
-      hasLinkedIn: !!parsedContent.linkedin,
-      hasX: !!parsedContent.x,
-      linkedinType: typeof parsedContent.linkedin,
-      xType: typeof parsedContent.x,
-      linkedinHasText: parsedContent.linkedin?.text ? true : false,
-      xHasText: parsedContent.x?.text ? true : false,
-      linkedinHasImage: parsedContent.linkedin?.image_url ? true : false,
-      xHasImage: parsedContent.x?.image_url ? true : false
-    });
+    parsedContent = processObjectContent(rawContent);
   } else if (typeof rawContent === 'string') {
     // Handle string content - enhanced JSON parsing for both platforms
     console.log('🔄 [SocialContentPreview] Processing string content:', rawContent.length, 'chars');
@@ -76,15 +59,8 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   });
 
   // Validate that we have at least one platform with valid content
-  const hasValidLinkedIn = parsedContent.linkedin && (
-    typeof parsedContent.linkedin === 'string' || 
-    (typeof parsedContent.linkedin === 'object' && parsedContent.linkedin.text)
-  );
-  
-  const hasValidX = parsedContent.x && (
-    typeof parsedContent.x === 'string' || 
-    (typeof parsedContent.x === 'object' && parsedContent.x.text)
-  );
+  const hasValidLinkedIn = validatePlatformContent(parsedContent.linkedin, 'linkedin');
+  const hasValidX = validatePlatformContent(parsedContent.x, 'x');
 
   if (!hasValidLinkedIn && !hasValidX) {
     console.warn('⚠️ [SocialContentPreview] No valid platform content found for derivative:', derivative.id);
