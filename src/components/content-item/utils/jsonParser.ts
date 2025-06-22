@@ -4,17 +4,44 @@ import { sanitizeJsonString } from './jsonSanitizer';
 // Fallback JSON parsing with multiple strategies
 export function resilientJsonParse(jsonString: string): any {
   console.log('🔄 [Resilient Parser] Attempting resilient JSON parse');
+  console.log('🔍 [Resilient Parser] Input preview:', jsonString.substring(0, 300) + '...');
   
   const strategies = [
     // Strategy 1: Direct parse (for valid JSON)
-    () => JSON.parse(jsonString),
+    () => {
+      const result = JSON.parse(jsonString);
+      console.log('✅ [Resilient Parser] Strategy 1 - Direct parse result:', result);
+      return result;
+    },
     
     // Strategy 2: Sanitized parse
-    () => JSON.parse(sanitizeJsonString(jsonString)),
-    
-    // Strategy 3: Manual content extraction for known structure
     () => {
-      console.log('🔧 [Resilient Parser] Using manual extraction strategy');
+      const sanitized = sanitizeJsonString(jsonString);
+      const result = JSON.parse(sanitized);
+      console.log('✅ [Resilient Parser] Strategy 2 - Sanitized parse result:', result);
+      return result;
+    },
+    
+    // Strategy 3: Simple fallback for malformed strings with valid structure
+    () => {
+      console.log('🔧 [Resilient Parser] Strategy 3 - Using simple eval fallback');
+      // Clean the string more aggressively for eval
+      let cleaned = jsonString
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t')
+        .replace(/\f/g, '\\f')
+        .replace(/\b/g, '\\b');
+      
+      // Use eval as last resort (only for trusted content)
+      const result = eval('(' + cleaned + ')');
+      console.log('✅ [Resilient Parser] Strategy 3 - Eval result:', result);
+      return result;
+    },
+    
+    // Strategy 4: Manual content extraction for known structure
+    () => {
+      console.log('🔧 [Resilient Parser] Strategy 4 - Manual extraction strategy');
       
       // Extract LinkedIn content
       const linkedinMatch = jsonString.match(/"linkedin"\s*:\s*{[^}]*"text"\s*:\s*"([^"]*(?:\\.[^"]*)*)"[^}]*(?:"image_url"\s*:\s*"([^"]*)")?[^}]*}/s);
@@ -36,28 +63,7 @@ export function resilientJsonParse(jsonString: string): any {
         };
       }
       
-      return Object.keys(result).length > 0 ? result : null;
-    },
-    
-    // Strategy 4: Simple key-value extraction
-    () => {
-      console.log('🔧 [Resilient Parser] Using simple key-value extraction');
-      
-      const linkedinTextMatch = jsonString.match(/"linkedin"[^:]*:[^{]*{[^}]*"text"[^:]*:[^"]+"([^"]+(?:\\.[^"]*)*)"/) || 
-                                jsonString.match(/"linkedin"[^:]*:[^"]+"([^"]+(?:\\.[^"]*)*)"/) ;
-      const xTextMatch = jsonString.match(/"x"[^:]*:[^{]*{[^}]*"text"[^:]*:[^"]+"([^"]+(?:\\.[^"]*)*)"/) || 
-                         jsonString.match(/"x"[^:]*:[^"]+"([^"]+(?:\\.[^"]*)*)"/) ;
-      
-      const result: any = {};
-      
-      if (linkedinTextMatch) {
-        result.linkedin = linkedinTextMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
-      }
-      
-      if (xTextMatch) {
-        result.x = xTextMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
-      }
-      
+      console.log('✅ [Resilient Parser] Strategy 4 - Manual extraction result:', result);
       return Object.keys(result).length > 0 ? result : null;
     }
   ];
@@ -66,7 +72,13 @@ export function resilientJsonParse(jsonString: string): any {
     try {
       const result = strategies[i]();
       if (result) {
-        console.log(`✅ [Resilient Parser] Strategy ${i + 1} succeeded`);
+        console.log(`✅ [Resilient Parser] Strategy ${i + 1} succeeded with result:`, result);
+        console.log(`🔍 [Resilient Parser] Strategy ${i + 1} - Platform keys found:`, {
+          hasLinkedIn: !!result.linkedin,
+          hasX: !!result.x,
+          hasTwitter: !!result.twitter,
+          keys: Object.keys(result)
+        });
         return result;
       }
     } catch (error) {
