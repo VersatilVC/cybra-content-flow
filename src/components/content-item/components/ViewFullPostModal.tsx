@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import PlatformBadge from './PlatformBadge';
 
@@ -16,6 +16,7 @@ interface ViewFullPostModalProps {
   onClose: () => void;
   platform: 'linkedin' | 'x';
   content: string;
+  imageUrl?: string;
   platformName: string;
 }
 
@@ -24,6 +25,7 @@ const ViewFullPostModal: React.FC<ViewFullPostModalProps> = ({
   onClose,
   platform,
   content,
+  imageUrl,
   platformName,
 }) => {
   const [copied, setCopied] = useState(false);
@@ -47,6 +49,34 @@ const ViewFullPostModal: React.FC<ViewFullPostModalProps> = ({
     }
   };
 
+  const handleImageDownload = async () => {
+    if (!imageUrl) return;
+    
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${platform}-post-image.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: 'Image downloaded',
+        description: 'Image has been downloaded successfully.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Download failed',
+        description: 'Failed to download image.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -64,21 +94,48 @@ const ViewFullPostModal: React.FC<ViewFullPostModalProps> = ({
             </div>
           </div>
           
+          {imageUrl && (
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h4 className="text-sm font-medium mb-2">Attached Image:</h4>
+              <img
+                src={imageUrl}
+                alt={`${platformName} post image`}
+                className="w-full max-w-md mx-auto rounded-lg shadow-sm border"
+                onError={(e) => {
+                  console.error('Failed to load image:', imageUrl);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
+          
           <div className="flex items-center justify-between pt-4 border-t">
             <div className="text-xs text-gray-500">
-              {content.length} characters
+              {content.length} characters {imageUrl && '• Image attached'}
             </div>
-            <Button
-              onClick={handleCopy}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {copied ? (
-                <Check className="w-4 h-4 mr-2 text-white" />
-              ) : (
-                <Copy className="w-4 h-4 mr-2" />
+            <div className="flex gap-2">
+              {imageUrl && (
+                <Button
+                  onClick={handleImageDownload}
+                  variant="outline"
+                  className="text-xs"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Image
+                </Button>
               )}
-              {copied ? 'Copied!' : `Copy ${platformName} Post`}
-            </Button>
+              <Button
+                onClick={handleCopy}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+              >
+                {copied ? (
+                  <Check className="w-4 h-4 mr-2 text-white" />
+                ) : (
+                  <Copy className="w-4 h-4 mr-2" />
+                )}
+                {copied ? 'Copied!' : `Copy ${platformName} Post`}
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

@@ -37,69 +37,13 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
     console.log('✅ [SocialContentPreview] Using direct object content:', {
       hasLinkedIn: !!parsedContent.linkedin,
       hasX: !!parsedContent.x,
-      linkedinLength: parsedContent.linkedin?.length || 0,
-      xLength: parsedContent.x?.length || 0
+      linkedinType: typeof parsedContent.linkedin,
+      xType: typeof parsedContent.x
     });
   } else if (typeof rawContent === 'string') {
     // Handle string content - enhanced JSON parsing for both platforms
     console.log('🔄 [SocialContentPreview] Processing string content:', rawContent.length, 'chars');
-    
-    const trimmedContent = rawContent.trim();
-    
-    // Try to parse as JSON first with enhanced extraction
-    if (trimmedContent.startsWith('{') && trimmedContent.endsWith('}')) {
-      try {
-        console.log('🔄 [SocialContentPreview] Attempting JSON parse...');
-        
-        // Enhanced manual extraction for both platforms
-        const multiPlatformMatch = trimmedContent.match(/\{"linkedin":"(.*?)"\s*,\s*"x":"(.*?)"\}/s);
-        const linkedinOnlyMatch = trimmedContent.match(/\{"linkedin":"(.*?)"\}/s);
-        const xOnlyMatch = trimmedContent.match(/\{"x":"(.*?)"\}/s);
-        
-        if (multiPlatformMatch) {
-          console.log('✅ [SocialContentPreview] Found multi-platform content');
-          parsedContent = {
-            linkedin: multiPlatformMatch[1],
-            x: multiPlatformMatch[2]
-          };
-        } else if (linkedinOnlyMatch) {
-          console.log('✅ [SocialContentPreview] Found LinkedIn-only content');
-          parsedContent = {
-            linkedin: linkedinOnlyMatch[1],
-            x: undefined
-          };
-        } else if (xOnlyMatch) {
-          console.log('✅ [SocialContentPreview] Found X-only content');
-          parsedContent = {
-            linkedin: undefined,
-            x: xOnlyMatch[1]
-          };
-        } else {
-          // Fallback to standard JSON parse
-          const directParsed = JSON.parse(trimmedContent);
-          console.log('✅ [SocialContentPreview] JSON parse successful:', directParsed);
-          
-          parsedContent = {
-            linkedin: directParsed.linkedin || undefined,
-            x: directParsed.x || directParsed.twitter || undefined
-          };
-        }
-        
-        console.log('✅ [SocialContentPreview] Extracted platform content:', {
-          hasLinkedIn: !!parsedContent.linkedin,
-          hasX: !!parsedContent.x,
-          linkedinLength: parsedContent.linkedin?.length || 0,
-          xLength: parsedContent.x?.length || 0
-        });
-      } catch (error) {
-        console.log('❌ [SocialContentPreview] JSON parse failed, using text parser:', error);
-        parsedContent = parseSocialContent(rawContent);
-      }
-    } else {
-      // Not JSON-like, use text parser for text-based content
-      console.log('🔄 [SocialContentPreview] Content not JSON-like, using text parser');
-      parsedContent = parseSocialContent(rawContent);
-    }
+    parsedContent = parseSocialContent(rawContent);
   } else {
     // Fallback for unexpected types
     console.log('⚠️ [SocialContentPreview] Unexpected content type, using empty result');
@@ -109,8 +53,8 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   console.log('✅ [SocialContentPreview] Final parsed content result:', {
     hasLinkedIn: !!parsedContent.linkedin,
     hasX: !!parsedContent.x,
-    linkedinLength: parsedContent.linkedin?.length || 0,
-    xLength: parsedContent.x?.length || 0
+    linkedinType: typeof parsedContent.linkedin,
+    xType: typeof parsedContent.x
   });
 
   // Only show sections for platforms that have content

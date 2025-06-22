@@ -1,7 +1,12 @@
 
 export interface ParsedSocialContent {
-  linkedin?: string;
-  x?: string;
+  linkedin?: string | SocialPostData;
+  x?: string | SocialPostData;
+}
+
+export interface SocialPostData {
+  text: string;
+  image_url?: string;
 }
 
 export function parseSocialContent(content: string): ParsedSocialContent {
@@ -26,61 +31,82 @@ export function parseSocialContent(content: string): ParsedSocialContent {
     
     // If it looks like JSON, try to parse it
     if (cleanedContent.trim().startsWith('{') && cleanedContent.trim().endsWith('}')) {
-      // Enhanced manual extraction patterns for both platforms
-      const multiPlatformMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\s*,\s*"x":"(.*?)"\}/s);
-      const linkedinFirstMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\s*,\s*"(?:x|twitter)":"(.*?)"\}/s);
-      const xFirstMatch = cleanedContent.match(/\{"(?:x|twitter)":"(.*?)"\s*,\s*"linkedin":"(.*?)"\}/s);
-      const linkedinOnlyMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\}/s);
-      const xOnlyMatch = cleanedContent.match(/\{"(?:x|twitter)":"(.*?)"\}/s);
-      
       let parsed = null;
       
-      if (multiPlatformMatch || linkedinFirstMatch) {
-        const match = multiPlatformMatch || linkedinFirstMatch;
-        console.log('✅ [Social Parser] Found multi-platform content (LinkedIn first)');
-        parsed = { 
-          linkedin: match[1], 
-          x: match[2] 
-        };
-      } else if (xFirstMatch) {
-        console.log('✅ [Social Parser] Found multi-platform content (X first)');
-        parsed = { 
-          linkedin: xFirstMatch[2], 
-          x: xFirstMatch[1] 
-        };
-      } else if (linkedinOnlyMatch) {
-        console.log('✅ [Social Parser] Found LinkedIn-only content');
-        parsed = { 
-          linkedin: linkedinOnlyMatch[1],
-          x: undefined
-        };
-      } else if (xOnlyMatch) {
-        console.log('✅ [Social Parser] Found X-only content');
-        parsed = { 
-          linkedin: undefined,
-          x: xOnlyMatch[1] 
-        };
-      } else {
-        // Fallback to standard JSON parse
-        try {
-          parsed = JSON.parse(cleanedContent);
-          console.log('✅ [Social Parser] Standard JSON parse successful');
-        } catch (standardParseError) {
-          console.log('❌ [Social Parser] Standard JSON parse also failed');
-          throw standardParseError;
+      try {
+        parsed = JSON.parse(cleanedContent);
+        console.log('✅ [Social Parser] Standard JSON parse successful');
+      } catch (standardParseError) {
+        console.log('❌ [Social Parser] Standard JSON parse failed, trying manual extraction');
+        
+        // Enhanced manual extraction patterns for both platforms with image support
+        const multiPlatformTextMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\s*,\s*"x":"(.*?)"\}/s);
+        const multiPlatformObjectMatch = cleanedContent.match(/\{"linkedin":\{[^}]*\}\s*,\s*"x":\{[^}]*\}\}/s);
+        const linkedinOnlyMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\}/s);
+        const xOnlyMatch = cleanedContent.match(/\{"(?:x|twitter)":"(.*?)"\}/s);
+        
+        if (multiPlatformObjectMatch) {
+          console.log('✅ [Social Parser] Found multi-platform object content');
+          // Try to parse the complex object structure
+          try {
+            parsed = JSON.parse(multiPlatformObjectMatch[0]);
+          } catch (e) {
+            console.log('❌ [Social Parser] Failed to parse complex object, using text fallback');
+          }
+        } else if (multiPlatformTextMatch) {
+          console.log('✅ [Social Parser] Found multi-platform text content');
+          parsed = { 
+            linkedin: multiPlatformTextMatch[1], 
+            x: multiPlatformTextMatch[2] 
+          };
+        } else if (linkedinOnlyMatch) {
+          console.log('✅ [Social Parser] Found LinkedIn-only content');
+          parsed = { 
+            linkedin: linkedinOnlyMatch[1],
+            x: undefined
+          };
+        } else if (xOnlyMatch) {
+          console.log('✅ [Social Parser] Found X-only content');
+          parsed = { 
+            linkedin: undefined,
+            x: xOnlyMatch[1] 
+          };
         }
       }
       
       if (parsed && (parsed.linkedin || parsed.x || parsed.twitter)) {
-        const result = {
-          linkedin: parsed.linkedin,
-          x: parsed.x || parsed.twitter
-        };
+        const result: ParsedSocialContent = {};
+        
+        // Handle LinkedIn content
+        if (parsed.linkedin) {
+          if (typeof parsed.linkedin === 'string') {
+            result.linkedin = parsed.linkedin;
+          } else if (typeof parsed.linkedin === 'object' && parsed.linkedin.text) {
+            result.linkedin = {
+              text: parsed.linkedin.text,
+              image_url: parsed.linkedin.image_url
+            };
+          }
+        }
+        
+        // Handle X content (check both x and twitter keys)
+        const xContent = parsed.x || parsed.twitter;
+        if (xContent) {
+          if (typeof xContent === 'string') {
+            result.x = xContent;
+          } else if (typeof xContent === 'object' && xContent.text) {
+            result.x = {
+              text: xContent.text,
+              image_url: xContent.image_url
+            };
+          }
+        }
+        
         console.log('✅ [Social Parser] Found platform content via JSON:', {
           hasLinkedIn: !!result.linkedin,
           hasX: !!result.x,
-          linkedinLength: result.linkedin?.length || 0,
-          xLength: result.x?.length || 0
+          linkedinType: typeof result.linkedin,
+          xType: typeof result.x
         });
         return result;
       } else {
@@ -150,8 +176,8 @@ export function parseSocialContent(content: string): ParsedSocialContent {
   console.log('🔍 [Social Parser] Final result:', {
     hasLinkedIn: !!result.linkedin,
     hasX: !!result.x,
-    linkedinLength: result.linkedin?.length || 0,
-    xLength: result.x?.length || 0
+    linkedinType: typeof result.linkedin,
+    xType: typeof result.x
   });
 
   return result;
