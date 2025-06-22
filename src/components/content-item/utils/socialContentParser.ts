@@ -1,10 +1,9 @@
-
 import { resilientJsonParse } from './jsonParser';
 import { parseTextBasedContent } from './textContentParser';
 import { validatePlatformContent, processObjectContent, applyGenericFallback } from './contentValidator';
 import { ParsedSocialContent, SocialPostData } from './types';
 
-export { ParsedSocialContent, SocialPostData };
+export type { ParsedSocialContent, SocialPostData };
 
 export function parseSocialContent(content: string): ParsedSocialContent {
   console.log('🔍 [Social Parser] Raw content received:', content);
