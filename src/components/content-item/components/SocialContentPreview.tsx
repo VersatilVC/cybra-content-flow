@@ -30,13 +30,18 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
   const rawContent = derivative.content as string | object;
   let parsedContent;
   
-  // Handle object content directly (new composite format)
-  if (typeof rawContent === 'object' && rawContent !== null) {
+  // Handle composite content type with direct object processing
+  if (derivative.content_type === 'composite' && typeof rawContent === 'object' && rawContent !== null) {
+    console.log('✅ [SocialContentPreview] Processing composite content directly as object');
+    parsedContent = processObjectContent(rawContent);
+  } else if (typeof rawContent === 'object' && rawContent !== null) {
+    // Handle object content directly (new composite format)
+    console.log('✅ [SocialContentPreview] Processing object content directly');
     parsedContent = processObjectContent(rawContent);
   } else if (typeof rawContent === 'string') {
     // Handle string content - enhanced JSON parsing for both platforms
     console.log('🔄 [SocialContentPreview] Processing string content:', rawContent.length, 'chars');
-    parsedContent = parseSocialContent(rawContent);
+    parsedContent = parseSocialContent(rawContent, derivative.content_type);
     
     console.log('✅ [SocialContentPreview] String parsing result:', {
       hasLinkedIn: !!parsedContent.linkedin,

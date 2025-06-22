@@ -1,6 +1,12 @@
 
-// Enhanced JSON sanitization function
+// Enhanced JSON sanitization function - only for strings, not objects
 export function sanitizeJsonString(jsonString: string): string {
+  // Type guard - only sanitize strings
+  if (typeof jsonString !== 'string') {
+    console.log('🧹 [JSON Sanitizer] Input is not a string, skipping sanitization');
+    return jsonString;
+  }
+  
   console.log('🧹 [JSON Sanitizer] Starting sanitization for:', jsonString.substring(0, 200) + '...');
   
   // Remove any BOM characters

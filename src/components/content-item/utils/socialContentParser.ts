@@ -6,20 +6,33 @@ import { ParsedSocialContent, SocialPostData } from './types';
 
 export type { ParsedSocialContent, SocialPostData };
 
-export function parseSocialContent(content: string): ParsedSocialContent {
+export function parseSocialContent(content: string | object, contentType?: string): ParsedSocialContent {
   console.log('🔍 [Social Parser] Raw content received:', content);
   console.log('🔍 [Social Parser] Content type:', typeof content);
-  console.log('🔍 [Social Parser] Content length:', content?.length);
+  console.log('🔍 [Social Parser] Content type parameter:', contentType);
+  console.log('🔍 [Social Parser] Content length:', typeof content === 'string' ? content?.length : 'N/A (object)');
 
   if (!content) {
     console.log('❌ [Social Parser] No content provided');
     return {};
   }
 
-  // Ensure we're working with a string
+  // Handle composite content type - direct object pass-through
+  if (contentType === 'composite' && typeof content === 'object' && content !== null) {
+    console.log('✅ [Social Parser] Processing composite content as direct object');
+    return processObjectContent(content);
+  }
+
+  // Handle object content directly (already parsed JSON)
+  if (typeof content === 'object' && content !== null) {
+    console.log('✅ [Social Parser] Content is already an object, processing directly');
+    return processObjectContent(content);
+  }
+
+  // Ensure we're working with a string for further processing
   const contentString = typeof content === 'string' ? content : JSON.stringify(content);
   
-  // Try resilient JSON parsing first - with better detection
+  // Try resilient JSON parsing for string content - with better detection
   if (contentString.trim().startsWith('{') || contentString.includes('"linkedin"') || contentString.includes('"x"')) {
     console.log('🔄 [Social Parser] Attempting resilient JSON parse...');
     
