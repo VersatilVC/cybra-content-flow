@@ -9,6 +9,107 @@ export interface SocialPostData {
   image_url?: string;
 }
 
+// Enhanced JSON sanitization function
+function sanitizeJsonString(jsonString: string): string {
+  console.log('🧹 [JSON Sanitizer] Sanitizing JSON string');
+  
+  // Remove any BOM characters
+  let cleaned = jsonString.replace(/^\uFEFF/, '');
+  
+  // Escape unescaped newlines, tabs, and carriage returns within string values
+  // This regex finds string values and escapes control characters within them
+  cleaned = cleaned.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, (match, content) => {
+    const escaped = content
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t')
+      .replace(/\f/g, '\\f')
+      .replace(/\b/g, '\\b');
+    return `"${escaped}"`;
+  });
+  
+  console.log('✅ [JSON Sanitizer] Sanitization complete');
+  return cleaned;
+}
+
+// Fallback JSON parsing with multiple strategies
+function resilientJsonParse(jsonString: string): any {
+  console.log('🔄 [Resilient Parser] Attempting resilient JSON parse');
+  
+  const strategies = [
+    // Strategy 1: Direct parse (for valid JSON)
+    () => JSON.parse(jsonString),
+    
+    // Strategy 2: Sanitized parse
+    () => JSON.parse(sanitizeJsonString(jsonString)),
+    
+    // Strategy 3: Manual content extraction for known structure
+    () => {
+      console.log('🔧 [Resilient Parser] Using manual extraction strategy');
+      
+      // Extract LinkedIn content
+      const linkedinMatch = jsonString.match(/"linkedin"\s*:\s*{[^}]*"text"\s*:\s*"([^"]*(?:\\.[^"]*)*)"[^}]*(?:"image_url"\s*:\s*"([^"]*)")?[^}]*}/s);
+      const xMatch = jsonString.match(/"x"\s*:\s*{[^}]*"text"\s*:\s*"([^"]*(?:\\.[^"]*)*)"[^}]*(?:"image_url"\s*:\s*"([^"]*)")?[^}]*}/s);
+      
+      const result: any = {};
+      
+      if (linkedinMatch) {
+        result.linkedin = {
+          text: linkedinMatch[1].replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t'),
+          ...(linkedinMatch[2] && { image_url: linkedinMatch[2] })
+        };
+      }
+      
+      if (xMatch) {
+        result.x = {
+          text: xMatch[1].replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t'),
+          ...(xMatch[2] && { image_url: xMatch[2] })
+        };
+      }
+      
+      return Object.keys(result).length > 0 ? result : null;
+    },
+    
+    // Strategy 4: Simple key-value extraction
+    () => {
+      console.log('🔧 [Resilient Parser] Using simple key-value extraction');
+      
+      const linkedinTextMatch = jsonString.match(/"linkedin"[^:]*:[^{]*{[^}]*"text"[^:]*:[^"]+"([^"]+(?:\\.[^"]*)*)"/) || 
+                                jsonString.match(/"linkedin"[^:]*:[^"]+"([^"]+(?:\\.[^"]*)*)"/) ;
+      const xTextMatch = jsonString.match(/"x"[^:]*:[^{]*{[^}]*"text"[^:]*:[^"]+"([^"]+(?:\\.[^"]*)*)"/) || 
+                         jsonString.match(/"x"[^:]*:[^"]+"([^"]+(?:\\.[^"]*)*)"/) ;
+      
+      const result: any = {};
+      
+      if (linkedinTextMatch) {
+        result.linkedin = linkedinTextMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+      }
+      
+      if (xTextMatch) {
+        result.x = xTextMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+      }
+      
+      return Object.keys(result).length > 0 ? result : null;
+    }
+  ];
+  
+  for (let i = 0; i < strategies.length; i++) {
+    try {
+      const result = strategies[i]();
+      if (result) {
+        console.log(`✅ [Resilient Parser] Strategy ${i + 1} succeeded`);
+        return result;
+      }
+    } catch (error) {
+      console.log(`❌ [Resilient Parser] Strategy ${i + 1} failed:`, error.message);
+      continue;
+    }
+  }
+  
+  console.log('❌ [Resilient Parser] All strategies failed');
+  return null;
+}
+
 export function parseSocialContent(content: string): ParsedSocialContent {
   console.log('🔍 [Social Parser] Raw content received:', content);
   console.log('🔍 [Social Parser] Content type:', typeof content);
@@ -22,114 +123,65 @@ export function parseSocialContent(content: string): ParsedSocialContent {
   // Ensure we're working with a string
   const contentString = typeof content === 'string' ? content : JSON.stringify(content);
   
-  // Try to parse as JSON first with enhanced extraction for both platforms
-  try {
-    console.log('🔄 [Social Parser] Attempting JSON parse...');
+  // Try resilient JSON parsing first
+  if (contentString.trim().startsWith('{') && contentString.trim().endsWith('}')) {
+    console.log('🔄 [Social Parser] Attempting resilient JSON parse...');
     
-    // Clean the JSON string to handle special characters
-    let cleanedContent = contentString;
+    const parsed = resilientJsonParse(contentString);
     
-    // If it looks like JSON, try to parse it
-    if (cleanedContent.trim().startsWith('{') && cleanedContent.trim().endsWith('}')) {
-      let parsed = null;
+    if (parsed && (parsed.linkedin || parsed.x || parsed.twitter)) {
+      const result: ParsedSocialContent = {};
       
-      try {
-        parsed = JSON.parse(cleanedContent);
-        console.log('✅ [Social Parser] Standard JSON parse successful:', parsed);
-      } catch (standardParseError) {
-        console.log('❌ [Social Parser] Standard JSON parse failed, trying manual extraction:', standardParseError);
-        
-        // Enhanced manual extraction patterns for both platforms with image support
-        const multiPlatformTextMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\s*,\s*"x":"(.*?)"\}/s);
-        const multiPlatformObjectMatch = cleanedContent.match(/\{"linkedin":\{[^}]*\}\s*,\s*"x":\{[^}]*\}\}/s);
-        const linkedinOnlyMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\}/s);
-        const xOnlyMatch = cleanedContent.match(/\{"(?:x|twitter)":"(.*?)"\}/s);
-        
-        if (multiPlatformObjectMatch) {
-          console.log('✅ [Social Parser] Found multi-platform object content');
-          // Try to parse the complex object structure
-          try {
-            parsed = JSON.parse(multiPlatformObjectMatch[0]);
-          } catch (e) {
-            console.log('❌ [Social Parser] Failed to parse complex object, using text fallback');
-          }
-        } else if (multiPlatformTextMatch) {
-          console.log('✅ [Social Parser] Found multi-platform text content');
-          parsed = { 
-            linkedin: multiPlatformTextMatch[1], 
-            x: multiPlatformTextMatch[2] 
+      // Handle LinkedIn content with better validation
+      if (parsed.linkedin) {
+        if (typeof parsed.linkedin === 'string') {
+          result.linkedin = parsed.linkedin;
+          console.log('✅ [Social Parser] LinkedIn string content processed:', parsed.linkedin.length, 'chars');
+        } else if (typeof parsed.linkedin === 'object' && parsed.linkedin.text) {
+          result.linkedin = {
+            text: parsed.linkedin.text,
+            image_url: parsed.linkedin.image_url
           };
-        } else if (linkedinOnlyMatch) {
-          console.log('✅ [Social Parser] Found LinkedIn-only content');
-          parsed = { 
-            linkedin: linkedinOnlyMatch[1],
-            x: undefined
-          };
-        } else if (xOnlyMatch) {
-          console.log('✅ [Social Parser] Found X-only content');
-          parsed = { 
-            linkedin: undefined,
-            x: xOnlyMatch[1] 
-          };
+          console.log('✅ [Social Parser] LinkedIn object content processed:', {
+            textLength: parsed.linkedin.text.length,
+            hasImage: !!parsed.linkedin.image_url
+          });
+        } else {
+          console.warn('⚠️ [Social Parser] LinkedIn content format invalid:', parsed.linkedin);
         }
       }
       
-      if (parsed && (parsed.linkedin || parsed.x || parsed.twitter)) {
-        const result: ParsedSocialContent = {};
-        
-        // Handle LinkedIn content with better validation
-        if (parsed.linkedin) {
-          if (typeof parsed.linkedin === 'string') {
-            result.linkedin = parsed.linkedin;
-            console.log('✅ [Social Parser] LinkedIn string content processed:', parsed.linkedin.length, 'chars');
-          } else if (typeof parsed.linkedin === 'object' && parsed.linkedin.text) {
-            result.linkedin = {
-              text: parsed.linkedin.text,
-              image_url: parsed.linkedin.image_url
-            };
-            console.log('✅ [Social Parser] LinkedIn object content processed:', {
-              textLength: parsed.linkedin.text.length,
-              hasImage: !!parsed.linkedin.image_url
-            });
-          } else {
-            console.warn('⚠️ [Social Parser] LinkedIn content format invalid:', parsed.linkedin);
-          }
+      // Handle X content (check both x and twitter keys) with better validation
+      const xContent = parsed.x || parsed.twitter;
+      if (xContent) {
+        if (typeof xContent === 'string') {
+          result.x = xContent;
+          console.log('✅ [Social Parser] X string content processed:', xContent.length, 'chars');
+        } else if (typeof xContent === 'object' && xContent.text) {
+          result.x = {
+            text: xContent.text,
+            image_url: xContent.image_url
+          };
+          console.log('✅ [Social Parser] X object content processed:', {
+            textLength: xContent.text.length,
+            hasImage: !!xContent.image_url
+          });
+        } else {
+          console.warn('⚠️ [Social Parser] X content format invalid:', xContent);
         }
-        
-        // Handle X content (check both x and twitter keys) with better validation
-        const xContent = parsed.x || parsed.twitter;
-        if (xContent) {
-          if (typeof xContent === 'string') {
-            result.x = xContent;
-            console.log('✅ [Social Parser] X string content processed:', xContent.length, 'chars');
-          } else if (typeof xContent === 'object' && xContent.text) {
-            result.x = {
-              text: xContent.text,
-              image_url: xContent.image_url
-            };
-            console.log('✅ [Social Parser] X object content processed:', {
-              textLength: xContent.text.length,
-              hasImage: !!xContent.image_url
-            });
-          } else {
-            console.warn('⚠️ [Social Parser] X content format invalid:', xContent);
-          }
-        }
-        
-        console.log('✅ [Social Parser] Found platform content via JSON:', {
-          hasLinkedIn: !!result.linkedin,
-          hasX: !!result.x,
-          linkedinType: typeof result.linkedin,
-          xType: typeof result.x,
-          finalResult: result
-        });
-        return result;
-      } else {
-        console.log('⚠️ [Social Parser] JSON parsed but no platform keys found:', parsed);
       }
+      
+      console.log('✅ [Social Parser] Found platform content via resilient JSON:', {
+        hasLinkedIn: !!result.linkedin,
+        hasX: !!result.x,
+        linkedinType: typeof result.linkedin,
+        xType: typeof result.x,
+        finalResult: result
+      });
+      return result;
+    } else {
+      console.log('⚠️ [Social Parser] Resilient JSON parsed but no platform keys found:', parsed);
     }
-  } catch (parseError) {
-    console.log('❌ [Social Parser] JSON parse failed, trying text-based parsing:', parseError);
   }
 
   // Enhanced text-based content parsing for markdown-style content
