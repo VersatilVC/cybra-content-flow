@@ -13,60 +13,99 @@ const SocialContentPreview: React.FC<SocialContentPreviewProps> = ({ derivative 
     console.log('🚫 [SocialContentPreview] Not a social derivative or no content:', {
       isSocial: isSocialDerivative(derivative.derivative_type),
       hasContent: !!derivative.content,
-      derivativeType: derivative.derivative_type
+      derivativeType: derivative.derivative_type,
+      derivativeId: derivative.id
     });
     return null;
   }
 
-  console.log('🔄 [SocialContentPreview] Processing social content for derivative:', derivative.id);
-  console.log('🔍 [SocialContentPreview] Raw derivative content type:', typeof derivative.content);
+  console.log('🔄 [SocialContentPreview] Processing social content for derivative:', {
+    id: derivative.id,
+    derivativeType: derivative.derivative_type,
+    contentType: derivative.content_type,
+    rawContentType: typeof derivative.content
+  });
   
   const rawContent = derivative.content as string | object;
   let parsedContent;
   
-  // Handle object content directly
+  // Handle object content directly (new composite format)
   if (typeof rawContent === 'object' && rawContent !== null) {
     console.log('✅ [SocialContentPreview] Content is already an object');
-    console.log('🔍 [SocialContentPreview] Object content:', rawContent);
+    console.log('🔍 [SocialContentPreview] Object content structure:', rawContent);
     
     const contentObj = rawContent as any;
     parsedContent = {
       linkedin: contentObj.linkedin || undefined,
       x: contentObj.x || contentObj.twitter || undefined
     };
-    console.log('✅ [SocialContentPreview] Using direct object content:', {
+    
+    console.log('✅ [SocialContentPreview] Direct object parsing result:', {
       hasLinkedIn: !!parsedContent.linkedin,
       hasX: !!parsedContent.x,
       linkedinType: typeof parsedContent.linkedin,
-      xType: typeof parsedContent.x
+      xType: typeof parsedContent.x,
+      linkedinHasText: parsedContent.linkedin?.text ? true : false,
+      xHasText: parsedContent.x?.text ? true : false,
+      linkedinHasImage: parsedContent.linkedin?.image_url ? true : false,
+      xHasImage: parsedContent.x?.image_url ? true : false
     });
   } else if (typeof rawContent === 'string') {
     // Handle string content - enhanced JSON parsing for both platforms
     console.log('🔄 [SocialContentPreview] Processing string content:', rawContent.length, 'chars');
     parsedContent = parseSocialContent(rawContent);
+    
+    console.log('✅ [SocialContentPreview] String parsing result:', {
+      hasLinkedIn: !!parsedContent.linkedin,
+      hasX: !!parsedContent.x,
+      linkedinType: typeof parsedContent.linkedin,
+      xType: typeof parsedContent.x
+    });
   } else {
     // Fallback for unexpected types
     console.log('⚠️ [SocialContentPreview] Unexpected content type, using empty result');
     parsedContent = {};
   }
   
-  console.log('✅ [SocialContentPreview] Final parsed content result:', {
+  console.log('✅ [SocialContentPreview] Final parsed content for rendering:', {
+    derivativeId: derivative.id,
     hasLinkedIn: !!parsedContent.linkedin,
     hasX: !!parsedContent.x,
-    linkedinType: typeof parsedContent.linkedin,
-    xType: typeof parsedContent.x
+    linkedinContent: parsedContent.linkedin,
+    xContent: parsedContent.x
   });
 
-  // Only show sections for platforms that have content
+  // Validate that we have at least one platform with valid content
+  const hasValidLinkedIn = parsedContent.linkedin && (
+    typeof parsedContent.linkedin === 'string' || 
+    (typeof parsedContent.linkedin === 'object' && parsedContent.linkedin.text)
+  );
+  
+  const hasValidX = parsedContent.x && (
+    typeof parsedContent.x === 'string' || 
+    (typeof parsedContent.x === 'object' && parsedContent.x.text)
+  );
+
+  if (!hasValidLinkedIn && !hasValidX) {
+    console.warn('⚠️ [SocialContentPreview] No valid platform content found for derivative:', derivative.id);
+    return (
+      <div className="text-center text-gray-500 py-4">
+        <p>No valid social content found</p>
+        <p className="text-xs mt-1">Check console for debugging details</p>
+      </div>
+    );
+  }
+
+  // Only show sections for platforms that have valid content
   return (
     <div className="space-y-4">
-      {parsedContent.linkedin && (
+      {hasValidLinkedIn && (
         <SocialPostSection
           platform="linkedin"
           content={parsedContent.linkedin}
         />
       )}
-      {parsedContent.x && (
+      {hasValidX && (
         <SocialPostSection
           platform="x"
           content={parsedContent.x}

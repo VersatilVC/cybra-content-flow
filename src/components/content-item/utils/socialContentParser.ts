@@ -35,9 +35,9 @@ export function parseSocialContent(content: string): ParsedSocialContent {
       
       try {
         parsed = JSON.parse(cleanedContent);
-        console.log('✅ [Social Parser] Standard JSON parse successful');
+        console.log('✅ [Social Parser] Standard JSON parse successful:', parsed);
       } catch (standardParseError) {
-        console.log('❌ [Social Parser] Standard JSON parse failed, trying manual extraction');
+        console.log('❌ [Social Parser] Standard JSON parse failed, trying manual extraction:', standardParseError);
         
         // Enhanced manual extraction patterns for both platforms with image support
         const multiPlatformTextMatch = cleanedContent.match(/\{"linkedin":"(.*?)"\s*,\s*"x":"(.*?)"\}/s);
@@ -77,28 +77,42 @@ export function parseSocialContent(content: string): ParsedSocialContent {
       if (parsed && (parsed.linkedin || parsed.x || parsed.twitter)) {
         const result: ParsedSocialContent = {};
         
-        // Handle LinkedIn content
+        // Handle LinkedIn content with better validation
         if (parsed.linkedin) {
           if (typeof parsed.linkedin === 'string') {
             result.linkedin = parsed.linkedin;
+            console.log('✅ [Social Parser] LinkedIn string content processed:', parsed.linkedin.length, 'chars');
           } else if (typeof parsed.linkedin === 'object' && parsed.linkedin.text) {
             result.linkedin = {
               text: parsed.linkedin.text,
               image_url: parsed.linkedin.image_url
             };
+            console.log('✅ [Social Parser] LinkedIn object content processed:', {
+              textLength: parsed.linkedin.text.length,
+              hasImage: !!parsed.linkedin.image_url
+            });
+          } else {
+            console.warn('⚠️ [Social Parser] LinkedIn content format invalid:', parsed.linkedin);
           }
         }
         
-        // Handle X content (check both x and twitter keys)
+        // Handle X content (check both x and twitter keys) with better validation
         const xContent = parsed.x || parsed.twitter;
         if (xContent) {
           if (typeof xContent === 'string') {
             result.x = xContent;
+            console.log('✅ [Social Parser] X string content processed:', xContent.length, 'chars');
           } else if (typeof xContent === 'object' && xContent.text) {
             result.x = {
               text: xContent.text,
               image_url: xContent.image_url
             };
+            console.log('✅ [Social Parser] X object content processed:', {
+              textLength: xContent.text.length,
+              hasImage: !!xContent.image_url
+            });
+          } else {
+            console.warn('⚠️ [Social Parser] X content format invalid:', xContent);
           }
         }
         
@@ -106,11 +120,12 @@ export function parseSocialContent(content: string): ParsedSocialContent {
           hasLinkedIn: !!result.linkedin,
           hasX: !!result.x,
           linkedinType: typeof result.linkedin,
-          xType: typeof result.x
+          xType: typeof result.x,
+          finalResult: result
         });
         return result;
       } else {
-        console.log('⚠️ [Social Parser] JSON parsed but no platform keys found');
+        console.log('⚠️ [Social Parser] JSON parsed but no platform keys found:', parsed);
       }
     }
   } catch (parseError) {
@@ -179,7 +194,8 @@ export function parseSocialContent(content: string): ParsedSocialContent {
     hasLinkedIn: !!result.linkedin,
     hasX: !!result.x,
     linkedinType: typeof result.linkedin,
-    xType: typeof result.x
+    xType: typeof result.x,
+    finalResult: result
   });
 
   return result;

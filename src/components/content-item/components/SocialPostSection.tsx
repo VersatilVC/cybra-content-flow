@@ -25,13 +25,41 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
 
-  // Parse content to handle both string and object formats
+  // Parse content to handle both string and object formats with better debugging
   const postData: SocialPostData = React.useMemo(() => {
+    console.log(`🔍 [SocialPostSection] Processing ${platform} content:`, {
+      contentType: typeof content,
+      content: content,
+      isString: typeof content === 'string',
+      isObject: typeof content === 'object' && content !== null
+    });
+
     if (typeof content === 'string') {
+      console.log(`✅ [SocialPostSection] ${platform} - Using string format`);
       return { text: content };
     }
-    return content;
-  }, [content]);
+    
+    if (typeof content === 'object' && content !== null) {
+      const objectContent = content as SocialPostData;
+      console.log(`✅ [SocialPostSection] ${platform} - Using object format:`, {
+        hasText: !!objectContent.text,
+        textLength: objectContent.text?.length || 0,
+        hasImage: !!objectContent.image_url,
+        imageUrl: objectContent.image_url
+      });
+      
+      // Ensure we have at least text content
+      if (!objectContent.text) {
+        console.warn(`⚠️ [SocialPostSection] ${platform} - Object content missing text field`);
+        return { text: 'Content missing text field' };
+      }
+      
+      return objectContent;
+    }
+    
+    console.error(`❌ [SocialPostSection] ${platform} - Invalid content format:`, content);
+    return { text: 'Invalid content format' };
+  }, [content, platform]);
 
   const handleCopy = async () => {
     try {
@@ -43,6 +71,7 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
+      console.error(`❌ [SocialPostSection] ${platform} - Copy failed:`, error);
       toast({
         title: 'Copy failed',
         description: 'Failed to copy content to clipboard.',
@@ -71,6 +100,7 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
         description: 'Image has been downloaded successfully.',
       });
     } catch (error) {
+      console.error(`❌ [SocialPostSection] ${platform} - Image download failed:`, error);
       toast({
         title: 'Download failed',
         description: 'Failed to download image.',
@@ -85,16 +115,22 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
   const maxLength = platform === 'linkedin' ? 600 : 250;
 
   // Use the actual content length for accurate display
-  const characterCount = postData.text.length;
+  const characterCount = postData.text?.length || 0;
   
-  console.log(`🔍 [SocialPostSection] ${platformName} post processing:`, {
+  console.log(`🔍 [SocialPostSection] ${platformName} final render data:`, {
     actualContentLength: characterCount,
-    contentPreview: postData.text.substring(0, 150) + '...',
+    contentPreview: postData.text?.substring(0, 50) + '...',
     platform,
     maxLength,
     hasImage: !!postData.image_url,
     willShowExpandable: characterCount > maxLength
   });
+
+  // Don't render if we don't have valid text content
+  if (!postData.text || characterCount === 0) {
+    console.warn(`⚠️ [SocialPostSection] ${platformName} - No valid text content, skipping render`);
+    return null;
+  }
 
   return (
     <>
@@ -149,13 +185,22 @@ const SocialPostSection: React.FC<SocialPostSectionProps> = ({
 
         {postData.image_url && (
           <div className="mt-4">
+            <div className="text-xs text-gray-500 mb-2">Attached Image:</div>
             <img
               src={postData.image_url}
               alt={`${platformName} post image`}
               className="w-full max-w-md mx-auto rounded-lg shadow-sm border"
               onError={(e) => {
-                console.error('Failed to load image:', postData.image_url);
+                console.error(`❌ [SocialPostSection] ${platform} - Failed to load image:`, postData.image_url);
                 e.currentTarget.style.display = 'none';
+                // Show a fallback message
+                const fallback = document.createElement('div');
+                fallback.className = 'text-xs text-gray-400 text-center p-2 border rounded bg-gray-100';
+                fallback.textContent = 'Image failed to load';
+                e.currentTarget.parentNode?.appendChild(fallback);
+              }}
+              onLoad={() => {
+                console.log(`✅ [SocialPostSection] ${platform} - Image loaded successfully:`, postData.image_url);
               }}
             />
           </div>
