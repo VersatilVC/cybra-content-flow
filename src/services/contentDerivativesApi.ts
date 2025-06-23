@@ -145,7 +145,7 @@ export async function triggerDerivativeGeneration(
     throw new Error(`Failed to fetch content item: ${contentError.message}`);
   }
 
-  // Prepare webhook payload with enhanced LinkedIn ads handling
+  // Prepare webhook payload with correct callback structure
   const payload = {
     type: 'derivative_generation',
     content_item_id: contentItemId,
@@ -154,7 +154,17 @@ export async function triggerDerivativeGeneration(
     category: category,
     user_id: userId,
     timestamp: new Date().toISOString(),
-    callback_url: `https://uejgjytmqpcilwfrlpai.supabase.co/functions/v1/process-content?action=callback`,
+    // Fixed callback URL to match the working notification system
+    callback_url: `https://uejgjytmqpcilwfrlpai.supabase.co/functions/v1/process-idea-callback`,
+    // Added proper callback_data structure for notifications
+    callback_data: {
+      type: 'derivative_generation_complete',
+      content_item_id: contentItemId,
+      user_id: userId,
+      title: contentItem.title,
+      category: category,
+      derivative_types: derivativeTypes
+    },
     storage_config: {
       bucket_name: 'content-derivatives',
       base_url: 'https://uejgjytmqpcilwfrlpai.supabase.co/storage/v1/object/public/content-derivatives'

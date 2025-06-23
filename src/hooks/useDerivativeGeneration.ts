@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useContentDerivatives } from '@/hooks/useContentDerivatives';
 import { triggerDerivativeGeneration } from '@/services/contentDerivativesApi';
 import { derivativeTypes } from '@/components/content-item/derivativeTypes';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useDerivativeGeneration(contentItemId: string) {
   const { user } = useAuth();
@@ -19,6 +20,26 @@ export function useDerivativeGeneration(contentItemId: string) {
         ? prev.filter(t => t !== type)
         : [...prev, type]
     );
+  };
+
+  const createFallbackNotification = async (category: 'General' | 'Social' | 'Ads') => {
+    if (!user?.id) return;
+
+    try {
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: user.id,
+          title: 'Content Derivatives Generated',
+          message: `Your ${category.toLowerCase()} content derivatives have been generated successfully. Check the Derivatives tab to view them.`,
+          type: 'success',
+          related_entity_id: contentItemId,
+          related_entity_type: 'content_item'
+        });
+      console.log('Fallback notification created for derivative generation');
+    } catch (error) {
+      console.error('Failed to create fallback notification:', error);
+    }
   };
 
   const handleGenerate = async (category: 'General' | 'Social' | 'Ads') => {
@@ -95,6 +116,9 @@ export function useDerivativeGeneration(contentItemId: string) {
             }
           });
         }
+        
+        // Create fallback notification for local generation
+        await createFallbackNotification(category);
         
         toast({
           title: 'Derivatives Created',
