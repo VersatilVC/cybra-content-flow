@@ -1,5 +1,5 @@
 
-// Enhanced JSON sanitization function - only for strings, not objects
+// Simplified JSON sanitization function - minimal processing to preserve structure
 export function sanitizeJsonString(jsonString: string): string {
   // Type guard - only sanitize strings
   if (typeof jsonString !== 'string') {
@@ -12,19 +12,26 @@ export function sanitizeJsonString(jsonString: string): string {
   // Remove any BOM characters
   let cleaned = jsonString.replace(/^\uFEFF/, '');
   
-  // More careful handling of control characters within string values
-  // This preserves the JSON structure while fixing control character issues
-  cleaned = cleaned.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/g, (match, content) => {
-    // Only escape unescaped control characters
-    const escaped = content
-      .replace(/(?<!\\)\n/g, '\\n')  // Only escape unescaped newlines
-      .replace(/(?<!\\)\r/g, '\\r')  // Only escape unescaped carriage returns
-      .replace(/(?<!\\)\t/g, '\\t')  // Only escape unescaped tabs
-      .replace(/(?<!\\)\f/g, '\\f')  // Only escape unescaped form feeds
-      .replace(/(?<!\\)\b/g, '\\b'); // Only escape unescaped backspaces
-    return `"${escaped}"`;
-  });
+  // Test if the JSON is already valid
+  try {
+    JSON.parse(cleaned);
+    console.log('✅ [JSON Sanitizer] JSON is already valid, returning as-is');
+    return cleaned;
+  } catch (error) {
+    console.log('⚠️ [JSON Sanitizer] JSON parsing failed, applying minimal fixes:', error.message);
+  }
   
-  console.log('✅ [JSON Sanitizer] Sanitization complete, result:', cleaned.substring(0, 200) + '...');
-  return cleaned;
+  // Only apply the most basic fixes that won't corrupt the structure
+  // Remove null bytes and other problematic control characters
+  cleaned = cleaned.replace(/\0/g, '');
+  
+  // Try parsing again after minimal cleanup
+  try {
+    JSON.parse(cleaned);
+    console.log('✅ [JSON Sanitizer] JSON valid after minimal cleanup');
+    return cleaned;
+  } catch (error) {
+    console.log('❌ [JSON Sanitizer] Still invalid after cleanup, returning original:', error.message);
+    return jsonString; // Return original if we can't fix it safely
+  }
 }
