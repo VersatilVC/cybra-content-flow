@@ -9,4 +9,6 @@ export interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   signOut: () => Promise<void>;
+  validateSession: () => Promise<boolean>;
+  recoverSession: () => Promise<boolean>;
 }

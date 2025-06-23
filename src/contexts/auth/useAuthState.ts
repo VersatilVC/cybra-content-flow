@@ -9,73 +9,128 @@ export function useAuthState() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
+    let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
+
     const getInitialSession = async () => {
       try {
-        console.log('AuthState: Getting initial session');
+        console.log('AuthState: Getting initial session (attempt', retryCount + 1, ')');
+        
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('AuthState: Error getting initial session:', error);
-        } else {
-          console.log('AuthState: Initial session:', initialSession ? 'found' : 'not found');
-          if (initialSession) {
-            console.log('AuthState: Initial session user email:', initialSession.user?.email);
+          
+          // Retry on network errors
+          if (retryCount < maxRetries && (error.message.includes('network') || error.message.includes('fetch'))) {
+            retryCount++;
+            console.log('AuthState: Retrying session retrieval in 1 second...');
+            setTimeout(getInitialSession, 1000);
+            return;
           }
-          setSession(initialSession);
-          setUser(initialSession?.user ?? null);
+        } else {
+          console.log('AuthState: Initial session result:', {
+            hasSession: !!initialSession,
+            userId: initialSession?.user?.id,
+            email: initialSession?.user?.email,
+            expiresAt: initialSession?.expires_at,
+            accessToken: initialSession?.access_token ? 'present' : 'missing'
+          });
+          
+          if (mounted) {
+            setSession(initialSession);
+            setUser(initialSession?.user ?? null);
+          }
         }
       } catch (error) {
         console.error('AuthState: Unexpected error getting initial session:', error);
+        
+        // Retry on unexpected errors
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log('AuthState: Retrying session retrieval after unexpected error...');
+          setTimeout(getInitialSession, 1000);
+          return;
+        }
       } finally {
-        setLoading(false);
+        if (mounted && retryCount >= maxRetries) {
+          console.log('AuthState: Setting loading to false after', retryCount + 1, 'attempts');
+          setLoading(false);
+        } else if (mounted && retryCount === 0) {
+          console.log('AuthState: Setting loading to false after successful session check');
+          setLoading(false);
+        }
       }
     };
 
+    // Get initial session first
     getInitialSession();
 
-    // Listen for auth changes
+    // Then set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('AuthState: Auth state change:', event, session ? 'session exists' : 'no session');
+        console.log('AuthState: Auth state change event:', event, {
+          hasSession: !!session,
+          userId: session?.user?.id,
+          email: session?.user?.email,
+          eventTimestamp: new Date().toISOString()
+        });
         
-        if (session) {
-          console.log('AuthState: Session user email:', session.user?.email);
-          console.log('AuthState: Session providers:', session.user?.app_metadata?.providers);
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          // Always ensure loading is false when auth state changes
+          setLoading(false);
         }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
 
-        // Handle specific auth events
+        // Handle specific auth events with enhanced logging
         switch (event) {
+          case 'INITIAL_SESSION':
+            console.log('AuthState: Initial session processed');
+            break;
           case 'SIGNED_IN':
-            console.log('AuthState: User signed in, checking for account linking...');
-            // Account linking will be handled by useAccountLinking hook
+            console.log('AuthState: User signed in successfully');
+            if (session) {
+              console.log('AuthState: Session details:', {
+                accessToken: session.access_token ? 'present' : 'missing',
+                refreshToken: session.refresh_token ? 'present' : 'missing',
+                expiresAt: session.expires_at,
+                provider: session.user?.app_metadata?.provider
+              });
+            }
             break;
           case 'SIGNED_OUT':
             console.log('AuthState: User signed out');
-            // Clear local state first to prevent UI flickering
-            setUser(null);
-            setSession(null);
-            // Only redirect after successful sign out
+            if (mounted) {
+              setUser(null);
+              setSession(null);
+            }
+            // Only redirect if not already on auth page
             if (window.location.pathname !== '/auth') {
+              console.log('AuthState: Redirecting to auth page after sign out');
               window.location.href = '/auth';
             }
             break;
           case 'TOKEN_REFRESHED':
-            console.log('AuthState: Token refreshed');
+            console.log('AuthState: Token refreshed successfully');
+            if (session) {
+              console.log('AuthState: New token expires at:', session.expires_at);
+            }
             break;
           case 'USER_UPDATED':
-            console.log('AuthState: User updated');
+            console.log('AuthState: User data updated');
             break;
+          default:
+            console.log('AuthState: Unhandled auth event:', event);
         }
       }
     );
 
     return () => {
       console.log('AuthState: Cleaning up auth subscription');
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
