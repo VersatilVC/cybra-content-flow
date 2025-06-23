@@ -33,7 +33,9 @@ export function processObjectContent(rawContent: any): ParsedSocialContent {
     linkedinHasText: parsedContent.linkedin?.text ? true : false,
     xHasText: parsedContent.x?.text ? true : false,
     linkedinHasImage: parsedContent.linkedin?.image_url ? true : false,
-    xHasImage: parsedContent.x?.image_url ? true : false
+    xHasImage: parsedContent.x?.image_url ? true : false,
+    linkedinImageUrl: parsedContent.linkedin?.image_url,
+    xImageUrl: parsedContent.x?.image_url
   });
   
   return parsedContent;

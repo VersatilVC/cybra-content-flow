@@ -50,7 +50,7 @@ export function parseSocialContent(content: string | object, contentType?: strin
       if (parsed.linkedin || parsed.x || parsed.twitter) {
         const result: ParsedSocialContent = {};
         
-        // Handle LinkedIn content with better validation
+        // Handle LinkedIn content with enhanced image URL preservation
         if (parsed.linkedin) {
           if (typeof parsed.linkedin === 'string') {
             result.linkedin = parsed.linkedin;
@@ -58,18 +58,19 @@ export function parseSocialContent(content: string | object, contentType?: strin
           } else if (typeof parsed.linkedin === 'object' && parsed.linkedin.text) {
             result.linkedin = {
               text: parsed.linkedin.text,
-              image_url: parsed.linkedin.image_url
+              ...(parsed.linkedin.image_url && { image_url: parsed.linkedin.image_url })
             };
             console.log('✅ [Social Parser] LinkedIn object content processed:', {
               textLength: parsed.linkedin.text.length,
-              hasImage: !!parsed.linkedin.image_url
+              hasImage: !!parsed.linkedin.image_url,
+              imageUrl: parsed.linkedin.image_url
             });
           } else {
             console.warn('⚠️ [Social Parser] LinkedIn content format invalid:', parsed.linkedin);
           }
         }
         
-        // Handle X content (check both x and twitter keys) with better validation
+        // Handle X content (check both x and twitter keys) with enhanced image URL preservation
         const xContent = parsed.x || parsed.twitter;
         if (xContent) {
           if (typeof xContent === 'string') {
@@ -78,11 +79,12 @@ export function parseSocialContent(content: string | object, contentType?: strin
           } else if (typeof xContent === 'object' && xContent.text) {
             result.x = {
               text: xContent.text,
-              image_url: xContent.image_url
+              ...(xContent.image_url && { image_url: xContent.image_url })
             };
             console.log('✅ [Social Parser] X object content processed:', {
               textLength: xContent.text.length,
-              hasImage: !!xContent.image_url
+              hasImage: !!xContent.image_url,
+              imageUrl: xContent.image_url
             });
           } else {
             console.warn('⚠️ [Social Parser] X content format invalid:', xContent);
@@ -94,6 +96,8 @@ export function parseSocialContent(content: string | object, contentType?: strin
           hasX: !!result.x,
           linkedinType: typeof result.linkedin,
           xType: typeof result.x,
+          linkedinHasImage: !!result.linkedin?.image_url,
+          xHasImage: !!result.x?.image_url,
           finalResult: result
         });
         return result;

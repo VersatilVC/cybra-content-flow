@@ -39,31 +39,79 @@ export function resilientJsonParse(jsonString: string): any {
       return result;
     },
     
-    // Strategy 4: Manual content extraction for known structure
+    // Strategy 4: Enhanced manual content extraction with proper image URL capture
     () => {
-      console.log('🔧 [Resilient Parser] Strategy 4 - Manual extraction strategy');
+      console.log('🔧 [Resilient Parser] Strategy 4 - Enhanced manual extraction strategy');
       
-      // Extract LinkedIn content
-      const linkedinMatch = jsonString.match(/"linkedin"\s*:\s*{[^}]*"text"\s*:\s*"([^"]*(?:\\.[^"]*)*)"[^}]*(?:"image_url"\s*:\s*"([^"]*)")?[^}]*}/s);
-      const xMatch = jsonString.match(/"x"\s*:\s*{[^}]*"text"\s*:\s*"([^"]*(?:\\.[^"]*)*)"[^}]*(?:"image_url"\s*:\s*"([^"]*)")?[^}]*}/s);
+      // Enhanced regex patterns to capture both text and image_url
+      const linkedinMatch = jsonString.match(/"linkedin"\s*:\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}/s);
+      const xMatch = jsonString.match(/"x"\s*:\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}/s);
       
       const result: any = {};
       
       if (linkedinMatch) {
-        result.linkedin = {
-          text: linkedinMatch[1].replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t'),
-          ...(linkedinMatch[2] && { image_url: linkedinMatch[2] })
-        };
+        const linkedinContent = linkedinMatch[1];
+        console.log('🔍 [Resilient Parser] LinkedIn content block:', linkedinContent);
+        
+        // Extract text
+        const textMatch = linkedinContent.match(/"text"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/s);
+        // Extract image_url
+        const imageMatch = linkedinContent.match(/"image_url"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/s);
+        
+        if (textMatch) {
+          result.linkedin = {
+            text: textMatch[1]
+              .replace(/\\n/g, '\n')
+              .replace(/\\r/g, '\r')
+              .replace(/\\t/g, '\t')
+              .replace(/\\"/g, '"')
+              .replace(/\\\\/g, '\\')
+          };
+          
+          if (imageMatch) {
+            result.linkedin.image_url = imageMatch[1];
+            console.log('✅ [Resilient Parser] LinkedIn image URL extracted:', imageMatch[1]);
+          }
+          
+          console.log('✅ [Resilient Parser] LinkedIn content extracted:', {
+            textLength: result.linkedin.text.length,
+            hasImage: !!result.linkedin.image_url
+          });
+        }
       }
       
       if (xMatch) {
-        result.x = {
-          text: xMatch[1].replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t'),
-          ...(xMatch[2] && { image_url: xMatch[2] })
-        };
+        const xContent = xMatch[1];
+        console.log('🔍 [Resilient Parser] X content block:', xContent);
+        
+        // Extract text
+        const textMatch = xContent.match(/"text"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/s);
+        // Extract image_url
+        const imageMatch = xContent.match(/"image_url"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/s);
+        
+        if (textMatch) {
+          result.x = {
+            text: textMatch[1]
+              .replace(/\\n/g, '\n')
+              .replace(/\\r/g, '\r')
+              .replace(/\\t/g, '\t')
+              .replace(/\\"/g, '"')
+              .replace(/\\\\/g, '\\')
+          };
+          
+          if (imageMatch) {
+            result.x.image_url = imageMatch[1];
+            console.log('✅ [Resilient Parser] X image URL extracted:', imageMatch[1]);
+          }
+          
+          console.log('✅ [Resilient Parser] X content extracted:', {
+            textLength: result.x.text.length,
+            hasImage: !!result.x.image_url
+          });
+        }
       }
       
-      console.log('✅ [Resilient Parser] Strategy 4 - Manual extraction result:', result);
+      console.log('✅ [Resilient Parser] Strategy 4 - Enhanced manual extraction result:', result);
       return Object.keys(result).length > 0 ? result : null;
     }
   ];
@@ -77,6 +125,8 @@ export function resilientJsonParse(jsonString: string): any {
           hasLinkedIn: !!result.linkedin,
           hasX: !!result.x,
           hasTwitter: !!result.twitter,
+          linkedinHasImage: !!result.linkedin?.image_url,
+          xHasImage: !!result.x?.image_url,
           keys: Object.keys(result)
         });
         return result;

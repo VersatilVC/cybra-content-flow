@@ -1,5 +1,5 @@
 
-// Simplified JSON sanitization function - minimal processing to preserve structure
+// Enhanced JSON sanitization function - better handling of control characters and Unicode
 export function sanitizeJsonString(jsonString: string): string {
   // Type guard - only sanitize strings
   if (typeof jsonString !== 'string') {
@@ -18,17 +18,28 @@ export function sanitizeJsonString(jsonString: string): string {
     console.log('✅ [JSON Sanitizer] JSON is already valid, returning as-is');
     return cleaned;
   } catch (error) {
-    console.log('⚠️ [JSON Sanitizer] JSON parsing failed, applying minimal fixes:', error.message);
+    console.log('⚠️ [JSON Sanitizer] JSON parsing failed, applying enhanced fixes:', error.message);
   }
   
-  // Only apply the most basic fixes that won't corrupt the structure
-  // Remove null bytes and other problematic control characters
-  cleaned = cleaned.replace(/\0/g, '');
+  // Enhanced sanitization to handle control characters and escape sequences
+  cleaned = cleaned
+    // Remove null bytes and other problematic control characters
+    .replace(/\0/g, '')
+    // Fix common escape sequence issues
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t')
+    .replace(/\f/g, '\\f')
+    .replace(/\b/g, '\\b')
+    // Handle unescaped quotes in text content
+    .replace(/([^\\])"/g, '$1\\"')
+    // Fix potential issues with Unicode characters
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
   
-  // Try parsing again after minimal cleanup
+  // Try parsing again after enhanced cleanup
   try {
     JSON.parse(cleaned);
-    console.log('✅ [JSON Sanitizer] JSON valid after minimal cleanup');
+    console.log('✅ [JSON Sanitizer] JSON valid after enhanced cleanup');
     return cleaned;
   } catch (error) {
     console.log('❌ [JSON Sanitizer] Still invalid after cleanup, returning original:', error.message);

@@ -11,6 +11,8 @@ const SocialPostImage: React.FC<SocialPostImageProps> = ({ imageUrl, platform })
   const [loadingState, setLoadingState] = useState<'loading' | 'loaded' | 'error'>('loading');
   const platformName = platform === 'linkedin' ? 'LinkedIn' : 'X';
 
+  console.log(`🔍 [SocialPostImage] ${platform} - Rendering with imageUrl:`, imageUrl);
+
   // Enhanced URL validation
   const validateImageUrl = (url: string): boolean => {
     console.log(`🔍 [SocialPostImage] ${platform} - Validating URL:`, url);
