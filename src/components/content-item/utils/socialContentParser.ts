@@ -96,8 +96,8 @@ export function parseSocialContent(content: string | object, contentType?: strin
           hasX: !!result.x,
           linkedinType: typeof result.linkedin,
           xType: typeof result.x,
-          linkedinHasImage: !!result.linkedin?.image_url,
-          xHasImage: !!result.x?.image_url,
+          linkedinHasImage: typeof result.linkedin === 'object' && result.linkedin !== null && 'image_url' in result.linkedin ? !!result.linkedin.image_url : false,
+          xHasImage: typeof result.x === 'object' && result.x !== null && 'image_url' in result.x ? !!result.x.image_url : false,
           finalResult: result
         });
         return result;
