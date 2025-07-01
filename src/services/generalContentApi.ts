@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { CreateGeneralContentRequest, GeneralContentItem } from '@/types/generalContent';
 
@@ -39,28 +40,40 @@ export const fetchGeneralContent = async (filters: {
 };
 
 export const createGeneralContent = async (data: CreateGeneralContentRequest): Promise<GeneralContentItem> => {
+  console.log('Creating general content with data:', data);
+  
   const { data: user } = await supabase.auth.getUser();
   if (!user.user?.id) {
+    console.error('User not authenticated');
     throw new Error('User not authenticated');
   }
+
+  console.log('Authenticated user ID:', user.user.id);
+
+  // Prepare the data for insertion
+  const insertData = {
+    ...data,
+    user_id: user.user.id,
+    // Ensure derivative_types is properly handled
+    derivative_types: data.derivative_types || [data.derivative_type],
+  };
+
+  console.log('Insert data prepared:', insertData);
 
   // First, create the general content item in the database
   const { data: result, error } = await supabase
     .from('general_content_items')
-    .insert([{
-      ...data,
-      user_id: user.user.id
-    }])
+    .insert([insertData])
     .select()
     .single();
 
   if (error) {
-    console.error('Error creating general content:', error);
-    throw new Error('Failed to create general content');
+    console.error('Database insertion error:', error);
+    throw new Error(`Failed to create general content: ${error.message}`);
   }
 
   const createdContent = result as GeneralContentItem;
-  console.log('General content created:', createdContent.id);
+  console.log('General content created successfully:', createdContent.id);
 
   // Trigger webhook for processing
   try {
@@ -110,9 +123,8 @@ async function triggerGeneralContentWebhook(content: GeneralContentItem, userId:
   const { data: webhooks, error: webhookError } = await supabase
     .from('webhook_configurations')
     .select('*')
-    .eq('webhook_type', 'knowledge_base') // Using knowledge_base type as configured
-    .eq('is_active', true)
-    .eq('webhook_url', 'https://cyabramarketing.app.n8n.cloud/webhook/8a3f4dae-49b3-436f-8a57-e91c4a82548c');
+    .eq('webhook_type', 'knowledge_base')
+    .eq('is_active', true);
 
   if (webhookError) {
     console.error('Error fetching webhook configuration:', webhookError);
@@ -125,7 +137,7 @@ async function triggerGeneralContentWebhook(content: GeneralContentItem, userId:
   }
 
   const webhook = webhooks[0];
-  console.log('Using webhook:', webhook.name);
+  console.log('Using webhook:', webhook.name, webhook.webhook_url);
 
   // Prepare webhook payload with derivative_types array
   const payload = {
@@ -172,6 +184,6 @@ async function triggerGeneralContentWebhook(content: GeneralContentItem, userId:
     console.log('General content webhook triggered successfully');
   } catch (error) {
     console.error('Error calling general content webhook:', error);
-    throw new Error(`Failed to trigger general content webhook: ${error.message}`);
+    throw new Error(`Failed to trigger general content webhook: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

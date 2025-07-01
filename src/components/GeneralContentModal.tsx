@@ -8,6 +8,7 @@ import { BasicFormFields } from '@/components/general-content/BasicFormFields';
 import { InputSourceSection } from '@/components/general-content/InputSourceSection';
 import { ContentTypeSelection } from '@/components/general-content/ContentTypeSelection';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface GeneralContentModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
   onClose
 }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -41,21 +43,89 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.derivative_types.length === 0 || !formData.title.trim()) {
+    // Check authentication first
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to create content.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate required fields
+    if (formData.derivative_types.length === 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select at least one content type.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!formData.title.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please enter a title.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate source-specific requirements
+    if (formData.source_type === 'url' && !formData.url.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please enter a URL.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (formData.source_type === 'file' && !formData.file) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select a file.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (formData.source_type === 'manual' && !formData.content.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please enter content.',
+        variant: 'destructive',
+      });
       return;
     }
 
     try {
+      console.log('Creating general content with user ID:', user.id);
+      console.log('Form data:', formData);
+      
       let fileData = {};
       
       if (formData.source_type === 'file' && formData.file) {
-        const uploadResult = await handleFileUpload(formData.file, 'current-user-id');
-        fileData = {
-          file_path: uploadResult.path,
-          file_url: uploadResult.url,
-          file_size: uploadResult.size,
-          mime_type: uploadResult.type,
-        };
+        console.log('Uploading file...');
+        try {
+          const uploadResult = await handleFileUpload(formData.file, user.id);
+          fileData = {
+            file_path: uploadResult.path,
+            file_url: uploadResult.url,
+            file_size: uploadResult.size,
+            mime_type: uploadResult.type,
+          };
+          console.log('File uploaded successfully:', fileData);
+        } catch (fileError) {
+          console.error('File upload failed:', fileError);
+          toast({
+            title: 'File Upload Error',
+            description: 'Failed to upload file. Please try again.',
+            variant: 'destructive',
+          });
+          return;
+        }
       }
 
       const sourceData = formData.source_type === 'url' 
@@ -64,7 +134,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
         ? { originalName: formData.file?.name }
         : {};
 
-      await createGeneralContent({
+      const contentData = {
         title: formData.title,
         content: formData.content,
         derivative_type: formData.derivative_types[0], // First selected for backward compatibility
@@ -75,7 +145,11 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
         source_data: sourceData,
         target_audience: formData.target_audience,
         ...fileData,
-      });
+      };
+
+      console.log('Submitting content data:', contentData);
+
+      await createGeneralContent(contentData);
 
       // Show success message with webhook information
       toast({
@@ -97,9 +171,10 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
       });
     } catch (error) {
       console.error('Error creating general content:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
         title: 'Error',
-        description: 'Failed to create general content. Please try again.',
+        description: `Failed to create general content: ${errorMessage}`,
         variant: 'destructive',
       });
     }
@@ -112,6 +187,11 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
       category
     }));
   };
+
+  // Don't render modal if user is not authenticated
+  if (!user) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
