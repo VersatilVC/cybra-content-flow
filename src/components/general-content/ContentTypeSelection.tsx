@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,11 +15,7 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
   selectedTypes,
   onTypesSelect
 }) => {
-  const handleTypeToggle = (type: string, category: string, event?: React.MouseEvent) => {
-    if (event) {
-      event.stopPropagation();
-    }
-    
+  const handleTypeToggle = (type: string, category: string) => {
     const newSelectedTypes = selectedTypes.includes(type)
       ? selectedTypes.filter(t => t !== type)
       : [...selectedTypes, type];
@@ -32,8 +27,7 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
     handleTypeToggle(type, category);
   };
 
-  const handleCheckboxChange = (checked: boolean, type: string, category: string, event: React.MouseEvent) => {
-    event.stopPropagation();
+  const handleCheckboxChange = (checked: boolean, type: string, category: string) => {
     handleTypeToggle(type, category);
   };
 
@@ -133,7 +127,7 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
                           <div onClick={(e) => e.stopPropagation()}>
                             <Checkbox
                               checked={isSelected}
-                              onCheckedChange={(checked) => handleCheckboxChange(checked as boolean, typeInfo.type, category, e as any)}
+                              onCheckedChange={(checked) => handleCheckboxChange(checked as boolean, typeInfo.type, category)}
                               className="mt-1"
                             />
                           </div>
