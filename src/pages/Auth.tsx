@@ -7,7 +7,6 @@ import { useToast } from '@/hooks/use-toast';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthLoadingScreen } from '@/components/auth/AuthLoadingScreen';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
-import { AccountLinkingInfo } from '@/components/auth/AccountLinkingInfo';
 
 const Auth = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -52,16 +51,7 @@ const Auth = () => {
 
   return (
     <AuthLayout>
-      <div className="space-y-6 text-center">
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold">Welcome to Marko</h2>
-          <p className="text-muted-foreground">
-            Sign in with your Google account to get started
-          </p>
-        </div>
-        
-        <AccountLinkingInfo />
-        
+      <div className="space-y-4 text-center">
         <GoogleSignInButton 
           onClick={handleGoogleSignIn} 
           isLoading={isGoogleLoading}

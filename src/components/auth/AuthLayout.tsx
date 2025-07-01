@@ -18,7 +18,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             </div>
           </div>
           <CardTitle className="text-2xl">Marko</CardTitle>
-          <CardDescription>Sign in to your account or create a new one</CardDescription>
+          <CardDescription>Sign in to get started</CardDescription>
         </CardHeader>
         <CardContent>
           {children}
