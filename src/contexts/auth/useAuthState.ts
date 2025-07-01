@@ -10,25 +10,15 @@ export function useAuthState() {
 
   useEffect(() => {
     let mounted = true;
-    let retryCount = 0;
-    const maxRetries = 3;
 
     const getInitialSession = async () => {
       try {
-        console.log('AuthState: Getting initial session (attempt', retryCount + 1, ')');
+        console.log('AuthState: Getting initial session');
         
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('AuthState: Error getting initial session:', error);
-          
-          // Retry on network errors
-          if (retryCount < maxRetries && (error.message.includes('network') || error.message.includes('fetch'))) {
-            retryCount++;
-            console.log('AuthState: Retrying session retrieval in 1 second...');
-            setTimeout(getInitialSession, 1000);
-            return;
-          }
         } else {
           console.log('AuthState: Initial session result:', {
             hasSession: !!initialSession,
@@ -45,20 +35,9 @@ export function useAuthState() {
         }
       } catch (error) {
         console.error('AuthState: Unexpected error getting initial session:', error);
-        
-        // Retry on unexpected errors
-        if (retryCount < maxRetries) {
-          retryCount++;
-          console.log('AuthState: Retrying session retrieval after unexpected error...');
-          setTimeout(getInitialSession, 1000);
-          return;
-        }
       } finally {
-        if (mounted && retryCount >= maxRetries) {
-          console.log('AuthState: Setting loading to false after', retryCount + 1, 'attempts');
-          setLoading(false);
-        } else if (mounted && retryCount === 0) {
-          console.log('AuthState: Setting loading to false after successful session check');
+        if (mounted) {
+          console.log('AuthState: Setting loading to false');
           setLoading(false);
         }
       }
@@ -80,12 +59,10 @@ export function useAuthState() {
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
-          
-          // Always ensure loading is false when auth state changes
           setLoading(false);
         }
 
-        // Handle specific auth events with enhanced logging
+        // Handle specific auth events
         switch (event) {
           case 'INITIAL_SESSION':
             console.log('AuthState: Initial session processed');

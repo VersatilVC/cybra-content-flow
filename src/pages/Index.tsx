@@ -18,26 +18,6 @@ const Index = () => {
       return;
     }
 
-    // If we haven't checked for session recovery yet, try it
-    if (!sessionChecked && !user && !session) {
-      console.log('Index: No user/session found, attempting session recovery...');
-      setSessionChecked(true);
-      
-      recoverSession().then((recovered) => {
-        if (!recovered) {
-          console.log('Index: Session recovery failed, checking for OAuth callback...');
-          handleAuthRedirect();
-        } else {
-          console.log('Index: Session recovered successfully, waiting for auth state update...');
-        }
-      }).catch((error) => {
-        console.error('Index: Session recovery error:', error);
-        handleAuthRedirect();
-      });
-      
-      return;
-    }
-
     // If user is authenticated, redirect to dashboard
     if (user && session) {
       console.log('Index: User authenticated, redirecting to dashboard');
@@ -50,14 +30,7 @@ const Index = () => {
       return;
     }
 
-    // If no user after all checks, handle redirect logic
-    if (sessionChecked && !user && !session) {
-      handleAuthRedirect();
-    }
-  }, [navigate, user, session, loading, sessionChecked, recoverSession]);
-
-  const handleAuthRedirect = () => {
-    // Check if this might be an OAuth callback
+    // Check if this is an OAuth callback
     const urlParams = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     
@@ -66,13 +39,13 @@ const Index = () => {
     
     if (accessToken) {
       console.log('Index: OAuth callback detected with access_token, waiting for auth state update...');
-      // Give time for the auth state to update
+      // Give more time for OAuth callback to complete
       setTimeout(() => {
         if (!user) {
-          console.log('Index: OAuth callback timeout, redirecting to auth page');
+          console.log('Index: OAuth callback processing timeout, redirecting to auth page');
           navigate("/auth", { replace: true });
         }
-      }, 5000); // Increased timeout for better reliability
+      }, 3000);
       return;
     }
     
@@ -82,10 +55,32 @@ const Index = () => {
       return;
     }
 
-    // No user and no OAuth callback, redirect to auth
-    console.log('Index: No user authenticated and no OAuth callback, redirecting to auth page');
-    navigate("/auth", { replace: true });
-  };
+    // If we haven't checked for session recovery yet, try it
+    if (!sessionChecked && !user && !session) {
+      console.log('Index: No user/session found, attempting session recovery...');
+      setSessionChecked(true);
+      
+      recoverSession().then((recovered) => {
+        if (!recovered) {
+          console.log('Index: Session recovery failed, redirecting to auth page');
+          navigate("/auth", { replace: true });
+        } else {
+          console.log('Index: Session recovered successfully');
+        }
+      }).catch((error) => {
+        console.error('Index: Session recovery error:', error);
+        navigate("/auth", { replace: true });
+      });
+      
+      return;
+    }
+
+    // If no user after all checks, redirect to auth
+    if (sessionChecked && !user && !session) {
+      console.log('Index: No user authenticated, redirecting to auth page');
+      navigate("/auth", { replace: true });
+    }
+  }, [navigate, user, session, loading, sessionChecked, recoverSession]);
 
   // Show loading while determining where to redirect
   return (
