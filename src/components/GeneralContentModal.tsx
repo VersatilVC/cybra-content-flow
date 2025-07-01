@@ -7,6 +7,7 @@ import { handleFileUpload } from '@/lib/fileUploadHandler';
 import { BasicFormFields } from '@/components/general-content/BasicFormFields';
 import { InputSourceSection } from '@/components/general-content/InputSourceSection';
 import { ContentTypeSelection } from '@/components/general-content/ContentTypeSelection';
+import { useToast } from '@/hooks/use-toast';
 
 interface GeneralContentModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
   isOpen,
   onClose
 }) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -74,6 +76,12 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
         ...fileData,
       });
 
+      // Show success message with webhook information
+      toast({
+        title: 'Content Created Successfully',
+        description: 'Your general content has been created and sent for processing. You will be notified when it\'s ready.',
+      });
+
       onClose();
       setFormData({
         title: '',
@@ -88,6 +96,11 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
       });
     } catch (error) {
       console.error('Error creating general content:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create general content. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
