@@ -16,12 +16,25 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
   selectedTypes,
   onTypesSelect
 }) => {
-  const handleTypeToggle = (type: string, category: string) => {
+  const handleTypeToggle = (type: string, category: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
+    
     const newSelectedTypes = selectedTypes.includes(type)
       ? selectedTypes.filter(t => t !== type)
       : [...selectedTypes, type];
     
     onTypesSelect(newSelectedTypes, category);
+  };
+
+  const handleCardClick = (type: string, category: string) => {
+    handleTypeToggle(type, category);
+  };
+
+  const handleCheckboxChange = (checked: boolean, type: string, category: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    handleTypeToggle(type, category);
   };
 
   const handleSelectAllInCategory = (category: string) => {
@@ -113,15 +126,17 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
                           ? 'ring-2 ring-purple-500 bg-purple-50' 
                           : 'hover:bg-gray-50'
                       }`}
-                      onClick={() => handleTypeToggle(typeInfo.type, category)}
+                      onClick={() => handleCardClick(typeInfo.type, category)}
                     >
                       <CardContent className="p-3">
                         <div className="flex items-start gap-3">
-                          <Checkbox
-                            checked={isSelected}
-                            onChange={() => handleTypeToggle(typeInfo.type, category)}
-                            className="mt-1"
-                          />
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={(checked) => handleCheckboxChange(checked as boolean, typeInfo.type, category, e as any)}
+                              className="mt-1"
+                            />
+                          </div>
                           
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
