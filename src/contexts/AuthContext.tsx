@@ -28,9 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user, 
       session, 
       loading, 
-      signIn: authService.signIn,
       signInWithGoogle: authService.signInWithGoogle,
-      signUp: authService.signUp,
       signOut,
       validateSession,
       recoverSession
