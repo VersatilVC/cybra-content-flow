@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { CreateGeneralContentRequest, GeneralContentItem } from '@/types/generalContent';
 
@@ -65,7 +64,7 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
 
   // Trigger webhook for processing
   try {
-    await triggerGeneralContentWebhook(createdContent, user.user.id);
+    await triggerGeneralContentWebhook(createdContent, user.user.id, data.derivative_types);
     console.log('General content webhook triggered successfully');
   } catch (webhookError) {
     console.error('General content webhook failed:', webhookError);
@@ -104,7 +103,7 @@ export const deleteGeneralContent = async (id: string): Promise<void> => {
   }
 };
 
-async function triggerGeneralContentWebhook(content: GeneralContentItem, userId: string): Promise<void> {
+async function triggerGeneralContentWebhook(content: GeneralContentItem, userId: string, derivativeTypes?: string[]): Promise<void> {
   console.log('Triggering general content webhook for:', content.id);
   
   // Get the webhook configuration for general content processing
@@ -128,14 +127,15 @@ async function triggerGeneralContentWebhook(content: GeneralContentItem, userId:
   const webhook = webhooks[0];
   console.log('Using webhook:', webhook.name);
 
-  // Prepare webhook payload
+  // Prepare webhook payload with derivative_types array
   const payload = {
     type: 'general_content_submission',
     general_content_id: content.id,
     user_id: userId,
     title: content.title,
     content: content.content,
-    derivative_type: content.derivative_type,
+    derivative_type: content.derivative_type, // Keep for backward compatibility
+    derivative_types: derivativeTypes || [content.derivative_type], // Array for N8N Split Out node
     category: content.category,
     source_type: content.source_type,
     source_data: content.source_data,

@@ -5,6 +5,7 @@ export interface GeneralContentItem {
   title: string;
   content?: string;
   derivative_type: string;
+  derivative_types?: string[];
   category: string;
   content_type: string;
   source_type: 'manual' | 'url' | 'file';
@@ -32,6 +33,7 @@ export interface CreateGeneralContentRequest {
   title: string;
   content?: string;
   derivative_type: string;
+  derivative_types?: string[];
   category: string;
   content_type: string;
   source_type: 'manual' | 'url' | 'file';

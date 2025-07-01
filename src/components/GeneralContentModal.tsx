@@ -22,7 +22,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    derivative_type: '',
+    derivative_types: [] as string[],
     category: '',
     target_audience: 'Private Sector',
     source_type: 'manual' as 'manual' | 'url' | 'file',
@@ -41,7 +41,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.derivative_type || !formData.title.trim()) {
+    if (formData.derivative_types.length === 0 || !formData.title.trim()) {
       return;
     }
 
@@ -67,7 +67,8 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
       await createGeneralContent({
         title: formData.title,
         content: formData.content,
-        derivative_type: formData.derivative_type,
+        derivative_type: formData.derivative_types[0], // First selected for backward compatibility
+        derivative_types: formData.derivative_types,
         category: formData.category,
         content_type: 'text',
         source_type: formData.source_type,
@@ -86,7 +87,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
       setFormData({
         title: '',
         content: '',
-        derivative_type: '',
+        derivative_types: [],
         category: '',
         target_audience: 'Private Sector',
         source_type: 'manual',
@@ -104,10 +105,10 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
     }
   };
 
-  const handleDerivativeTypeSelect = (type: string, category: string) => {
+  const handleDerivativeTypesSelect = (types: string[], category: string) => {
     setFormData(prev => ({
       ...prev,
-      derivative_type: type,
+      derivative_types: types,
       category
     }));
   };
@@ -140,8 +141,8 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
             />
 
             <ContentTypeSelection
-              selectedType={formData.derivative_type}
-              onTypeSelect={handleDerivativeTypeSelect}
+              selectedTypes={formData.derivative_types}
+              onTypesSelect={handleDerivativeTypesSelect}
             />
           </div>
 
@@ -151,7 +152,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
             </Button>
             <Button 
               type="submit" 
-              disabled={isCreating || !formData.derivative_type || !formData.title.trim()}
+              disabled={isCreating || formData.derivative_types.length === 0 || !formData.title.trim()}
               className="bg-purple-600 hover:bg-purple-700"
             >
               {isCreating ? 'Creating...' : 'Create Content'}
