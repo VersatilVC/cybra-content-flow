@@ -621,6 +621,7 @@ export type Database = {
           content_type: string
           created_at: string
           derivative_type: string
+          derivative_types: Json | null
           file_path: string | null
           file_size: string | null
           file_url: string | null
@@ -642,6 +643,7 @@ export type Database = {
           content_type?: string
           created_at?: string
           derivative_type: string
+          derivative_types?: Json | null
           file_path?: string | null
           file_size?: string | null
           file_url?: string | null
@@ -663,6 +665,7 @@ export type Database = {
           content_type?: string
           created_at?: string
           derivative_type?: string
+          derivative_types?: Json | null
           file_path?: string | null
           file_size?: string | null
           file_url?: string | null

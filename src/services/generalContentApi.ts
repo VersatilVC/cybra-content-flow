@@ -50,17 +50,21 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
 
   console.log('Authenticated user ID:', user.user.id);
 
-  // Prepare the data for insertion
+  // Prepare the data for insertion with proper derivative_types handling
   const insertData = {
     ...data,
     user_id: user.user.id,
-    // Ensure derivative_types is properly handled
+    // Ensure derivative_type is set for backward compatibility (use first type)
+    derivative_type: data.derivative_types && data.derivative_types.length > 0 
+      ? data.derivative_types[0] 
+      : data.derivative_type,
+    // Store the full array in derivative_types
     derivative_types: data.derivative_types || [data.derivative_type],
   };
 
   console.log('Insert data prepared:', insertData);
 
-  // First, create the general content item in the database
+  // Create the general content item in the database
   const { data: result, error } = await supabase
     .from('general_content_items')
     .insert([insertData])
@@ -77,7 +81,7 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
 
   // Trigger webhook for processing
   try {
-    await triggerGeneralContentWebhook(createdContent, user.user.id, data.derivative_types);
+    await triggerGeneralContentWebhook(createdContent, user.user.id, insertData.derivative_types);
     console.log('General content webhook triggered successfully');
   } catch (webhookError) {
     console.error('General content webhook failed:', webhookError);
@@ -139,7 +143,7 @@ async function triggerGeneralContentWebhook(content: GeneralContentItem, userId:
   const webhook = webhooks[0];
   console.log('Using webhook:', webhook.name, webhook.webhook_url);
 
-  // Prepare webhook payload with derivative_types array
+  // Prepare webhook payload with both single and array derivative types
   const payload = {
     type: 'general_content_submission',
     general_content_id: content.id,

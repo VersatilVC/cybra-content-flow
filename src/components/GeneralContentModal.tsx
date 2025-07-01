@@ -138,7 +138,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
         title: formData.title,
         content: formData.content,
         derivative_type: formData.derivative_types[0], // First selected for backward compatibility
-        derivative_types: formData.derivative_types,
+        derivative_types: formData.derivative_types, // Full array for new functionality
         category: formData.category,
         content_type: 'text',
         source_type: formData.source_type,

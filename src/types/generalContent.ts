@@ -5,7 +5,7 @@ export interface GeneralContentItem {
   title: string;
   content?: string;
   derivative_type: string;
-  derivative_types?: string[];
+  derivative_types?: string[]; // Array of derivative types
   category: string;
   content_type: string;
   source_type: 'manual' | 'url' | 'file';
@@ -33,7 +33,7 @@ export interface CreateGeneralContentRequest {
   title: string;
   content?: string;
   derivative_type: string;
-  derivative_types?: string[];
+  derivative_types?: string[]; // Array of derivative types for multi-select
   category: string;
   content_type: string;
   source_type: 'manual' | 'url' | 'file';
