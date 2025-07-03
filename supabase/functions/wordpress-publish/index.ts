@@ -165,6 +165,7 @@ class WordPressApiService {
         postData.meta = {
           _yoast_wpseo_metadesc: metaDescription,
         };
+        postData.excerpt = metaDescription;
       }
 
       const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/posts`, {
