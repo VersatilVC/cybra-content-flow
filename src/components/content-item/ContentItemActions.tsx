@@ -53,19 +53,27 @@ const ContentItemActions: React.FC<ContentItemActionsProps> = ({
     setIsPublishingToWordPress(true);
     
     try {
-      await publishToWordPress(contentItem, userId);
+      const result = await publishToWordPress(contentItem, userId);
       
-      toast({
-        title: 'WordPress Publishing Started',
-        description: 'Your content is being published to WordPress. You will receive a notification when complete.',
-      });
-      
-      onRefetch();
+      if (result.success) {
+        toast({
+          title: 'WordPress Publishing Successful',
+          description: `Your content has been published to WordPress as a draft post. Post ID: ${result.postId}`,
+        });
+        
+        onRefetch();
+      } else {
+        toast({
+          title: 'WordPress Publishing Failed',
+          description: result.error || 'Failed to publish to WordPress.',
+          variant: 'destructive',
+        });
+      }
     } catch (error) {
       console.error('WordPress publishing failed:', error);
       toast({
         title: 'WordPress Publishing Failed',
-        description: error instanceof Error ? error.message : 'Failed to start WordPress publishing. Please check your webhook configuration.',
+        description: error instanceof Error ? error.message : 'Failed to publish to WordPress.',
         variant: 'destructive',
       });
     } finally {
