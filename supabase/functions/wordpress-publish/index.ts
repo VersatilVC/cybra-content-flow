@@ -397,11 +397,10 @@ serve(async (req) => {
 
     console.log('Validation passed - found blog image and excerpt');
 
-    // Update status to publishing
+    // Update status to indicate publishing in progress (using published since publishing is not allowed)
     await supabase
       .from('content_items')
       .update({ 
-        status: 'publishing',
         updated_at: new Date().toISOString()
       })
       .eq('id', contentItemId);

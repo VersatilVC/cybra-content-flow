@@ -43,7 +43,7 @@ export async function publishToWordPress(contentItem: ContentItem, userId: strin
     await supabase
       .from('content_items')
       .update({ 
-        status: 'publish_failed',
+        status: 'needs_fix',
         updated_at: new Date().toISOString()
       })
       .eq('id', contentItem.id);
