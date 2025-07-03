@@ -101,6 +101,46 @@ class WordPressApiService {
     }
   }
 
+  async uploadMedia(fileUrl: string, filename: string): Promise<WordPressMedia> {
+    try {
+      console.log('Downloading file from:', fileUrl);
+      
+      // Download the file first
+      const fileResponse = await fetch(fileUrl);
+      if (!fileResponse.ok) {
+        throw new Error('Failed to download file from URL');
+      }
+      
+      const fileBlob = await fileResponse.blob();
+      console.log('File downloaded, size:', fileBlob.size, 'bytes');
+      
+      const formData = new FormData();
+      formData.append('file', fileBlob, filename);
+
+      console.log('Uploading to WordPress media library...');
+      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/media`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${btoa(`${this.username}:${this.appPassword}`)}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Media upload error:', errorText);
+        throw new Error(`Failed to upload media: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const media: WordPressMedia = await response.json();
+      console.log('Media uploaded successfully:', media.id);
+      return media;
+    } catch (error) {
+      console.error('Error uploading media:', error);
+      throw new Error(`Failed to upload media: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
   async getCategoryId(categoryName: string): Promise<number> {
     try {
       console.log('Fetching WordPress categories');
@@ -321,9 +361,12 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting wordpress-publish function');
     const { contentItemId, userId } = await req.json()
+    console.log('Received request:', { contentItemId, userId });
     
     if (!contentItemId || !userId) {
+      console.error('Missing required parameters:', { contentItemId, userId });
       return new Response(
         JSON.stringify({ success: false, error: 'Missing contentItemId or userId' }),
         { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
