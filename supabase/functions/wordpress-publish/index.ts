@@ -101,41 +101,61 @@ class WordPressApiService {
     }
   }
 
-  async uploadMedia(fileUrl: string, filename: string): Promise<WordPressMedia> {
+  async getCategoryId(categoryName: string): Promise<number> {
     try {
-      console.log('Downloading file from:', fileUrl);
+      console.log('Fetching WordPress categories');
       
-      // Download the file first
-      const fileResponse = await fetch(fileUrl);
-      if (!fileResponse.ok) {
-        throw new Error('Failed to download file from URL');
-      }
-      
-      const fileBlob = await fileResponse.blob();
-      
-      const formData = new FormData();
-      formData.append('file', fileBlob, filename);
-
-      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/media`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${btoa(`${this.username}:${this.appPassword}`)}`,
-        },
-        body: formData,
+      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/categories?search=${encodeURIComponent(categoryName)}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Media upload error:', errorText);
-        throw new Error(`Failed to upload media: ${response.status} ${response.statusText} - ${errorText}`);
+        console.error('WordPress API error:', errorText);
+        throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
-      const media: WordPressMedia = await response.json();
-      console.log('Media uploaded successfully:', media.id);
-      return media;
+      const categories = await response.json();
+      const category = categories.find((cat: any) => cat.name.toLowerCase() === categoryName.toLowerCase());
+      
+      if (!category) {
+        // Create the category if it doesn't exist
+        console.log(`Category "${categoryName}" not found, creating it`);
+        return await this.createCategory(categoryName);
+      }
+
+      console.log('Found category:', category.name, 'with ID:', category.id);
+      return category.id;
     } catch (error) {
-      console.error('Error uploading media:', error);
-      throw new Error(`Failed to upload media: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Error fetching category ID:', error);
+      throw new Error(`Failed to get category ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async createCategory(categoryName: string): Promise<number> {
+    try {
+      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/categories`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          name: categoryName,
+          slug: categoryName.toLowerCase().replace(/\s+/g, '-')
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Category creation error:', errorText);
+        throw new Error(`Failed to create category: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const category = await response.json();
+      console.log('Category created successfully:', category.id);
+      return category.id;
+    } catch (error) {
+      console.error('Error creating category:', error);
+      throw new Error(`Failed to create category: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -143,6 +163,7 @@ class WordPressApiService {
     title: string,
     content: string,
     authorId: number,
+    categoryId: number,
     featuredMediaId?: number,
     metaDescription?: string
   ): Promise<WordPressPost> {
@@ -152,6 +173,7 @@ class WordPressApiService {
         content,
         status: 'draft',
         author: authorId,
+        categories: [categoryId],
         comment_status: 'closed',
         ping_status: 'closed',
       };
@@ -391,6 +413,10 @@ serve(async (req) => {
     const authorId = await wordpressApi.getAuthorId();
     console.log('WordPress author ID:', authorId);
 
+    // Get category ID for "Blog" category
+    const categoryId = await wordpressApi.getCategoryId('Blog');
+    console.log('WordPress category ID:', categoryId);
+
     // Upload blog image to WordPress
     console.log('Uploading blog image to WordPress...');
     const uploadedImage = await wordpressApi.uploadMedia(
@@ -409,6 +435,7 @@ serve(async (req) => {
       contentItem.title,
       htmlContent,
       authorId,
+      categoryId,
       uploadedImage.id,
       excerpt.content
     );
