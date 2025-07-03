@@ -189,6 +189,36 @@ class WordPressApiService {
   }
 }
 
+// Simple markdown to HTML converter
+function markdownToHtml(markdown: string): string {
+  return markdown
+    // Headers
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    // Bold
+    .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.*)\*/gim, '<em>$1</em>')
+    // Links
+    .replace(/\[([^\]]*)\]\(([^)]*)\)/gim, '<a href="$2">$1</a>')
+    // Lists
+    .replace(/^\- (.*$)/gim, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gims, '<ul>$1</ul>')
+    // Line breaks
+    .replace(/\n\n/gim, '</p><p>')
+    .replace(/\n/gim, '<br>')
+    // Wrap in paragraphs
+    .replace(/^(?!<[h|u|l])/gim, '<p>')
+    .replace(/(?![>])$/gim, '</p>')
+    // Clean up empty paragraphs
+    .replace(/<p><\/p>/gim, '')
+    .replace(/<p><h/gim, '<h')
+    .replace(/h[1-6]><\/p>/gim, (match) => match.replace('<\/p>', ''))
+    .replace(/<p><ul>/gim, '<ul>')
+    .replace(/<\/ul><\/p>/gim, '</ul>');
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -297,9 +327,14 @@ serve(async (req) => {
 
     // Create draft post with all the required settings
     console.log('Creating WordPress draft post...');
+    
+    // Convert markdown content to HTML
+    const htmlContent = markdownToHtml(contentItem.content || '');
+    console.log('Converted markdown to HTML for WordPress');
+    
     const post = await wordpressApi.createDraftPost(
       contentItem.title,
-      contentItem.content || '',
+      htmlContent,
       authorId,
       uploadedImage.id,
       excerpt.content
