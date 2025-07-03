@@ -226,6 +226,7 @@ class WordPressApiService {
       if (metaDescription) {
         postData.meta = {
           _yoast_wpseo_metadesc: metaDescription,
+          _yoast_wpseo_metadesc_length: metaDescription.length.toString(),
         };
         postData.excerpt = metaDescription;
       }
@@ -248,6 +249,35 @@ class WordPressApiService {
     } catch (error) {
       console.error('Error creating post:', error);
       throw new Error(`Failed to create post: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async updatePostMeta(postId: number, metaDescription: string): Promise<void> {
+    try {
+      console.log('Updating post meta for post ID:', postId);
+      const updateData = {
+        meta: {
+          _yoast_wpseo_metadesc: metaDescription,
+          _yoast_wpseo_metadesc_length: metaDescription.length.toString(),
+        },
+      };
+
+      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/posts/${postId}`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Post meta update error:', errorText);
+        throw new Error(`Failed to update post meta: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      console.log('Post meta updated successfully');
+    } catch (error) {
+      console.error('Error updating post meta:', error);
+      throw new Error(`Failed to update post meta: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }
@@ -483,6 +513,10 @@ serve(async (req) => {
     );
 
     console.log('WordPress post created successfully:', post.id);
+
+    // Update the post with Yoast SEO meta description separately to ensure it's saved
+    console.log('Updating post with Yoast SEO meta description...');
+    await wordpressApi.updatePostMeta(post.id, excerpt.content!);
 
     // Update content item with WordPress information
     await supabase
