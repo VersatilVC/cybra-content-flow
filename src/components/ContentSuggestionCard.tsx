@@ -52,7 +52,7 @@ export default function ContentSuggestionCard({
   const handleViewBrief = () => {
     if (existingBrief) {
       // Navigate to the brief details page
-      window.location.href = `/content-briefs?brief=${existingBrief.id}&action=view`;
+      window.location.href = `/content-briefs?view=${existingBrief.id}`;
     }
   };
 
