@@ -45,19 +45,30 @@ export class WordPressApiService {
 
   async getAuthorId(): Promise<number> {
     try {
+      console.log('Attempting to fetch WordPress users from:', `${this.baseUrl}/wp-json/wp/v2/users`);
+      console.log('Using credentials for:', this.username);
+      console.log('Looking for author email:', this.authorEmail);
+      
       const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/users?search=${encodeURIComponent(this.authorEmail)}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
 
+      console.log('WordPress API response status:', response.status);
+      console.log('WordPress API response ok:', response.ok);
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch users: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('WordPress API error response:', errorText);
+        throw new Error(`Failed to fetch users: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       const users: WordPressUser[] = await response.json();
+      console.log('Found users:', users.length);
       const author = users.find(user => user.email === this.authorEmail);
       
       if (!author) {
+        console.log('Author not found, trying fallback to admin user');
         // Fallback to admin user (the one making the request)
         const adminResponse = await fetch(`${this.baseUrl}/wp-json/wp/v2/users/me`, {
           method: 'GET',
@@ -70,12 +81,19 @@ export class WordPressApiService {
           return adminUser.id;
         }
         
-        throw new Error(`Author with email ${this.authorEmail} not found`);
+        throw new Error(`Author with email ${this.authorEmail} not found and fallback failed`);
       }
 
+      console.log('Found author:', author.email, 'with ID:', author.id);
       return author.id;
     } catch (error) {
       console.error('Error fetching author ID:', error);
+      
+      // Check if it's a CORS or network error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error(`Network error: Unable to connect to WordPress site at ${this.baseUrl}. This may be due to CORS restrictions or the site being inaccessible from the browser.`);
+      }
+      
       throw new Error(`Failed to get author ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
