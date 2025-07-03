@@ -58,7 +58,7 @@ const ContentItemActions: React.FC<ContentItemActionsProps> = ({
       if (result.success) {
         toast({
           title: 'WordPress Publishing Successful',
-          description: `Your content has been published to WordPress as a draft post. Post ID: ${result.postId}`,
+          description: `Your content has been published to WordPress as a draft post and is ready for review. View post: ${result.postUrl}`,
         });
         
         onRefetch();

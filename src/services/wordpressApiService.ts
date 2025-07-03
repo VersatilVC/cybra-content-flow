@@ -128,9 +128,6 @@ export class WordPressApiService {
 
       // Add Yoast SEO meta description if provided
       if (metaDescription) {
-        postData.yoast_head_json = {
-          description: metaDescription,
-        };
         postData.meta = {
           _yoast_wpseo_metadesc: metaDescription,
         };
