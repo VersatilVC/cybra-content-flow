@@ -36,13 +36,16 @@ export function useContentBriefsActions({
   // Handle opening brief when briefs are loaded and we have a pending brief ID
   useEffect(() => {
     if (pendingBriefId && briefs.length > 0 && !isLoading) {
+      console.log('Looking for brief:', pendingBriefId, 'in', briefs.length, 'available briefs');
       const briefToView = briefs.find(brief => brief.id === pendingBriefId);
       if (briefToView) {
+        console.log('Found brief:', briefToView);
         setSelectedBrief(briefToView);
         setViewModalOpen(true);
         setPendingBriefId(null);
       } else {
         // Brief not found, clear pending ID
+        console.log('Brief not found in available briefs');
         setPendingBriefId(null);
         toast({
           title: 'Brief not found',

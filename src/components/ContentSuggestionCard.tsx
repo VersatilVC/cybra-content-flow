@@ -51,6 +51,7 @@ export default function ContentSuggestionCard({
 
   const handleViewBrief = () => {
     if (existingBrief) {
+      console.log('Navigating to brief:', existingBrief.id, 'for suggestion:', suggestion.id);
       // Navigate to the brief details page
       window.location.href = `/content-briefs?view=${existingBrief.id}`;
     }
