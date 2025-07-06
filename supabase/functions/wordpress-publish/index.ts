@@ -13,8 +13,33 @@ serve(async (req) => {
 
   try {
     console.log('Starting wordpress-publish function');
-    const { contentItemId, userId } = await req.json()
-    console.log('Received request:', { contentItemId, userId });
+    const body = await req.json()
+    console.log('Received request:', body);
+    
+    // Handle test connection requests
+    if (body.test) {
+      console.log('Test connection requested');
+      
+      // Initialize WordPress API service to test configuration
+      try {
+        const wordpressApi = new WordPressApiService();
+        return new Response(
+          JSON.stringify({ success: true, message: 'WordPress API configuration is valid' }),
+          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      } catch (error) {
+        console.error('WordPress API configuration error:', error);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'WordPress API configuration is missing or invalid. Please check environment variables.' 
+          }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+    }
+    
+    const { contentItemId, userId } = body;
     
     if (!contentItemId || !userId) {
       console.error('Missing required parameters:', { contentItemId, userId });

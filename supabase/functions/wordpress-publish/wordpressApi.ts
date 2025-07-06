@@ -1,10 +1,21 @@
 import { WordPressUser, WordPressPost, WordPressMedia } from './types.ts';
 
 export class WordPressApiService {
-  private baseUrl = 'https://cyabra.com';
-  private username = 'ilan.hertz@versatil.vc';
-  private appPassword = 'm7WL YRJo kfnR 6nYj CMLJ MhQN';
-  private authorEmail = 'rotemb@cyabra.com';
+  private baseUrl: string;
+  private username: string;
+  private appPassword: string;
+  private authorEmail: string;
+
+  constructor() {
+    this.baseUrl = Deno.env.get('WORDPRESS_BASE_URL') || '';
+    this.username = Deno.env.get('WORDPRESS_USERNAME') || '';
+    this.appPassword = Deno.env.get('WORDPRESS_APP_PASSWORD') || '';
+    this.authorEmail = Deno.env.get('WORDPRESS_AUTHOR_EMAIL') || '';
+    
+    if (!this.baseUrl || !this.username || !this.appPassword || !this.authorEmail) {
+      throw new Error('Missing required WordPress configuration. Please check environment variables.');
+    }
+  }
 
   private getAuthHeaders(): Record<string, string> {
     const credentials = btoa(`${this.username}:${this.appPassword}`);
