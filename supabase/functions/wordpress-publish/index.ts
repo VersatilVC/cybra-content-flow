@@ -199,13 +199,82 @@ class WordPressApiService {
     }
   }
 
+  async getOrCreateTag(tagName: string): Promise<number> {
+    try {
+      console.log('Fetching WordPress tag:', tagName);
+      
+      // First, try to find existing tag
+      const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/tags?search=${encodeURIComponent(tagName)}`, {
+        method: 'GET',
+        headers: this.getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('WordPress API error:', errorText);
+        throw new Error(`Failed to fetch tags: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const tags = await response.json();
+      const existingTag = tags.find((tag: any) => tag.name.toLowerCase() === tagName.toLowerCase());
+      
+      if (existingTag) {
+        console.log('Found existing tag:', existingTag.name, 'with ID:', existingTag.id);
+        return existingTag.id;
+      }
+
+      // Create new tag if it doesn't exist
+      console.log(`Tag "${tagName}" not found, creating it`);
+      const createResponse = await fetch(`${this.baseUrl}/wp-json/wp/v2/tags`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          name: tagName,
+          slug: tagName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+        }),
+      });
+
+      if (!createResponse.ok) {
+        const errorText = await createResponse.text();
+        console.error('Tag creation error:', errorText);
+        throw new Error(`Failed to create tag: ${createResponse.status} ${createResponse.statusText} - ${errorText}`);
+      }
+
+      const newTag = await createResponse.json();
+      console.log('Tag created successfully:', newTag.id);
+      return newTag.id;
+    } catch (error) {
+      console.error('Error with tag operation:', error);
+      throw new Error(`Failed to get/create tag: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async getTagIds(tagNames: string[]): Promise<number[]> {
+    const tagIds: number[] = [];
+    
+    for (const tagName of tagNames) {
+      if (tagName && tagName.trim()) {
+        try {
+          const tagId = await this.getOrCreateTag(tagName.trim());
+          tagIds.push(tagId);
+        } catch (error) {
+          console.error(`Failed to process tag "${tagName}":`, error);
+          // Continue with other tags even if one fails
+        }
+      }
+    }
+    
+    return tagIds;
+  }
+
   async createDraftPost(
     title: string,
     content: string,
     authorId: number,
     categoryId: number,
     featuredMediaId?: number,
-    metaDescription?: string
+    metaDescription?: string,
+    tagIds?: number[]
   ): Promise<WordPressPost> {
     try {
       const postData: any = {
@@ -220,6 +289,11 @@ class WordPressApiService {
 
       if (featuredMediaId) {
         postData.featured_media = featuredMediaId;
+      }
+
+      if (tagIds && tagIds.length > 0) {
+        postData.tags = tagIds;
+        console.log('Adding tags to post:', tagIds);
       }
 
       // Add Yoast SEO meta description if provided
@@ -489,6 +563,16 @@ serve(async (req) => {
     const categoryId = await wordpressApi.getCategoryId('Blog');
     console.log('WordPress category ID:', categoryId);
 
+    // Process tags from content item
+    let tagIds: number[] = [];
+    if (contentItem.tags && Array.isArray(contentItem.tags) && contentItem.tags.length > 0) {
+      console.log('Processing tags:', contentItem.tags);
+      tagIds = await wordpressApi.getTagIds(contentItem.tags);
+      console.log('WordPress tag IDs:', tagIds);
+    } else {
+      console.log('No tags found in content item');
+    }
+
     // Upload blog image to WordPress
     console.log('Uploading blog image to WordPress...');
     const uploadedImage = await wordpressApi.uploadMedia(
@@ -509,7 +593,8 @@ serve(async (req) => {
       authorId,
       categoryId,
       uploadedImage.id,
-      excerpt.content
+      excerpt.content,
+      tagIds
     );
 
     console.log('WordPress post created successfully:', post.id);
