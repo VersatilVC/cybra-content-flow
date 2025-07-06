@@ -25,6 +25,7 @@ import Webhooks from "./pages/Webhooks";
 import Settings from "./pages/Settings";
 import FeedbackManagement from "./pages/FeedbackManagement";
 import NotFound from "./pages/NotFound";
+import { ProductionDashboard } from "@/components/ProductionDashboard";
 
 const queryClient = new QueryClient();
 
@@ -169,6 +170,16 @@ const App = () => (
                   <ProtectedRoute adminOnly>
                     <AppLayout>
                       <Settings />
+                    </AppLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/production-dashboard" 
+                element={
+                  <ProtectedRoute adminOnly>
+                    <AppLayout>
+                      <ProductionDashboard />
                     </AppLayout>
                   </ProtectedRoute>
                 } 

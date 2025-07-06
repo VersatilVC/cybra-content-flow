@@ -13,6 +13,7 @@ import {
   Bell,
   Bug,
   PenTool,
+  Activity,
 } from "lucide-react";
 import {
   SidebarContent,
@@ -86,6 +87,11 @@ const adminItems = [
     title: "Webhooks",
     url: "/webhooks",
     icon: Zap,
+  },
+  {
+    title: "Production Dashboard",
+    url: "/production-dashboard",
+    icon: Activity,
   },
   {
     title: "Settings",
