@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthLoadingScreen } from '@/components/auth/AuthLoadingScreen';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { runSecurityValidation } from '@/utils/securityTests';
 
 const Auth = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -19,6 +20,14 @@ const Auth = () => {
   useAccountLinking();
 
   const from = location.state?.from?.pathname || '/dashboard';
+
+  // Initialize security testing in development
+  useEffect(() => {
+    // Run security validation tests
+    if (process.env.NODE_ENV === 'development') {
+      runSecurityValidation().catch(console.error);
+    }
+  }, []);
 
   // Redirect authenticated users
   useEffect(() => {

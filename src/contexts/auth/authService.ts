@@ -5,8 +5,8 @@ export const authService = {
   async signInWithGoogle() {
     try {
       console.log('AuthService: Signing in with Google');
-      // Use fixed redirect URL to avoid callback loops
-      const redirectUrl = 'https://preview--cybra-content-flow.lovable.app/';
+      // Use dynamic redirect URL based on current origin for security
+      const redirectUrl = window.location.origin + '/';
       console.log('AuthService: Google OAuth redirect URL:', redirectUrl);
       
       const { error } = await supabase.auth.signInWithOAuth({
