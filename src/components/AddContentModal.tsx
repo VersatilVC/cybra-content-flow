@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { getEdgeFunctionUrl } from '@/config/environment';
 import { useAuth } from '@/contexts/AuthContext';
 import { Upload, Link, FileText, Database, Newspaper, Building2, Zap, AlertCircle, CheckCircle } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -174,7 +175,7 @@ export function AddContentModal({ open, onOpenChange }: AddContentModalProps) {
 
     // Use direct fetch to call the edge function with proper body
     const response = await fetch(
-      'https://uejgjytmqpcilwfrlpai.supabase.co/functions/v1/process-content?action=trigger',
+      getEdgeFunctionUrl('process-content', 'action=trigger'),
       {
         method: 'POST',
         headers: {

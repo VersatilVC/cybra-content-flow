@@ -5,9 +5,7 @@ import { generateSlug } from '@/utils/slugGenerator';
 import { convertMarkdownToHtml } from '@/utils/markdownToHtml';
 import { WordPressPublishPayload } from './types';
 
-function getCallbackBaseUrl(): string {
-  return 'https://uejgjytmqpcilwfrlpai.supabase.co';
-}
+import { getCallbackUrl } from '@/config/environment';
 
 export function buildWordPressPayload(
   contentItem: ContentItem,
@@ -68,7 +66,7 @@ export function buildWordPressPayload(
       content_brief_id: contentItem.content_brief_id || undefined,
       resources: contentItem.resources || undefined,
     },
-    callback_url: `${getCallbackBaseUrl()}/functions/v1/process-idea-callback`,
+    callback_url: getCallbackUrl('process-idea-callback'),
     callback_data: {
       type: 'wordpress_publishing_complete',
       content_item_id: contentItem.id,

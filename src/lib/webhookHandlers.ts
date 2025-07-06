@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { triggerWebhook } from '@/services/webhookService';
 import { ContentIdea } from '@/types/contentIdeas';
+import { getCallbackUrl } from '@/config/environment';
 
 export async function triggerIdeaWebhooks(idea: ContentIdea, userId: string) {
   // Prepare webhook payload with flexible typing
@@ -10,7 +11,7 @@ export async function triggerIdeaWebhooks(idea: ContentIdea, userId: string) {
     user_id: userId,
     timestamp: new Date().toISOString(),
     // Add callback URL for N8N to call when processing is complete
-    callback_url: `${getCallbackBaseUrl()}/functions/v1/process-idea-callback`,
+    callback_url: getCallbackUrl('process-idea-callback'),
     callback_data: {
       type: 'idea_processing_complete',
       content_idea_id: idea.id,
@@ -70,7 +71,7 @@ export async function triggerBriefWebhooks(briefId: string, userId: string, idea
     idea_id: ideaId,
     brief: brief,
     timestamp: new Date().toISOString(),
-    callback_url: `${getCallbackBaseUrl()}/functions/v1/process-idea-callback`,
+    callback_url: getCallbackUrl('process-idea-callback'),
     callback_data: {
       type: 'brief_completion',
       brief_id: briefId,
@@ -99,7 +100,7 @@ export async function triggerAutoGenerationWebhooks(userId: string, requestData:
     target_audience: requestData.target_audience,
     request_data: requestData,
     timestamp: new Date().toISOString(),
-    callback_url: `${getCallbackBaseUrl()}/functions/v1/process-idea-callback`,
+    callback_url: getCallbackUrl('process-idea-callback'),
     callback_data: {
       type: 'auto_generation_complete',
       content_idea_id: requestData.content_idea_id,
@@ -116,8 +117,4 @@ export async function triggerAutoGenerationWebhooks(userId: string, requestData:
     console.error('Auto-generation webhook trigger failed:', webhookError);
     throw webhookError;
   }
-}
-
-function getCallbackBaseUrl(): string {
-  return 'https://uejgjytmqpcilwfrlpai.supabase.co';
 }

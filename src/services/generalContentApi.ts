@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { getCallbackUrl } from '@/config/environment';
 import { CreateGeneralContentRequest, GeneralContentItem } from '@/types/generalContent';
 
 export const fetchGeneralContent = async (filters: {
@@ -160,7 +161,7 @@ async function triggerGeneralContentWebhook(content: GeneralContentItem, userId:
     file_url: content.file_url,
     file_path: content.file_path,
     timestamp: new Date().toISOString(),
-    callback_url: `https://uejgjytmqpcilwfrlpai.supabase.co/functions/v1/process-idea-callback`,
+    callback_url: getCallbackUrl('process-idea-callback'),
     callback_data: {
       type: 'general_content_processing_complete',
       general_content_id: content.id,

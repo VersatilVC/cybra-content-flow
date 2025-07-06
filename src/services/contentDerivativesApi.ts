@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { getCallbackUrl, getStorageUrl } from '@/config/environment';
 
 export interface ContentDerivative {
   id: string;
@@ -155,7 +156,7 @@ export async function triggerDerivativeGeneration(
     user_id: userId,
     timestamp: new Date().toISOString(),
     // Fixed callback URL to match the working notification system
-    callback_url: `https://uejgjytmqpcilwfrlpai.supabase.co/functions/v1/process-idea-callback`,
+    callback_url: getCallbackUrl('process-idea-callback'),
     // Added proper callback_data structure for notifications
     callback_data: {
       type: 'derivative_generation_complete',
@@ -167,7 +168,7 @@ export async function triggerDerivativeGeneration(
     },
     storage_config: {
       bucket_name: 'content-derivatives',
-      base_url: 'https://uejgjytmqpcilwfrlpai.supabase.co/storage/v1/object/public/content-derivatives'
+      base_url: getStorageUrl('content-derivatives')
     },
     // Enhanced instructions for LinkedIn ads with proper structure
     special_instructions: {

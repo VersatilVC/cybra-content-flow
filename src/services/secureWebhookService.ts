@@ -6,10 +6,11 @@ import { logSecurityEvent } from '@/lib/security';
 // Re-export the secure webhook trigger as the main trigger function
 export const triggerWebhook = secureWebhookTrigger;
 
+import { getCallbackUrl, getEdgeFunctionUrl } from '@/config/environment';
+
 // Helper function to get the callback URL for idea processing
 export const getIdeaCallbackUrl = () => {
-  const supabaseUrl = 'https://uejgjytmqpcilwfrlpai.supabase.co';
-  return `${supabaseUrl}/functions/v1/process-idea-callback`;
+  return getCallbackUrl('process-idea-callback');
 };
 
 // Enhanced content processing webhook with security
@@ -115,8 +116,7 @@ export const triggerContentProcessingWebhook = async (briefId: string, userId: s
       // Fallback to direct edge function call if no webhook is configured
       console.log('No content_processing webhooks found, falling back to edge function');
       
-      const supabaseUrl = 'https://uejgjytmqpcilwfrlpai.supabase.co';
-      const triggerUrl = `${supabaseUrl}/functions/v1/process-content?action=trigger`;
+      const triggerUrl = getEdgeFunctionUrl('process-content', 'action=trigger');
 
       const payload = {
         submissionId: submission.id,

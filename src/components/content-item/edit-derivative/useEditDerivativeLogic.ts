@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { ContentDerivative } from '@/services/contentDerivativesApi';
+import { getStorageUrl } from '@/config/environment';
 import { useContentDerivatives } from '@/hooks/useContentDerivatives';
 import { handleDerivativeFileUpload } from '@/lib/fileUploadHandler';
 import { useAuth } from '@/contexts/AuthContext';
@@ -86,7 +87,7 @@ export function useEditDerivativeLogic(derivative: ContentDerivative, isOpen: bo
         setIsUploading(true);
         try {
           const uploadResult = await handleDerivativeFileUpload(file, user.id);
-          const publicUrl = `https://uejgjytmqpcilwfrlpai.supabase.co/storage/v1/object/public/content-derivatives/${uploadResult.path}`;
+          const publicUrl = getStorageUrl('content-derivatives', uploadResult.path);
           
           updates.file_url = publicUrl;
           updates.file_path = uploadResult.path;

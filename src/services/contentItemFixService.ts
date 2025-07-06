@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { getCallbackUrl } from '@/config/environment';
 import { triggerWebhook } from '@/services/webhookService';
 
 export interface ContentItemFixRequest {
@@ -39,7 +40,7 @@ export const triggerContentItemFixWebhook = async (fixRequest: ContentItemFixReq
         current_content: fixRequest.currentContent,
         title: fixRequest.title,
         timestamp: new Date().toISOString(),
-        callback_url: `https://uejgjytmqpcilwfrlpai.supabase.co/functions/v1/process-idea-callback`,
+        callback_url: getCallbackUrl('process-idea-callback'),
         callback_data: {
           type: 'content_item_fix_complete',
           content_item_id: fixRequest.contentItemId,
