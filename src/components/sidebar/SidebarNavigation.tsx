@@ -109,7 +109,8 @@ export function SidebarNavigation() {
   console.log('SidebarNavigation render:', { 
     profile: profile ? { role: profile.role, email: profile.email } : null, 
     loading, 
-    isAdmin 
+    isAdmin,
+    showAdminSection: !loading && isAdmin
   });
 
   return (
