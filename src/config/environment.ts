@@ -52,39 +52,10 @@ function getConfig(): AppConfig {
     userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'server'
   });
   
-  if (environment === 'production') {
-    console.log('Using PRODUCTION config:', productionConfig.supabase.url);
-    return productionConfig;
-  }
-  
-  // Development configuration
-  const supabaseUrl = "https://uejgjytmqpcilwfrlpai.supabase.co";
-  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlamdqeXRtcXBjaWx3ZnJscGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNjY0ODAsImV4cCI6MjA1ODY0MjQ4MH0.KGvrDLND84FX-WEtSzLr_A0fFNP7WF5Jl8jnpxajJqU";
-  
-  const config: AppConfig = {
-    supabase: {
-      url: supabaseUrl,
-      anonKey: supabaseAnonKey,
-      functions: {
-        baseUrl: `${supabaseUrl}/functions/v1`,
-        processContent: `${supabaseUrl}/functions/v1/process-content`,
-        processIdeaCallback: `${supabaseUrl}/functions/v1/process-idea-callback`,
-        wordpressPublish: `${supabaseUrl}/functions/v1/wordpress-publish`,
-        healthCheck: `${supabaseUrl}/functions/v1/health-check`,
-      },
-      storage: {
-        baseUrl: `${supabaseUrl}/storage/v1/object`,
-        contentDerivatives: `${supabaseUrl}/storage/v1/object/public/content-derivatives`,
-        knowledgeBaseFiles: `${supabaseUrl}/storage/v1/object/public/knowledge-base-files`,
-        contentFiles: `${supabaseUrl}/storage/v1/object/content-files`,
-      },
-    },
-    environment: 'development' as const,
-    projectId: 'uejgjytmqpcilwfrlpai',
-  };
-  
-  console.log('Using DEVELOPMENT config:', config.supabase.url);
-  return config;
+  // ALWAYS use production configuration for this project
+  // The production database (agbcslwigqthrlxnqbmc) is our primary database
+  console.log('Using PRODUCTION config:', productionConfig.supabase.url);
+  return productionConfig;
 }
 
 export const config = getConfig();
