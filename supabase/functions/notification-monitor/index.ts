@@ -14,8 +14,8 @@ function handleCorsPreflightRequest(req: Request): Response | null {
   return null;
 }
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabaseUrl = Deno.env.get('PROJECT_URL')!;
+const supabaseKey = Deno.env.get('PROJECT_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 serve(async (req) => {

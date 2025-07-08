@@ -45,8 +45,14 @@ function getEnvironment(): 'development' | 'production' {
 // Get configuration based on current environment
 function getConfig(): AppConfig {
   const environment = getEnvironment();
+  console.log('Environment Detection:', {
+    hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+    environment,
+    userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'server'
+  });
   
   if (environment === 'production') {
+    console.log('Using PRODUCTION config:', productionConfig.supabase.url);
     return productionConfig;
   }
   
@@ -54,7 +60,7 @@ function getConfig(): AppConfig {
   const supabaseUrl = "https://uejgjytmqpcilwfrlpai.supabase.co";
   const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlamdqeXRtcXBjaWx3ZnJscGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNjY0ODAsImV4cCI6MjA1ODY0MjQ4MH0.KGvrDLND84FX-WEtSzLr_A0fFNP7WF5Jl8jnpxajJqU";
   
-  return {
+  const config: AppConfig = {
     supabase: {
       url: supabaseUrl,
       anonKey: supabaseAnonKey,
@@ -72,9 +78,12 @@ function getConfig(): AppConfig {
         contentFiles: `${supabaseUrl}/storage/v1/object/content-files`,
       },
     },
-    environment: 'development',
+    environment: 'development' as const,
     projectId: 'uejgjytmqpcilwfrlpai',
   };
+  
+  console.log('Using DEVELOPMENT config:', config.supabase.url);
+  return config;
 }
 
 export const config = getConfig();

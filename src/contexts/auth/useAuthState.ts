@@ -53,7 +53,9 @@ export function useAuthState() {
           hasSession: !!session,
           userId: session?.user?.id,
           email: session?.user?.email,
-          eventTimestamp: new Date().toISOString()
+          eventTimestamp: new Date().toISOString(),
+          currentUrl: window.location.href,
+          userAgent: navigator.userAgent
         });
         
         if (mounted) {
