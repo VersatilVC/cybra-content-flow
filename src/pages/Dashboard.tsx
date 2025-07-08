@@ -1,8 +1,6 @@
 import { 
   FileText, 
-  Lightbulb, 
-  Database,
-  TrendingUp
+  Database
 } from "lucide-react";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { StatsCard } from "@/components/StatsCard";
@@ -17,27 +15,26 @@ const Dashboard = () => {
   const { data: stats, isLoading: statsLoading } = useDashboardStats();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white geometric-pattern">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50/50 to-white">
       <DashboardHeader 
         title="Dashboard" 
-        subtitle="Welcome back! Here's what's happening with your content." 
+        subtitle="Welcome back! Here's your content overview." 
       />
       
-      <div className="p-6 space-y-6">
+      <div className="px-6 pb-8 space-y-8">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
           {statsLoading ? (
             // Loading skeletons for stats cards
-            [...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white p-6 rounded-lg border shadow-sm">
-                <div className="space-y-3">
+            [...Array(2)].map((_, i) => (
+              <div key={i} className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border-0 shadow-sm">
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-4" />
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-8 w-8 rounded-lg" />
                   </div>
-                  <Skeleton className="h-8 w-16" />
-                  <Skeleton className="h-3 w-32" />
-                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-4 w-40" />
                 </div>
               </div>
             ))
@@ -48,53 +45,37 @@ const Dashboard = () => {
                 value={stats?.totalContentItems || 0}
                 description={`${stats?.pendingContentItems || 0} pending review`}
                 icon={FileText}
-                trend={{ value: 12, label: "from last month" }}
               />
               <StatsCard
                 title="Knowledge Base Items"
                 value={stats?.knowledgeBaseItems || 0}
                 description="Across all knowledge bases"
                 icon={Database}
-                trend={{ value: 8, label: "from last week" }}
-              />
-              <StatsCard
-                title="Active Ideas"
-                value={stats?.activeIdeas || 0}
-                description="Ready for brief creation"
-                icon={Lightbulb}
-                trend={{ value: -3, label: "from last week" }}
-              />
-              <StatsCard
-                title="Monthly Publications"
-                value={stats?.monthlyPublications || 0}
-                description="Content published this month"
-                icon={TrendingUp}
-                trend={{ value: 15, label: "from last month" }}
               />
             </>
           )}
         </div>
 
         {/* Auto Generation Controls */}
-        <div className="grid grid-cols-1 gap-6">
+        <div className="max-w-6xl">
           <AutoGenerationControls />
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Todo Section */}
-          <div className="lg:col-span-2">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 max-w-7xl">
+          {/* Todo Section - Takes up more space */}
+          <div className="xl:col-span-2">
             <TodoSection />
           </div>
 
           {/* Quick Actions */}
-          <div>
+          <div className="xl:col-span-1">
             <QuickActions />
           </div>
         </div>
 
         {/* Recent Activity Section */}
-        <div className="grid grid-cols-1 gap-6">
+        <div className="max-w-7xl">
           <RecentActivity />
         </div>
       </div>

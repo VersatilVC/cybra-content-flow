@@ -23,30 +23,32 @@ export function StatsCard({
   className = ""
 }: StatsCardProps) {
   return (
-    <Card className={`hover:shadow-md transition-shadow ${className}`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-gray-700">
+    <Card className={`group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white/80 backdrop-blur-sm ${className}`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+        <CardTitle className="text-sm font-medium text-muted-foreground/80 group-hover:text-muted-foreground transition-colors">
           {title}
         </CardTitle>
         {Icon && (
-          <Icon className="h-4 w-4 text-gray-500" />
+          <div className="p-2 rounded-lg bg-primary/5 group-hover:bg-primary/10 transition-colors">
+            <Icon className="h-4 w-4 text-primary" />
+          </div>
         )}
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-gray-900">{value}</div>
+      <CardContent className="pb-6">
+        <div className="text-3xl font-bold text-foreground mb-2">{value}</div>
         {description && (
-          <p className="text-xs text-gray-600 mt-1">
+          <p className="text-sm text-muted-foreground">
             {description}
           </p>
         )}
         {trend && (
-          <div className="flex items-center mt-2">
-            <span className={`text-xs font-medium ${
-              trend.value >= 0 ? 'text-green-600' : 'text-red-600'
+          <div className="flex items-center mt-3 pt-3 border-t border-border/50">
+            <span className={`text-sm font-medium ${
+              trend.value >= 0 ? 'text-emerald-600' : 'text-red-500'
             }`}>
               {trend.value >= 0 ? '+' : ''}{trend.value}%
             </span>
-            <span className="text-xs text-gray-500 ml-1">
+            <span className="text-sm text-muted-foreground ml-2">
               {trend.label}
             </span>
           </div>
