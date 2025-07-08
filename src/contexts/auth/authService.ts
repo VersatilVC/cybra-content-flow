@@ -5,8 +5,8 @@ export const authService = {
   async signInWithGoogle() {
     try {
       console.log('AuthService: Signing in with Google');
-      // Use dynamic redirect URL based on current origin for security
-      const redirectUrl = window.location.origin + '/';
+      // Always redirect to production URL to avoid domain switching
+      const redirectUrl = 'https://35651ca2-7c29-458b-823b-087384019799.lovableproject.com/';
       console.log('AuthService: Google OAuth redirect URL:', redirectUrl);
       
       const { error } = await supabase.auth.signInWithOAuth({
