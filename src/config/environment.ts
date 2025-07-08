@@ -33,6 +33,7 @@ function getEnvironment(): 'development' | 'production' {
   
   // Production conditions
   if (hostname.includes('lovable.app') || 
+      hostname.includes('lovableproject.com') ||
       hostname.includes('vercel.app') || 
       hostname.includes('netlify.app') ||
       !hostname.includes('localhost')) {
