@@ -23,10 +23,14 @@ export async function publishToWordPress(contentItem: ContentItem, userId: strin
 
     if (error) {
       console.error('Edge function error:', error);
+      console.error('Error details:', { message: error.message, context: error.context });
       throw new Error(error.message || 'Failed to call WordPress publishing function');
     }
 
+    console.log('Edge function response:', data);
+
     if (!data.success) {
+      console.error('WordPress publishing failed with error:', data.error);
       throw new Error(data.error || 'WordPress publishing failed');
     }
 

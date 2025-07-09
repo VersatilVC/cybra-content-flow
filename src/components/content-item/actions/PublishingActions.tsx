@@ -48,6 +48,7 @@ export const PublishingActions: React.FC<PublishingActionsProps> = ({
         
         onRefetch();
       } else {
+        console.error('WordPress publishing failed with result:', result);
         toast({
           title: 'WordPress Publishing Failed',
           description: result.error || 'Failed to publish to WordPress.',
@@ -56,6 +57,8 @@ export const PublishingActions: React.FC<PublishingActionsProps> = ({
       }
     } catch (error) {
       console.error('WordPress publishing failed:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error instanceof Error ? error.message : error);
       toast({
         title: 'WordPress Publishing Failed',
         description: error instanceof Error ? error.message : 'Failed to publish to WordPress.',
