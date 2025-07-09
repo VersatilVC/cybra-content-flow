@@ -80,8 +80,16 @@ export class WordPressApiService {
       const fileBlob = await fileResponse.blob();
       console.log('File downloaded, size:', fileBlob.size, 'bytes');
       
+      // Ensure proper JPEG filename and content type for WordPress
+      const jpegFilename = filename.toLowerCase().endsWith('.jpg') || filename.toLowerCase().endsWith('.jpeg') 
+        ? filename 
+        : filename.replace(/\.[^/.]+$/, '') + '.jpg';
+      
+      // Create a new blob with explicit JPEG mime type to ensure WordPress compatibility
+      const jpegBlob = new Blob([fileBlob], { type: 'image/jpeg' });
+      
       const formData = new FormData();
-      formData.append('file', fileBlob, filename);
+      formData.append('file', jpegBlob, jpegFilename);
 
       console.log('Uploading to WordPress media library...');
       const response = await fetch(`${this.baseUrl}/wp-json/wp/v2/media`, {
