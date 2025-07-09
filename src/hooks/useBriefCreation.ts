@@ -6,6 +6,7 @@ import { ContentIdea, ContentSuggestion } from '@/types/contentIdeas';
 import { updateContentIdea } from '@/services/contentIdeasApi';
 import { supabase } from '@/integrations/supabase/client';
 import { triggerWebhook } from '@/services/webhookService';
+import { getCallbackUrl } from '@/config/environment';
 import { useState } from 'react';
 
 interface BriefCreationParams {
@@ -50,6 +51,13 @@ export function useBriefCreation(ideas: ContentIdea[]) {
           idea: idea,
           user_id: user?.id,
           timestamp: new Date().toISOString(),
+          callback_url: getCallbackUrl('process-idea-callback'),
+          callback_data: {
+            type: 'brief_completion',
+            content_idea_id: idea?.id,
+            user_id: user?.id,
+            title: idea?.title || 'Content Brief'
+          }
         });
       } else if (type === 'suggestion') {
         // First check if brief already exists for this suggestion
@@ -92,6 +100,13 @@ export function useBriefCreation(ideas: ContentIdea[]) {
           idea: parentIdea,
           user_id: user?.id,
           timestamp: new Date().toISOString(),
+          callback_url: getCallbackUrl('process-idea-callback'),
+          callback_data: {
+            type: 'brief_completion',
+            content_idea_id: parentIdea?.id || suggestion.content_idea_id,
+            user_id: user?.id,
+            title: suggestion.title || 'Content Brief'
+          }
         });
       }
     },

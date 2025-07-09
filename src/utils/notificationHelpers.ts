@@ -38,7 +38,9 @@ export const isContentSuggestionNotification = (notification: Notification): boo
 
 export const isContentBriefNotification = (notification: Notification): boolean => {
   return notification.title.includes('Content Brief Ready') || 
+         notification.title.includes('Brief Ready') ||
          notification.message.includes('content brief') ||
+         notification.message.includes('brief') ||
          notification.related_entity_type === 'brief';
 };
 
@@ -50,9 +52,11 @@ export const isContentItemNotification = (notification: Notification): boolean =
   
   return notification.title.includes('Content Processing Complete') || 
          notification.title.includes('AI Content Fix Complete') ||
+         notification.title.includes('Content Item') ||
          notification.message.includes('content item') ||
          notification.message.includes('successfully generated') ||
          notification.message.includes('ready for review') ||
+         notification.message.includes('improved by AI') ||
          notification.related_entity_type === 'content_item';
 };
 
@@ -67,7 +71,9 @@ export const isWordPressPublishingNotification = (notification: Notification): b
 export const isDerivativeGenerationNotification = (notification: Notification): boolean => {
   return notification.title.includes('Content Derivatives Generated') ||
          notification.title.includes('Derivative Generation Failed') ||
+         notification.title.includes('Derivatives Generated') ||
          notification.message.includes('content derivatives') ||
+         notification.message.includes('derivatives') ||
          notification.message.includes('Derivatives tab');
 };
 

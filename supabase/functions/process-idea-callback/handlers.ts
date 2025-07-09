@@ -244,13 +244,34 @@ export async function handleBriefCreationCallback(supabase: any, body: any) {
   try {
     console.log('Processing brief creation callback');
     
-    if (!body.brief_id || !body.user_id) {
-      console.error('Missing required fields for brief creation callback:', body);
+    if (!body.user_id) {
+      console.error('Missing user_id for brief creation callback:', body);
       return;
     }
 
-    await updateBriefStatus(supabase, body.brief_id, 'ready');
-    await createBriefCompletionNotification(supabase, body.user_id, body.brief_id, body.title || 'Content Brief');
+    // Handle both brief_id and content_idea_id for backward compatibility
+    if (body.brief_id) {
+      await updateBriefStatus(supabase, body.brief_id, 'ready');
+      await createBriefCompletionNotification(supabase, body.user_id, body.brief_id, body.title || 'Content Brief');
+    } else if (body.content_idea_id) {
+      // If only content_idea_id is provided, find the brief associated with it
+      const { data: brief } = await supabase
+        .from('content_briefs')
+        .select('id, title')
+        .eq('source_id', body.content_idea_id)
+        .eq('source_type', 'idea')
+        .single();
+      
+      if (brief) {
+        await updateBriefStatus(supabase, brief.id, 'ready');
+        await createBriefCompletionNotification(supabase, body.user_id, brief.id, brief.title || body.title || 'Content Brief');
+      } else {
+        console.error('No brief found for content_idea_id:', body.content_idea_id);
+      }
+    } else {
+      console.error('No brief_id or content_idea_id provided for brief creation callback:', body);
+      return;
+    }
     
     console.log('Brief creation callback completed successfully');
   } catch (error) {
