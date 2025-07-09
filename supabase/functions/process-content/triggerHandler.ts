@@ -55,7 +55,7 @@ export async function handleTriggerAction(
     knowledge_base: submission.knowledge_base,
     content_type: submission.content_type,
     file_url: submission.file_path 
-      ? `https://uejgjytmqpcilwfrlpai.supabase.co/storage/v1/object/public/knowledge-base-files/${submission.file_path}` 
+      ? `https://agbcslwigqthrlxnqbmc.supabase.co/storage/v1/object/public/knowledge-base-files/${submission.file_path}` 
       : submission.file_url,
     original_filename: submission.original_filename,
     file_size: submission.file_size,
