@@ -36,7 +36,7 @@ export function validateContentForWordPress(
           success: false, 
           error: 'This blog post requires a blog image that can be generated through the derivative section. Please go to the Derivatives tab, generate a blog image derivative, and then try publishing to WordPress again.' 
         }),
-        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       )
     };
   }
@@ -49,7 +49,7 @@ export function validateContentForWordPress(
           success: false, 
           error: 'This blog post requires a 200-word excerpt that can be generated through the derivative section. Please go to the Derivatives tab, generate a 200-word excerpt derivative, and then try publishing to WordPress again.' 
         }),
-        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       )
     };
   }
