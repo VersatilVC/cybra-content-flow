@@ -212,7 +212,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.match_documents(query_embedding vector, match_count INTEGER DEFAULT NULL, filter JSONB DEFAULT '{}')
 RETURNS TABLE(id BIGINT, content TEXT, metadata JSONB, similarity DOUBLE PRECISION)
 LANGUAGE plpgsql
-SET search_path TO 'public, extensions'
+SET search_path TO 'public'
 AS $$
 #variable_conflict use_column
 BEGIN
@@ -232,7 +232,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.match_documents_competitor(query_embedding vector, match_count INTEGER DEFAULT NULL, filter JSONB DEFAULT '{}')
 RETURNS TABLE(id BIGINT, content TEXT, metadata JSONB, similarity DOUBLE PRECISION)
 LANGUAGE plpgsql
-SET search_path TO 'public, extensions'
+SET search_path TO 'public'
 AS $$
 #variable_conflict use_column
 BEGIN
@@ -252,7 +252,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.match_documents_industry(query_embedding vector, match_count INTEGER DEFAULT NULL, filter JSONB DEFAULT '{}')
 RETURNS TABLE(id BIGINT, content TEXT, metadata JSONB, similarity DOUBLE PRECISION)
 LANGUAGE plpgsql
-SET search_path TO 'public, extensions'
+SET search_path TO 'public'
 AS $$
 #variable_conflict use_column
 BEGIN
@@ -272,7 +272,7 @@ $$;
 CREATE OR REPLACE FUNCTION public.match_documents_news(query_embedding vector, match_count INTEGER DEFAULT NULL, filter JSONB DEFAULT '{}')
 RETURNS TABLE(id BIGINT, content TEXT, metadata JSONB, similarity DOUBLE PRECISION)
 LANGUAGE plpgsql
-SET search_path TO 'public, extensions'
+SET search_path TO 'public'
 AS $$
 #variable_conflict use_column
 BEGIN
