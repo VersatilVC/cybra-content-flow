@@ -20,11 +20,22 @@ export function ChatInterface({ sessionId, onSessionCreated }: ChatInterfaceProp
   const { createSessionAsync, isCreating } = useChatSessions();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll to bottom when messages change or when sending
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
-  }, [messages]);
+    const scrollToBottom = () => {
+      if (scrollAreaRef.current) {
+        const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+          viewport.scrollTop = viewport.scrollHeight;
+        }
+      }
+    };
+
+    // Use setTimeout to ensure DOM is updated before scrolling
+    const timeoutId = setTimeout(scrollToBottom, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [messages, isSending]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
