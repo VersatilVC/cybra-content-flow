@@ -518,7 +518,7 @@ export type Database = {
         Insert: {
           content?: string | null
           embedding?: string | null
-          id: number
+          id?: number
           metadata?: Json | null
         }
         Update: {
