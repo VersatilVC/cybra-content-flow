@@ -30,7 +30,9 @@ export const getNotificationColor = (type: string) => {
 export const isContentSuggestionNotification = (notification: Notification): boolean => {
   return notification.title.includes('Content Suggestions Ready') || 
          notification.title.includes('Idea Processing Complete') ||
+         notification.title.includes('Content Ideas Ready') ||
          notification.message.includes('content suggestions') ||
+         notification.message.includes('content ideas') ||
          notification.related_entity_type === 'idea';
 };
 

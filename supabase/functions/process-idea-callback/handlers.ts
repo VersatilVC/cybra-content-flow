@@ -120,8 +120,8 @@ async function createAutoGenerationNotification(supabase: SupabaseClient, userId
       .from('notifications')
       .insert({
         user_id: userId,
-        title: 'Auto-Generation Complete',
-        message: `Content has been automatically generated for "${ideaTitle}".`,
+        title: 'Content Ideas Ready',
+        message: `Your auto-generated content ideas for "${ideaTitle}" are ready to review. Click "View Content Ideas" to see them.`,
         type: 'success',
         related_entity_id: ideaId,
         related_entity_type: 'idea'
