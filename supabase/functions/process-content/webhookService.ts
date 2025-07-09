@@ -3,18 +3,20 @@ import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { WebhookPayload } from "./types.ts";
 
 export async function getWebhookConfiguration(supabase: SupabaseClient, webhookType: string) {
-  const { data: webhook, error: webhookError } = await supabase
+  const { data: webhooks, error: webhookError } = await supabase
     .from('webhook_configurations')
     .select('webhook_url')
     .eq('webhook_type', webhookType)
     .eq('is_active', true)
-    .maybeSingle();
+    .limit(1);
 
   if (webhookError) {
     console.error('Error fetching webhook configuration:', webhookError);
     throw new Error(`Webhook configuration error: ${webhookError.message}`);
   }
 
+  const webhook = webhooks?.[0];
+  
   if (!webhook?.webhook_url) {
     console.log(`No active ${webhookType} webhook configured`);
     throw new Error(`No active ${webhookType} webhook configured. Please set up a webhook in the Webhooks section.`);
