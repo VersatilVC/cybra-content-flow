@@ -41,6 +41,11 @@ export const isContentBriefNotification = (notification: Notification): boolean 
 };
 
 export const isContentItemNotification = (notification: Notification): boolean => {
+  // Exclude knowledge base processing notifications
+  if (notification.message.includes('added to the') && notification.message.includes('knowledge base')) {
+    return false;
+  }
+  
   return notification.title.includes('Content Processing Complete') || 
          notification.title.includes('AI Content Fix Complete') ||
          notification.message.includes('content item') ||
