@@ -98,7 +98,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Blog image derivative not found. Please ensure a blog image exists before publishing.' 
+          error: 'This blog post requires a blog image that can be generated through the derivative section. Please go to the Derivatives tab, generate a blog image derivative, and then try publishing to WordPress again.' 
         }),
         { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       )
@@ -108,7 +108,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: '200-word excerpt derivative not found. Please ensure a 200-word excerpt exists before publishing.' 
+          error: 'This blog post requires a 200-word excerpt that can be generated through the derivative section. Please go to the Derivatives tab, generate a 200-word excerpt derivative, and then try publishing to WordPress again.' 
         }),
         { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       )
