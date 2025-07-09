@@ -74,6 +74,14 @@ export const triggerContentProcessingWebhook = async (briefId: string, userId: s
 
     console.log('Content submission created:', submission.id);
 
+    // Update brief status to processing_content_item
+    await supabase
+      .from('content_briefs')
+      .update({ status: 'processing_content_item' })
+      .eq('id', briefId);
+
+    console.log('Brief status updated to processing_content_item');
+
     // Check for active content_processing webhooks (N8N)
     const { data: webhooks, error: webhookError } = await supabase
       .from('webhook_configurations')

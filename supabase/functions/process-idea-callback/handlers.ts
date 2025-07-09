@@ -299,6 +299,16 @@ export async function handleContentCreationCallback(supabase: any, body: any) {
         body.status === 'failed' ? 'error' : 'success',
         body.error_message
       );
+
+      // Update brief status to content_item_created if brief_id is provided
+      if (body.brief_id && body.status !== 'failed') {
+        await supabase
+          .from('content_briefs')
+          .update({ status: 'content_item_created' })
+          .eq('id', body.brief_id);
+        
+        console.log('Brief status updated to content_item_created for brief:', body.brief_id);
+      }
     }
 
     // Update submission status if provided
