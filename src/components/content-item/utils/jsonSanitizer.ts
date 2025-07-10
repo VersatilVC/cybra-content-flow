@@ -30,7 +30,6 @@ export function sanitizeJsonString(jsonString: string): string {
     .replace(/\r/g, '\\r')
     .replace(/\t/g, '\\t')
     .replace(/\f/g, '\\f')
-    .replace(/\b/g, '\\b')
     // Handle unescaped quotes in text content
     .replace(/([^\\])"/g, '$1\\"')
     // Fix potential issues with Unicode characters
