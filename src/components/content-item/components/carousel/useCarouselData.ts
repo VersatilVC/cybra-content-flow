@@ -10,13 +10,8 @@ export interface CarouselSlide {
 
 export const useCarouselData = (derivative: ContentDerivative): CarouselSlide[] => {
   const parseCarouselData = (): CarouselSlide[] => {
-    console.log('🔄 [Carousel Parser] Starting carousel data parsing');
-    console.log('🔍 [Carousel Parser] Raw content:', derivative.content);
-    console.log('🔍 [Carousel Parser] Content type:', typeof derivative.content);
-    
     try {
       if (!derivative.content) {
-        console.log('❌ [Carousel Parser] No content found');
         return [];
       }
       
@@ -24,47 +19,26 @@ export const useCarouselData = (derivative: ContentDerivative): CarouselSlide[] 
       
       // If content is already an object, stringify it first to normalize parsing
       if (typeof contentToParse === 'object') {
-        console.log('🔄 [Carousel Parser] Content is object, stringifying for parsing');
         contentToParse = JSON.stringify(contentToParse);
       }
       
-      // The content is stored as a JSON array string
+      // Parse the JSON content
       const parsed = JSON.parse(contentToParse);
-      console.log('✅ [Carousel Parser] Successfully parsed JSON:', parsed);
-      console.log('🔍 [Carousel Parser] Parsed type:', typeof parsed);
-      console.log('🔍 [Carousel Parser] Is array:', Array.isArray(parsed));
       
-      // Handle different possible formats
+      // Handle array format (n8n workflow format: [{"json": {...}, "pairedItem": {...}}])
       if (Array.isArray(parsed)) {
-        console.log('🔄 [Carousel Parser] Processing array of slides');
         const slides = parsed.map((item, index) => {
-          console.log(`🔍 [Carousel Parser] Processing slide ${index}:`, item);
+          // Extract slide data from nested json property or use item directly
+          const slideData = (item && typeof item === 'object' && item.json) ? item.json : item;
           
-          // Handle nested json property (common format: [{"json": {...}}])
-          let slideData = item;
-          if (item && typeof item === 'object' && item.json) {
-            console.log(`🔍 [Carousel Parser] Found nested json property for slide ${index}`);
-            slideData = item.json;
-          }
-          
-          console.log(`🔍 [Carousel Parser] Final slide data for ${index}:`, slideData);
-          
-          const slide = {
+          return {
             slide_number: slideData.slide_number || String(index + 1),
-            image_url: slideData.image_url || slideData.imageUrl || '', // Try both formats
+            image_url: slideData.image_url || slideData.imageUrl || '',
             title: slideData.title || '',
             description: slideData.description || ''
           };
-          
-          console.log(`✅ [Carousel Parser] Processed slide ${index}:`, slide);
-          return slide;
-        }).filter(slide => {
-          const hasUrl = !!slide.image_url;
-          console.log(`🔍 [Carousel Parser] Slide has image URL: ${hasUrl}`, slide);
-          return hasUrl;
-        });
+        }).filter(slide => slide.image_url); // Only include slides with valid image URLs
         
-        console.log('✅ [Carousel Parser] Final slides array:', slides);
         return slides;
       } else if (parsed && typeof parsed === 'object') {
         // Handle single slide object
