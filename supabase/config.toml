@@ -2,3 +2,6 @@ project_id = "agbcslwigqthrlxnqbmc"
 
 [functions.process-content]
 verify_jwt = false
+
+[functions.process-idea-callback]
+verify_jwt = false
