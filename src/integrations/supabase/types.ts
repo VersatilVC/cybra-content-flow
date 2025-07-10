@@ -490,16 +490,19 @@ export type Database = {
       documents: {
         Row: {
           content: string | null
+          embedding: string | null
           id: number
           metadata: Json | null
         }
         Insert: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
         Update: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
@@ -508,16 +511,19 @@ export type Database = {
       documents_competitor: {
         Row: {
           content: string | null
+          embedding: string | null
           id: number
           metadata: Json | null
         }
         Insert: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
         Update: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
@@ -526,16 +532,19 @@ export type Database = {
       documents_industry: {
         Row: {
           content: string | null
+          embedding: string | null
           id: number
           metadata: Json | null
         }
         Insert: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
         Update: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
@@ -544,16 +553,19 @@ export type Database = {
       documents_news: {
         Row: {
           content: string | null
+          embedding: string | null
           id: number
           metadata: Json | null
         }
         Insert: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
         Update: {
           content?: string | null
+          embedding?: string | null
           id?: number
           metadata?: Json | null
         }
@@ -810,6 +822,42 @@ export type Database = {
       is_domain_approved: {
         Args: { email_address: string }
         Returns: boolean
+      }
+      match_documents: {
+        Args: { query_embedding: string; match_count?: number; filter?: Json }
+        Returns: {
+          id: number
+          content: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
+      match_documents_competitor: {
+        Args: { query_embedding: string; match_count?: number; filter?: Json }
+        Returns: {
+          id: number
+          content: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
+      match_documents_industry: {
+        Args: { query_embedding: string; match_count?: number; filter?: Json }
+        Returns: {
+          id: number
+          content: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
+      match_documents_news: {
+        Args: { query_embedding: string; match_count?: number; filter?: Json }
+        Returns: {
+          id: number
+          content: string
+          metadata: Json
+          similarity: number
+        }[]
       }
     }
     Enums: {
