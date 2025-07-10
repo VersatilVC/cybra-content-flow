@@ -57,7 +57,7 @@ export function useContentBriefsActions({
   }, [briefs, isLoading, pendingBriefId, toast, setSelectedBrief, setViewModalOpen, setPendingBriefId]);
 
   const handleSaveBrief = (id: string, updates: Partial<ContentBrief>) => {
-    updateBrief({ id, updates });
+    updateBrief({ id, ...updates });
     setEditModalOpen(false);
     setSelectedBrief(null);
   };
