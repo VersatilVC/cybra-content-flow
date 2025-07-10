@@ -30,8 +30,7 @@ export function resilientJsonParse(jsonString: string): any {
         .replace(/\n/g, '\\n')
         .replace(/\r/g, '\\r')
         .replace(/\t/g, '\\t')
-        .replace(/\f/g, '\\f')
-        .replace(/\b/g, '\\b');
+        .replace(/\f/g, '\\f');
       
       // Use eval as last resort (only for trusted content)
       const result = eval('(' + cleaned + ')');
