@@ -16,6 +16,10 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
   onTypesSelect
 }) => {
   const handleTypeToggle = (type: string, category: string) => {
+    // Find the type info to check if it's active
+    const typeInfo = derivativeTypes[category as keyof typeof derivativeTypes]?.find(t => t.type === type);
+    if (typeInfo?.isActive === false) return; // Don't allow selection of inactive types
+    
     const newSelectedTypes = selectedTypes.includes(type)
       ? selectedTypes.filter(t => t !== type)
       : [...selectedTypes, type];
@@ -24,17 +28,23 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
   };
 
   const handleCardClick = (type: string, category: string) => {
+    const typeInfo = derivativeTypes[category as keyof typeof derivativeTypes]?.find(t => t.type === type);
+    if (typeInfo?.isActive === false) return; // Don't allow clicking inactive types
     handleTypeToggle(type, category);
   };
 
   const handleCheckboxChange = (checked: boolean, type: string, category: string) => {
+    const typeInfo = derivativeTypes[category as keyof typeof derivativeTypes]?.find(t => t.type === type);
+    if (typeInfo?.isActive === false) return; // Don't allow checking inactive types
     handleTypeToggle(type, category);
   };
 
   const handleSelectAllInCategory = (category: string) => {
-    const categoryTypes = derivativeTypes[category as keyof typeof derivativeTypes].map(t => t.type);
+    const categoryTypes = derivativeTypes[category as keyof typeof derivativeTypes]
+      .filter(t => t.isActive !== false) // Only include active types
+      .map(t => t.type);
     const otherSelectedTypes = selectedTypes.filter(type => 
-      !categoryTypes.includes(type)
+      !derivativeTypes[category as keyof typeof derivativeTypes].map(t => t.type).includes(type)
     );
     const newSelectedTypes = [...otherSelectedTypes, ...categoryTypes];
     onTypesSelect(newSelectedTypes, category);
@@ -51,6 +61,10 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
   const getCategorySelectedCount = (category: string) => {
     const categoryTypes = derivativeTypes[category as keyof typeof derivativeTypes].map(t => t.type);
     return selectedTypes.filter(type => categoryTypes.includes(type)).length;
+  };
+
+  const getCategoryActiveCount = (category: string) => {
+    return derivativeTypes[category as keyof typeof derivativeTypes].filter(t => t.isActive !== false).length;
   };
 
   return (
@@ -73,6 +87,7 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
         {Object.entries(derivativeTypes).map(([category, types]) => {
           const selectedCount = getCategorySelectedCount(category);
           const totalCount = types.length;
+          const activeCount = getCategoryActiveCount(category);
           
           return (
             <div key={category}>
@@ -91,9 +106,9 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleSelectAllInCategory(category)}
-                    disabled={selectedCount === totalCount}
+                    disabled={selectedCount === activeCount || activeCount === 0}
                   >
-                    Select All
+                    Select All{activeCount < totalCount ? ' Active' : ''}
                   </Button>
                   {selectedCount > 0 && (
                     <Button
@@ -115,10 +130,14 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
                   return (
                     <Card 
                       key={typeInfo.type}
-                      className={`cursor-pointer transition-all hover:shadow-md ${
-                        isSelected 
-                          ? 'ring-2 ring-purple-500 bg-purple-50' 
-                          : 'hover:bg-gray-50'
+                      className={`transition-all ${
+                        typeInfo.isActive === false 
+                          ? 'opacity-50 cursor-not-allowed bg-muted' 
+                          : `cursor-pointer hover:shadow-md ${
+                              isSelected 
+                                ? 'ring-2 ring-purple-500 bg-purple-50' 
+                                : 'hover:bg-gray-50'
+                            }`
                       }`}
                       onClick={() => handleCardClick(typeInfo.type, category)}
                     >
@@ -129,20 +148,25 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
                               checked={isSelected}
                               onCheckedChange={(checked) => handleCheckboxChange(checked as boolean, typeInfo.type, category)}
                               className="mt-1"
+                              disabled={typeInfo.isActive === false}
                             />
                           </div>
                           
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-sm">{getContentTypeIcon(typeInfo.content_type)}</span>
-                              <h5 className="font-medium text-sm text-gray-900">
+                              <h5 className={`font-medium text-sm ${
+                                typeInfo.isActive === false ? 'text-muted-foreground' : 'text-gray-900'
+                              }`}>
                                 {typeInfo.title}
                               </h5>
                               <Badge variant="secondary" className="text-xs">
                                 {typeInfo.content_type}
                               </Badge>
                             </div>
-                            <p className="text-xs text-gray-600">
+                            <p className={`text-xs ${
+                              typeInfo.isActive === false ? 'text-muted-foreground' : 'text-gray-600'
+                            }`}>
                               {typeInfo.description}
                             </p>
                           </div>
