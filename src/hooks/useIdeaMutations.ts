@@ -38,7 +38,7 @@ export function useIdeaMutations() {
         id: rawData.id,
         title: rawData.title,
         description: rawData.description,
-        content_type: rawData.content_type as 'Blog Post' | 'Guide',
+        content_type: rawData.content_type as 'Blog Post' | 'Guide' | 'Blog Post (Topical)',
         target_audience: rawData.target_audience as 'Private Sector' | 'Government Sector',
         status: rawData.status as 'processing' | 'ready' | 'brief_created' | 'discarded',
         source_type: rawData.source_type as 'manual' | 'file' | 'url' | 'auto_generated',

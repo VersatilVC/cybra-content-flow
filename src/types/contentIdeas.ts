@@ -3,7 +3,7 @@ export interface ContentIdea {
   id: string;
   title: string;
   description: string | null;
-  content_type: 'Blog Post' | 'Guide';
+  content_type: 'Blog Post' | 'Guide' | 'Blog Post (Topical)';
   target_audience: 'Private Sector' | 'Government Sector';
   status: 'processing' | 'ready' | 'brief_created' | 'discarded';
   source_type: 'manual' | 'file' | 'url' | 'auto_generated';
@@ -23,7 +23,7 @@ export interface ContentIdeaFilters {
 export interface CreateContentIdeaData {
   title: string;
   description: string | null;
-  content_type: 'Blog Post' | 'Guide';
+  content_type: 'Blog Post' | 'Guide' | 'Blog Post (Topical)';
   target_audience: 'Private Sector' | 'Government Sector';
   status: 'processing' | 'ready' | 'brief_created' | 'discarded';
   source_type: 'manual' | 'file' | 'url' | 'auto_generated';

@@ -11,7 +11,7 @@ export function useAutoGeneration() {
   const queryClient = useQueryClient();
 
   const generateNowMutation = useMutation({
-    mutationFn: async (params: { contentType: 'Blog Post' | 'Guide', targetAudience: 'Private Sector' | 'Government Sector' }) => {
+    mutationFn: async (params: { contentType: 'Blog Post' | 'Guide' | 'Blog Post (Topical)', targetAudience: 'Private Sector' | 'Government Sector' }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
       const { contentType, targetAudience } = params;
@@ -72,7 +72,7 @@ export function useAutoGeneration() {
   });
 
   return {
-    generateNow: (contentType: 'Blog Post' | 'Guide', targetAudience: 'Private Sector' | 'Government Sector') => 
+    generateNow: (contentType: 'Blog Post' | 'Guide' | 'Blog Post (Topical)', targetAudience: 'Private Sector' | 'Government Sector') => 
       generateNowMutation.mutate({ contentType, targetAudience }),
     isGenerating: generateNowMutation.isPending,
   };

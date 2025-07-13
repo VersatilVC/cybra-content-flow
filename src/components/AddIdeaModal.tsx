@@ -200,10 +200,11 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                 <SelectTrigger>
                   <SelectValue placeholder="Select content type" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Blog Post">Blog Post</SelectItem>
-                  <SelectItem value="Guide">Guide</SelectItem>
-                </SelectContent>
+                  <SelectContent>
+                    <SelectItem value="Blog Post">Blog Post</SelectItem>
+                    <SelectItem value="Guide">Guide</SelectItem>
+                    <SelectItem value="Blog Post (Topical)">Blog Post (Topical)</SelectItem>
+                  </SelectContent>
               </Select>
             </div>
           </div>

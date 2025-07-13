@@ -7,7 +7,7 @@ import { Zap } from 'lucide-react';
 import { useAutoGeneration } from '@/hooks/useAutoGeneration';
 
 export default function AutoGenerationControls() {
-  const [contentType, setContentType] = useState<'Blog Post' | 'Guide'>('Blog Post');
+  const [contentType, setContentType] = useState<'Blog Post' | 'Guide' | 'Blog Post (Topical)'>('Blog Post');
   const [targetAudience, setTargetAudience] = useState<'Private Sector' | 'Government Sector'>('Private Sector');
   const [isOpen, setIsOpen] = useState(false);
   
@@ -45,13 +45,14 @@ export default function AutoGenerationControls() {
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
                   Content Type
                 </label>
-                <Select value={contentType} onValueChange={(value: 'Blog Post' | 'Guide') => setContentType(value)}>
+                <Select value={contentType} onValueChange={(value: 'Blog Post' | 'Guide' | 'Blog Post (Topical)') => setContentType(value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Blog Post">Blog Post</SelectItem>
                     <SelectItem value="Guide">Guide</SelectItem>
+                    <SelectItem value="Blog Post (Topical)">Blog Post (Topical)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

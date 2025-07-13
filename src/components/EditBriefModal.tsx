@@ -41,7 +41,7 @@ export default function EditBriefModal({ brief, open, onClose, onSave, isUpdatin
   const [content, setContent] = useState('');
   const [structuredContent, setStructuredContent] = useState<BriefContentData>({});
   const [status, setStatus] = useState<'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded'>('ready_for_review');
-  const [briefType, setBriefType] = useState<'Blog Post' | 'Guide'>('Blog Post');
+  const [briefType, setBriefType] = useState<'Blog Post' | 'Guide' | 'Blog Post (Topical)'>('Blog Post');
   const [targetAudience, setTargetAudience] = useState<'Private Sector' | 'Government Sector'>('Private Sector');
   const [activeTab, setActiveTab] = useState('basic');
   const { toast } = useToast();
@@ -153,13 +153,14 @@ export default function EditBriefModal({ brief, open, onClose, onSave, isUpdatin
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Brief Type
                 </label>
-                <Select value={briefType} onValueChange={(value: 'Blog Post' | 'Guide') => setBriefType(value)}>
+                <Select value={briefType} onValueChange={(value: 'Blog Post' | 'Guide' | 'Blog Post (Topical)') => setBriefType(value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Blog Post">Blog Post</SelectItem>
                     <SelectItem value="Guide">Guide</SelectItem>
+                    <SelectItem value="Blog Post (Topical)">Blog Post (Topical)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -34,6 +34,7 @@ export default function ContentIdeasFilters({ filters, onFilterChange }: Content
             <SelectItem value="All Content Types">All Content Types</SelectItem>
             <SelectItem value="Blog Post">Blog Post</SelectItem>
             <SelectItem value="Guide">Guide</SelectItem>
+            <SelectItem value="Blog Post (Topical)">Blog Post (Topical)</SelectItem>
           </SelectContent>
         </Select>
         <Select 

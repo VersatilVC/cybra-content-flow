@@ -7,7 +7,7 @@ export interface ContentBrief {
   status: 'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded';
   source_type: 'idea' | 'suggestion';
   source_id: string;
-  brief_type: 'Blog Post' | 'Guide';
+  brief_type: 'Blog Post' | 'Guide' | 'Blog Post (Topical)';
   target_audience: 'Private Sector' | 'Government Sector';
   user_id: string;
   created_at: string;
@@ -28,7 +28,7 @@ export interface CreateContentBriefData {
   status: 'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded';
   source_type: 'idea' | 'suggestion';
   source_id: string;
-  brief_type: 'Blog Post' | 'Guide';
+  brief_type: 'Blog Post' | 'Guide' | 'Blog Post (Topical)';
   target_audience: 'Private Sector' | 'Government Sector';
   user_id: string;
 }

@@ -34,7 +34,7 @@ export const fetchContentIdeas = async (userId: string, filters?: ContentIdeaFil
     id: item.id,
     title: item.title,
     description: item.description,
-    content_type: item.content_type as 'Blog Post' | 'Guide',
+    content_type: item.content_type as 'Blog Post' | 'Guide' | 'Blog Post (Topical)',
     target_audience: item.target_audience as 'Private Sector' | 'Government Sector',
     status: item.status as 'processing' | 'ready' | 'brief_created' | 'discarded',
     source_type: item.source_type as 'manual' | 'file' | 'url' | 'auto_generated',
