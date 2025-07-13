@@ -20,26 +20,34 @@ const DerivativeTypeGrid: React.FC<DerivativeTypeGridProps> = ({
       {types.map((typeInfo) => (
         <Card 
           key={typeInfo.type}
-          className={`cursor-pointer transition-all hover:shadow-md ${
-            selectedTypes.includes(typeInfo.type) 
-              ? 'ring-2 ring-purple-500 bg-purple-50' 
-              : 'hover:bg-gray-50'
+          className={`transition-all ${
+            typeInfo.isActive === false 
+              ? 'opacity-50 cursor-not-allowed bg-muted' 
+              : `cursor-pointer hover:shadow-md ${
+                  selectedTypes.includes(typeInfo.type) 
+                    ? 'ring-2 ring-purple-500 bg-purple-50' 
+                    : 'hover:bg-gray-50'
+                }`
           }`}
-          onClick={() => onTypeToggle(typeInfo.type)}
+          onClick={() => typeInfo.isActive !== false && onTypeToggle(typeInfo.type)}
         >
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg">{getContentTypeIcon(typeInfo.content_type)}</span>
-                  <h4 className="font-medium text-gray-900">
+                  <h4 className={`font-medium ${
+                    typeInfo.isActive === false ? 'text-muted-foreground' : 'text-gray-900'
+                  }`}>
                     {typeInfo.title}
                   </h4>
                   <Badge variant="secondary" className="text-xs">
                     {typeInfo.content_type}
                   </Badge>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className={`text-sm ${
+                  typeInfo.isActive === false ? 'text-muted-foreground' : 'text-gray-600'
+                }`}>
                   {typeInfo.description}
                 </p>
               </div>
