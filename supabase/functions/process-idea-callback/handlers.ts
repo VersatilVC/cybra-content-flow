@@ -423,3 +423,66 @@ export async function handleContentItemFixCallback(supabase: any, body: any) {
     console.error('Error in handleContentItemFixCallback:', error);
   }
 }
+
+export async function handleDerivativeGenerationSubmissionCallback(supabase: any, body: any) {
+  try {
+    console.log('Processing derivative generation submission callback:', body);
+    
+    if (!body.submission_id) {
+      console.error('Missing submission_id for derivative generation callback:', body);
+      return;
+    }
+
+    // Get the submission details
+    const { data: submission, error: submissionError } = await supabase
+      .from('content_submissions')
+      .select('*')
+      .eq('id', body.submission_id)
+      .single();
+
+    if (submissionError || !submission) {
+      console.error('Error fetching submission:', submissionError);
+      return;
+    }
+
+    // Update submission status
+    const updateData = {
+      processing_status: body.status || 'completed',
+      updated_at: new Date().toISOString()
+    };
+
+    if (body.status === 'completed') {
+      updateData.completed_at = new Date().toISOString();
+    }
+
+    if (body.error_message) {
+      updateData.error_message = body.error_message;
+    }
+
+    await supabase
+      .from('content_submissions')
+      .update(updateData)
+      .eq('id', body.submission_id);
+
+    // Create notification for derivative generation completion
+    const isSuccess = body.status === 'completed' && !body.error_message;
+    
+    await supabase
+      .from('notifications')
+      .insert({
+        user_id: submission.user_id,
+        title: isSuccess ? 'Content Derivatives Generated' : 'Derivative Generation Failed',
+        message: isSuccess 
+          ? 'Your content derivatives have been generated successfully. Check the Derivatives tab to view them.'
+          : `Derivative generation failed: ${body.error_message || 'Unknown error'}`,
+        type: isSuccess ? 'success' : 'error',
+        related_entity_id: body.content_item_id,
+        related_entity_type: 'content_item',
+        related_submission_id: body.submission_id
+      });
+
+    console.log('Derivative generation submission callback completed successfully');
+  } catch (error) {
+    console.error('Error in handleDerivativeGenerationSubmissionCallback:', error);
+  }
+}

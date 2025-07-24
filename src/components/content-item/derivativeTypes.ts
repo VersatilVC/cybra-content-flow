@@ -13,7 +13,7 @@ export const derivativeTypes: Record<'General' | 'Social' | 'Ads', DerivativeTyp
     { type: 'newsletter_paragraph', title: 'Newsletter Paragraph', description: 'Email newsletter section', content_type: 'text', isActive: true },
     { type: 'blog_banner_image', title: 'Blog Banner Image', description: 'Hero image for blog post', content_type: 'image', isActive: true },
     { type: 'blog_internal_images', title: 'Blog Post Internal Images', description: 'Supporting images for blog content', content_type: 'image', isActive: false },
-    { type: 'nurture_email', title: 'Nurture Email', description: 'Educational email for lead nurturing', content_type: 'text', isActive: false },
+    { type: 'nurture_email', title: 'Nurture Email', description: 'Educational email for lead nurturing', content_type: 'text', isActive: true },
     { type: 'sales_email', title: 'Sales Email', description: 'Direct sales outreach email', content_type: 'text', isActive: false },
     { type: 'content_transformation', title: 'Turn Content Item Into', description: 'Transform into different content format', content_type: 'text', isActive: false },
     { type: 'webinar_outline', title: 'Webinar Outline', description: 'Structured webinar presentation outline', content_type: 'document', isActive: false },

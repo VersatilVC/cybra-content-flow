@@ -9,7 +9,8 @@ import {
   handleAutoGenerationCallback,
   handleWordPressPublishingCallback,
   handleDerivativeGenerationCallback,
-  handleContentItemFixCallback
+  handleContentItemFixCallback,
+  handleDerivativeGenerationSubmissionCallback
 } from "./handlers.ts";
 
 serve(async (req) => {
@@ -120,7 +121,13 @@ async function processCallbackInBackground(body: any) {
         break;
       
       default:
-        console.warn('Unknown callback type received:', body.type);
+        // Check if this is a submission-based callback for derivative generation
+        if (body.submission_id && body.content_item_id) {
+          console.log('Processing submission-based derivative generation callback');
+          await handleDerivativeGenerationSubmissionCallback(supabase, body);
+        } else {
+          console.warn('Unknown callback type received:', body.type);
+        }
         break;
     }
 

@@ -146,31 +146,39 @@ export async function triggerDerivativeGeneration(
     throw new Error(`Failed to fetch content item: ${contentError.message}`);
   }
 
-  // Prepare webhook payload with correct callback structure
+  // Create a submission record first to align with other workflows
+  const { data: submission, error: submissionError } = await supabase
+    .from('content_submissions')
+    .insert({
+      user_id: userId,
+      knowledge_base: 'derivative_generation',
+      content_type: category,
+      processing_status: 'queued',
+      webhook_triggered_at: new Date().toISOString()
+    })
+    .select()
+    .single();
+
+  if (submissionError) {
+    console.error('Error creating submission record:', submissionError);
+    throw new Error(`Failed to create submission record: ${submissionError.message}`);
+  }
+
+  // Prepare webhook payload with submission-based callback structure
   const payload = {
     type: 'derivative_generation',
+    submission_id: submission.id,
     content_item_id: contentItemId,
     content_item: contentItem,
     derivative_types: derivativeTypes,
     category: category,
     user_id: userId,
     timestamp: new Date().toISOString(),
-    // Fixed callback URL to match the working notification system
     callback_url: getCallbackUrl('process-idea-callback'),
-    // Added proper callback_data structure for notifications
-    callback_data: {
-      type: 'derivative_generation_complete',
-      content_item_id: contentItemId,
-      user_id: userId,
-      title: contentItem.title,
-      category: category,
-      derivative_types: derivativeTypes
-    },
     storage_config: {
       bucket_name: 'content-derivatives',
       base_url: getStorageUrl('content-derivatives')
     },
-    // Enhanced instructions for LinkedIn ads with proper structure
     special_instructions: {
       linkedin_ads: {
         output_format: 'composite',
@@ -200,9 +208,25 @@ export async function triggerDerivativeGeneration(
       throw new Error(`Webhook failed with status ${response.status}: ${responseText}`);
     }
 
+    // Update submission status to processing
+    await supabase
+      .from('content_submissions')
+      .update({ processing_status: 'processing' })
+      .eq('id', submission.id);
+
     console.log('Derivative generation webhook triggered successfully');
   } catch (error) {
     console.error('Error calling derivative generation webhook:', error);
+    
+    // Update submission status to failed
+    await supabase
+      .from('content_submissions')
+      .update({ 
+        processing_status: 'failed',
+        error_message: error.message 
+      })
+      .eq('id', submission.id);
+    
     throw new Error(`Failed to trigger derivative generation webhook: ${error.message}`);
   }
 }
