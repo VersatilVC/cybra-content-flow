@@ -32,12 +32,12 @@ export function useDashboardTodos() {
 
       if (ideasError) throw ideasError;
 
-      // Fetch content briefs that need review (ready_for_review status)
+      // Fetch content briefs that need review (ready status)
       const { data: briefsData, error: briefsError } = await supabase
         .from('content_briefs')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'ready_for_review')
+        .eq('status', 'ready')
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -74,7 +74,7 @@ export function useDashboardTodos() {
         title: item.title,
         description: item.description,
         content: item.content,
-        status: item.status as 'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded',
+        status: item.status as 'draft' | 'ready' | 'processing' | 'completed' | 'discarded',
         source_type: item.source_type as 'idea' | 'suggestion',
         source_id: item.source_id,
         brief_type: item.brief_type as 'Blog Post' | 'Guide' | 'Blog Post (Topical)',

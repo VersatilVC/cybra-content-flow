@@ -263,7 +263,7 @@ export async function handleBriefCreationCallback(supabase: any, body: any) {
         .single();
       
       if (brief) {
-        await updateBriefStatus(supabase, brief.id, 'ready');
+      await updateBriefStatus(supabase, brief.id, 'ready');
         await createBriefCompletionNotification(supabase, body.user_id, brief.id, brief.title || body.title || 'Content Brief');
       } else {
         console.error('No brief found for content_idea_id:', body.content_idea_id);
@@ -304,10 +304,10 @@ export async function handleContentCreationCallback(supabase: any, body: any) {
       if (body.brief_id && body.status !== 'failed') {
         await supabase
           .from('content_briefs')
-          .update({ status: 'content_item_created' })
+          .update({ status: 'completed' })
           .eq('id', body.brief_id);
         
-        console.log('Brief status updated to content_item_created for brief:', body.brief_id);
+        console.log('Brief status updated to completed for brief:', body.brief_id);
       }
     }
 

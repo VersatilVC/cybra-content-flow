@@ -19,8 +19,8 @@ export default function CreateContentCTA({ brief, onCreateContentItem }: CreateC
   const [isCreating, setIsCreating] = useState(false);
   const { data: contentItem } = useContentItemByBrief(brief.id);
   
-  const canCreateContent = brief.status === 'ready_for_review';
-  const hasContentItem = brief.status === 'content_item_created' && contentItem;
+  const canCreateContent = brief.status === 'ready';
+  const hasContentItem = brief.status === 'completed' && contentItem;
 
   // Don't show anything if the brief is not ready and doesn't have content
   if (!canCreateContent && !hasContentItem) return null;

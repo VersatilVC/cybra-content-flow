@@ -44,13 +44,13 @@ export default function ContentBriefCard({
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'draft':
+        return 'bg-gray-100 text-gray-800';
       case 'ready':
         return 'bg-green-100 text-green-800';
-      case 'ready_for_review':
-        return 'bg-green-100 text-green-800';
-      case 'processing_content_item':
+      case 'processing':
         return 'bg-yellow-100 text-yellow-800';
-      case 'content_item_created':
+      case 'completed':
         return 'bg-purple-100 text-purple-800';
       case 'discarded':
         return 'bg-red-100 text-red-800';
@@ -61,14 +61,14 @@ export default function ContentBriefCard({
 
   const getStatusLabel = (status: string) => {
     switch (status) {
+      case 'draft':
+        return 'Draft';
       case 'ready':
         return 'Ready';
-      case 'ready_for_review':
-        return 'Ready for Review';
-      case 'processing_content_item':
-        return 'Processing Content Item';
-      case 'content_item_created':
-        return 'Content Item Created';
+      case 'processing':
+        return 'Processing';
+      case 'completed':
+        return 'Completed';
       case 'discarded':
         return 'Discarded';
       default:
@@ -76,7 +76,7 @@ export default function ContentBriefCard({
     }
   };
 
-  const canCreateContent = (brief.status === 'ready_for_review' || brief.status === 'ready') && !contentItem;
+  const canCreateContent = brief.status === 'ready' && !contentItem;
   const hasContentCreated = contentItem; // Show "View Content" whenever content item exists
 
   const handleViewContent = () => {

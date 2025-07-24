@@ -60,8 +60,8 @@ export default function ContentBriefsFilters({ filters, onFilterChange }: Conten
             <SelectItem value="All Statuses">All Statuses</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
             <SelectItem value="ready">Ready</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="content_created">Content Created</SelectItem>
+            <SelectItem value="processing">Processing</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="discarded">Discarded</SelectItem>
           </SelectContent>
         </Select>
