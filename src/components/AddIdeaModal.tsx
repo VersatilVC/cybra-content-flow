@@ -24,20 +24,33 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
     url: '',
     file: null as File | null,
   });
+  const [errors, setErrors] = useState({
+    idea: false,
+    content_type: false,
+    target_audience: false,
+    url: false,
+    file: false,
+  });
 
   const { createIdea, isCreating } = useContentIdeas();
+
+  const validateForm = () => {
+    const newErrors = {
+      idea: !formData.idea,
+      content_type: !formData.content_type,
+      target_audience: !formData.target_audience,
+      url: activeTab === 'url' && !formData.url,
+      file: activeTab === 'file' && !formData.file,
+    };
+    
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Form submission started', { formData });
-    
-    if (!formData.idea || !formData.content_type || !formData.target_audience) {
-      console.log('Form validation failed', { 
-        idea: !!formData.idea, 
-        content_type: !!formData.content_type, 
-        target_audience: !!formData.target_audience 
-      });
+    if (!validateForm()) {
       return;
     }
 
@@ -78,6 +91,13 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
       url: '',
       file: null,
     });
+    setErrors({
+      idea: false,
+      content_type: false,
+      target_audience: false,
+      url: false,
+      file: false,
+    });
     onClose();
   };
 
@@ -117,7 +137,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
 
             <TabsContent value="manual" className="space-y-4">
               <div>
-                <Label htmlFor="idea">Content Idea *</Label>
+                <Label htmlFor="idea" className={errors.idea ? "text-destructive" : ""}>Content Idea *</Label>
                 <Textarea
                   id="idea"
                   value={formData.idea}
@@ -125,13 +145,17 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                   placeholder="Describe your content idea in detail..."
                   rows={4}
                   required
+                  className={errors.idea ? "border-destructive" : ""}
                 />
+                {errors.idea && (
+                  <p className="text-sm text-destructive mt-1">Content idea is required</p>
+                )}
               </div>
             </TabsContent>
 
             <TabsContent value="url" className="space-y-4">
               <div>
-                <Label htmlFor="url">URL *</Label>
+                <Label htmlFor="url" className={errors.url ? "text-destructive" : ""}>URL *</Label>
                 <Input
                   id="url"
                   type="url"
@@ -139,10 +163,14 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                   onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
                   placeholder="https://example.com/article"
                   required={activeTab === 'url'}
+                  className={errors.url ? "border-destructive" : ""}
                 />
+                {errors.url && (
+                  <p className="text-sm text-destructive mt-1">URL is required</p>
+                )}
               </div>
               <div>
-                <Label htmlFor="url-idea">Content Idea *</Label>
+                <Label htmlFor="url-idea" className={errors.idea ? "text-destructive" : ""}>Content Idea *</Label>
                 <Textarea
                   id="url-idea"
                   value={formData.idea}
@@ -150,14 +178,18 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                   placeholder="Describe what content idea this URL inspired..."
                   rows={4}
                   required
+                  className={errors.idea ? "border-destructive" : ""}
                 />
+                {errors.idea && (
+                  <p className="text-sm text-destructive mt-1">Content idea is required</p>
+                )}
               </div>
             </TabsContent>
 
             <TabsContent value="file" className="space-y-4">
               <div>
-                <Label htmlFor="file">Upload File *</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <Label htmlFor="file" className={errors.file ? "text-destructive" : ""}>Upload File *</Label>
+                <div className={`border-2 border-dashed rounded-lg p-6 text-center ${errors.file ? "border-destructive" : "border-gray-300"}`}>
                   <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                   <input
                     id="file"
@@ -175,9 +207,12 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                     <p className="text-sm text-green-600 mt-2">Selected: {formData.file.name}</p>
                   )}
                 </div>
+                {errors.file && (
+                  <p className="text-sm text-destructive mt-1">File upload is required</p>
+                )}
               </div>
               <div>
-                <Label htmlFor="file-idea">Content Idea *</Label>
+                <Label htmlFor="file-idea" className={errors.idea ? "text-destructive" : ""}>Content Idea *</Label>
                 <Textarea
                   id="file-idea"
                   value={formData.idea}
@@ -185,16 +220,20 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                   placeholder="Describe what content idea this file inspired..."
                   rows={4}
                   required
+                  className={errors.idea ? "border-destructive" : ""}
                 />
+                {errors.idea && (
+                  <p className="text-sm text-destructive mt-1">Content idea is required</p>
+                )}
               </div>
             </TabsContent>
           </Tabs>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="target_audience">Target Audience *</Label>
+              <Label htmlFor="target_audience" className={errors.target_audience ? "text-destructive" : ""}>Target Audience *</Label>
               <Select value={formData.target_audience} onValueChange={(value) => setFormData(prev => ({ ...prev, target_audience: value }))}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.target_audience ? "border-destructive" : ""}>
                   <SelectValue placeholder="Select target audience" />
                 </SelectTrigger>
                 <SelectContent>
@@ -202,11 +241,14 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                   <SelectItem value="Government Sector">Government Sector</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.target_audience && (
+                <p className="text-sm text-destructive mt-1">Target audience is required</p>
+              )}
             </div>
             <div>
-              <Label htmlFor="content_type">Content Type *</Label>
+              <Label htmlFor="content_type" className={errors.content_type ? "text-destructive" : ""}>Content Type *</Label>
               <Select value={formData.content_type} onValueChange={(value) => setFormData(prev => ({ ...prev, content_type: value }))}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.content_type ? "border-destructive" : ""}>
                   <SelectValue placeholder="Select content type" />
                 </SelectTrigger>
                   <SelectContent>
@@ -215,6 +257,9 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                     <SelectItem value="Blog Post (Topical)">Blog Post (Topical)</SelectItem>
                   </SelectContent>
               </Select>
+              {errors.content_type && (
+                <p className="text-sm text-destructive mt-1">Content type is required</p>
+              )}
             </div>
           </div>
 
