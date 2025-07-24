@@ -148,6 +148,7 @@ const ContentIdeas = () => {
           onClose={handleCloseSuggestionsModal}
           ideaId={suggestionsIdea.id}
           ideaTitle={suggestionsIdea.title}
+          parentIdea={suggestionsIdea}
         />
       )}
     </div>
