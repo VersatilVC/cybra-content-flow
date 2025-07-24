@@ -129,9 +129,9 @@ export function useNotifications() {
     
     if (entityId) {
       if (notification.related_entity_type === 'idea') {
-        navigate(`/content-ideas?expand=${entityId}`);
+        navigate(`/content-ideas?suggestions=${entityId}`);
       } else {
-        navigate(`/content-ideas?expand=${entityId}`);
+        navigate(`/content-ideas?suggestions=${entityId}`);
       }
     } else {
       navigate('/content-ideas');

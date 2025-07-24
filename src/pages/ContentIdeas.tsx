@@ -3,6 +3,7 @@ import { useContentIdeas } from '@/hooks/useContentIdeas';
 import { ContentIdeaFilters, ContentIdea } from '@/types/contentIdeas';
 import AddIdeaModal from '@/components/AddIdeaModal';
 import EditIdeaModal from '@/components/EditIdeaModal';
+import ViewSuggestionsModal from '@/components/ViewSuggestionsModal';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ContentIdeasHeader from '@/components/content-ideas/ContentIdeasHeader';
 import ContentIdeasFilters from '@/components/content-ideas/ContentIdeasFilters';
@@ -14,6 +15,7 @@ const ContentIdeas = () => {
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<ContentIdeaFilters>({
@@ -33,6 +35,7 @@ const ContentIdeas = () => {
   } = useContentIdeas(filters);
 
   const expandIdeaId = searchParams.get('expand');
+  const suggestionsIdeaId = searchParams.get('suggestions');
   const reviewAction = searchParams.get('action') === 'review';
 
   const handleFilterChange = (key: keyof ContentIdeaFilters, value: string) => {
@@ -53,8 +56,9 @@ const ContentIdeas = () => {
     navigate('/dashboard');
   };
 
-  // Find the specific idea for review
+  // Find the specific idea for review and suggestions
   const reviewIdea = expandIdeaId ? ideas.find(idea => idea.id === expandIdeaId) : null;
+  const suggestionsIdea = suggestionsIdeaId ? ideas.find(idea => idea.id === suggestionsIdeaId) : null;
 
   // Clear expand parameter after component mounts
   useEffect(() => {
@@ -69,6 +73,23 @@ const ContentIdeas = () => {
       return () => clearTimeout(timer);
     }
   }, [expandIdeaId, reviewAction, setSearchParams]);
+
+  // Handle suggestions parameter to show suggestions modal
+  useEffect(() => {
+    if (suggestionsIdeaId && suggestionsIdea) {
+      setShowSuggestionsModal(true);
+    }
+  }, [suggestionsIdeaId, suggestionsIdea]);
+
+  const handleCloseSuggestionsModal = () => {
+    setShowSuggestionsModal(false);
+    // Remove suggestions parameter from URL
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.delete('suggestions');
+      return newParams;
+    });
+  };
 
   if (isLoading) {
     return (
@@ -120,6 +141,15 @@ const ContentIdeas = () => {
         onClose={handleCloseEditModal}
         idea={selectedIdea}
       />
+
+      {suggestionsIdea && (
+        <ViewSuggestionsModal
+          isOpen={showSuggestionsModal}
+          onClose={handleCloseSuggestionsModal}
+          ideaId={suggestionsIdea.id}
+          ideaTitle={suggestionsIdea.title}
+        />
+      )}
     </div>
   );
 };
