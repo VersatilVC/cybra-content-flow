@@ -30,7 +30,16 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.idea || !formData.content_type || !formData.target_audience) return;
+    console.log('Form submission started', { formData });
+    
+    if (!formData.idea || !formData.content_type || !formData.target_audience) {
+      console.log('Form validation failed', { 
+        idea: !!formData.idea, 
+        content_type: !!formData.content_type, 
+        target_audience: !!formData.target_audience 
+      });
+      return;
+    }
 
     let sourceData = {};
     let sourceType: 'manual' | 'file' | 'url' = 'manual';
