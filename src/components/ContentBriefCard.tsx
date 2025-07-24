@@ -44,6 +44,8 @@ export default function ContentBriefCard({
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'ready':
+        return 'bg-green-100 text-green-800';
       case 'ready_for_review':
         return 'bg-green-100 text-green-800';
       case 'processing_content_item':
@@ -59,6 +61,8 @@ export default function ContentBriefCard({
 
   const getStatusLabel = (status: string) => {
     switch (status) {
+      case 'ready':
+        return 'Ready';
       case 'ready_for_review':
         return 'Ready for Review';
       case 'processing_content_item':
@@ -72,7 +76,7 @@ export default function ContentBriefCard({
     }
   };
 
-  const canCreateContent = brief.status === 'ready_for_review' && !contentItem;
+  const canCreateContent = (brief.status === 'ready_for_review' || brief.status === 'ready') && !contentItem;
   const hasContentCreated = (brief.status === 'content_item_created' || contentItem) && contentItem;
 
   const handleViewContent = () => {

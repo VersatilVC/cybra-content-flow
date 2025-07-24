@@ -4,7 +4,7 @@ export interface ContentBrief {
   title: string;
   description: string | null;
   content: string | null;
-  status: 'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded';
+  status: 'ready' | 'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded';
   source_type: 'idea' | 'suggestion';
   source_id: string;
   brief_type: 'Blog Post' | 'Guide' | 'Blog Post (Topical)';
@@ -25,7 +25,7 @@ export interface CreateContentBriefData {
   title: string;
   description: string | null;
   content: string | null;
-  status: 'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded';
+  status: 'ready' | 'ready_for_review' | 'processing_content_item' | 'content_item_created' | 'discarded';
   source_type: 'idea' | 'suggestion';
   source_id: string;
   brief_type: 'Blog Post' | 'Guide' | 'Blog Post (Topical)';
