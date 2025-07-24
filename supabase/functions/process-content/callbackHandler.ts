@@ -31,7 +31,7 @@ export async function handleCallbackAction(
   // If content creation completed successfully, update the associated brief status
   if (status === 'completed' && submission.knowledge_base === 'content_creation' && brief_id) {
     console.log('Updating brief status for completed content creation:', brief_id);
-    await updateBriefStatus(supabase, brief_id, 'content_created');
+    await updateBriefStatus(supabase, brief_id, 'content_item_created');
   }
 
   // Create notification with content item ID for direct linking
