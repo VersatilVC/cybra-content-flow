@@ -49,7 +49,7 @@ export function convertMarkdownToHtml(markdown: string): string {
   html = html.replace(/_(.*?)_/g, '<em>$1</em>');
   
   // 6. Links
-  html = html.replace(/\[([^\]]*)\]\(([^\)]*)\)/g, '<a href="$2">$1</a>');
+  html = html.replace(/\[([^\]]*)\]\(([^\)]*)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
   
   // 7. Process remaining lists (not in TL;DR sections)
   html = html.replace(/^(\* .*$)/gm, '<li>$1</li>');

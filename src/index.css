@@ -110,3 +110,10 @@
 .geometric-pattern {
   background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23A693DA' fill-opacity='0.03' fill-rule='evenodd'%3E%3Cpath d='M20 20c0-11.046-8.954-20-20-20s-20 8.954-20 20 8.954 20 20 20 20-8.954 20-20zM0 20c0-11.046 8.954-20 20-20s20 8.954 20 20-8.954 20-20 20S0 31.046 0 20z'/%3E%3C/g%3E%3C/svg%3E");
 }
+
+/* Ensure all links open in new tabs as a fallback */
+@layer utilities {
+  a[href^="http"]:not([target]) {
+    @apply [target:_blank] [rel:noopener_noreferrer];
+  }
+}

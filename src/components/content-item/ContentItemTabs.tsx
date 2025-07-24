@@ -110,7 +110,7 @@ const ContentItemTabs: React.FC<ContentItemTabsProps> = ({
                       pre: ({node, ...props}) => <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4" {...props} />,
                       strong: ({node, ...props}) => <strong className="font-semibold" {...props} />,
                       em: ({node, ...props}) => <em className="italic" {...props} />,
-                      a: ({node, ...props}) => <a className="text-blue-600 hover:text-blue-800 underline" {...props} />,
+                      a: ({node, ...props}) => <a className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer" {...props} />,
                     }}
                   >
                     {contentItem.content}

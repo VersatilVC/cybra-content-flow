@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { renderTextWithLinks } from '@/utils/linkRenderer';
 
 interface ExpandableTextProps {
   text: string;
@@ -33,20 +34,25 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
 
   if (!shouldTruncate) {
     console.log('✅ [ExpandableText] Text is short enough, showing full content');
+    const processedText = renderTextWithLinks(text);
     return (
-      <div className={`whitespace-pre-wrap ${className}`}>
-        {text}
-      </div>
+      <div 
+        className={`whitespace-pre-wrap ${className}`}
+        dangerouslySetInnerHTML={{ __html: processedText }}
+      />
     );
   }
 
   const remainingChars = text.length - maxLength;
 
+  const processedDisplayText = renderTextWithLinks(displayText);
+
   return (
     <div className={className}>
-      <div className="whitespace-pre-wrap">
-        {displayText}
-      </div>
+      <div 
+        className="whitespace-pre-wrap"
+        dangerouslySetInnerHTML={{ __html: processedDisplayText }}
+      />
       <Button
         variant="ghost"
         size="sm"

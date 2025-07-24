@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, Check, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import PlatformBadge from './PlatformBadge';
+import { renderTextWithLinks } from '@/utils/linkRenderer';
 
 interface ViewFullPostModalProps {
   isOpen: boolean;
@@ -89,9 +90,10 @@ const ViewFullPostModal: React.FC<ViewFullPostModalProps> = ({
         
         <div className="space-y-4">
           <div className="border rounded-lg p-4 bg-gray-50 min-h-[200px]">
-            <div className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">
-              {content}
-            </div>
+            <div 
+              className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: renderTextWithLinks(content) }}
+            />
           </div>
           
           {imageUrl && (
