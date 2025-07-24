@@ -77,7 +77,7 @@ export default function ContentBriefCard({
   };
 
   const canCreateContent = (brief.status === 'ready_for_review' || brief.status === 'ready') && !contentItem;
-  const hasContentCreated = (brief.status === 'content_item_created' || contentItem) && contentItem;
+  const hasContentCreated = contentItem; // Show "View Content" whenever content item exists
 
   const handleViewContent = () => {
     if (contentItem) {
