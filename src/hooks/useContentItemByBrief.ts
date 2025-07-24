@@ -13,7 +13,9 @@ export function useContentItemByBrief(briefId: string) {
         .from('content_items')
         .select('*')
         .eq('content_brief_id', briefId)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
       if (error) {
         console.error('Error fetching content item by brief:', error);
