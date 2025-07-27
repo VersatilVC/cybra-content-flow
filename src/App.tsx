@@ -147,7 +147,7 @@ const App = () => (
               <Route 
                 path="/feedback-management" 
                 element={
-                  <ProtectedRoute adminOnly>
+                  <ProtectedRoute>
                     <AppLayout>
                       <FeedbackManagement />
                     </AppLayout>

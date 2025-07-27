@@ -70,6 +70,11 @@ const navigationItems = [
     url: "/notifications",
     icon: Bell,
   },
+  {
+    title: "Feedback Management",
+    url: "/feedback-management",
+    icon: Bug,
+  },
 ];
 
 const adminItems = [
@@ -77,11 +82,6 @@ const adminItems = [
     title: "User Management",
     url: "/user-management",
     icon: Users,
-  },
-  {
-    title: "Feedback Management",
-    url: "/feedback-management",
-    icon: Bug,
   },
   {
     title: "Webhooks",
@@ -130,8 +130,13 @@ export function SidebarNavigation() {
                 >
                   <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
                     <item.icon className="w-4 h-4" />
-                    <span className="font-medium">{item.title}</span>
-                  </Link>
+                     <span className="font-medium">{item.title}</span>
+                     {item.title === "Feedback Management" && unreadCount > 0 && (
+                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                         {unreadCount > 99 ? '99+' : unreadCount}
+                       </span>
+                     )}
+                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
@@ -176,12 +181,7 @@ export function SidebarNavigation() {
                   >
                     <Link to={item.url} className="flex items-center gap-3 px-3 py-2 relative">
                       <item.icon className="w-4 h-4" />
-                      <span className="font-medium">{item.title}</span>
-                      {item.title === "Feedback Management" && unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                          {unreadCount > 99 ? '99+' : unreadCount}
-                        </span>
-                      )}
+                       <span className="font-medium">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
