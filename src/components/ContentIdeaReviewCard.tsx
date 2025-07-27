@@ -61,10 +61,6 @@ export default function ContentIdeaReviewCard({
               </>
             )}
           </Button>
-          <Button variant="outline">
-            <FileText className="w-4 h-4 mr-2" />
-            View Details
-          </Button>
         </div>
 
         <div className="mt-4 p-3 bg-yellow-100 rounded-lg">
