@@ -1,18 +1,21 @@
 
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useContentItems } from '@/hooks/useContentItems';
+import { useContentDerivatives } from '@/hooks/useContentDerivatives';
 import { supabase } from '@/integrations/supabase/client';
 import { ContentItem } from '@/services/contentItemsApi';
 
 export const useContentItemView = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { updateContentItem, isUpdating } = useContentItems();
+  const { updateContentItem, deleteContentItem, isUpdating } = useContentItems();
+  const { derivatives, deleteDerivative } = useContentDerivatives(id || '');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAIFixModalOpen, setIsAIFixModalOpen] = useState(false);
 
@@ -33,18 +36,45 @@ export const useContentItemView = () => {
     enabled: !!id && !!user?.id,
   });
 
-  const handleStatusUpdate = (newStatus: string) => {
+  const handleStatusUpdate = async (newStatus: string) => {
     if (!contentItem) return;
     
-    updateContentItem({ 
-      id: contentItem.id, 
-      updates: { status: newStatus as ContentItem['status'] } 
-    });
-    
-    toast({
-      title: 'Status updated',
-      description: `Content item has been ${newStatus === 'derivatives_created' ? 'approved' : newStatus === 'discarded' ? 'discarded' : 'updated'}.`,
-    });
+    if (newStatus === 'discarded') {
+      // Delete all derivatives first
+      try {
+        for (const derivative of derivatives) {
+          await deleteDerivative(derivative.id);
+        }
+        
+        // Then delete the content item
+        await deleteContentItem(contentItem.id);
+        
+        toast({
+          title: 'Content deleted',
+          description: 'Content item and all its derivatives have been permanently deleted.',
+        });
+        
+        // Navigate back to content items list
+        navigate('/content-items');
+      } catch (error) {
+        console.error('Error deleting content item:', error);
+        toast({
+          title: 'Delete failed',
+          description: 'Failed to delete the content item. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } else {
+      updateContentItem({ 
+        id: contentItem.id, 
+        updates: { status: newStatus as ContentItem['status'] } 
+      });
+      
+      toast({
+        title: 'Status updated',
+        description: `Content item has been ${newStatus === 'derivatives_created' ? 'approved' : 'updated'}.`,
+      });
+    }
   };
 
   const handleEditContent = () => {
