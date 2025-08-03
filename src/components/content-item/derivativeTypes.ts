@@ -15,6 +15,7 @@ export const derivativeTypes: Record<'General' | 'Social' | 'Ads', DerivativeTyp
     { type: 'blog_internal_images', title: 'Blog Post Internal Images', description: 'Supporting images for blog content', content_type: 'image', isActive: false },
     { type: 'nurture_email', title: 'Nurture Email', description: 'Educational email for lead nurturing', content_type: 'text', isActive: true },
     { type: 'sales_email', title: 'Sales Email', description: 'Direct sales outreach email', content_type: 'text', isActive: true },
+    { type: 'pr_pitch', title: 'PR Pitch', description: 'Media pitch for PR outreach and coverage', content_type: 'text', isActive: true },
     { type: 'content_transformation', title: 'Turn Content Item Into', description: 'Transform into different content format', content_type: 'text', isActive: false },
     { type: 'webinar_outline', title: 'Webinar Outline', description: 'Structured webinar presentation outline', content_type: 'document', isActive: false },
     { type: 'video_topic_points', title: 'Video Topic Points for CEO', description: 'Key talking points for executive video', content_type: 'text', isActive: false },
