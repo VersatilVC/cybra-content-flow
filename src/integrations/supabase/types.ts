@@ -890,6 +890,16 @@ export type Database = {
           similarity: number
         }[]
       }
+      validate_content_idea_retry_state: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_ideas: number
+          failed_ideas: number
+          processing_ideas: number
+          stuck_ideas: number
+          retryable_ideas: number
+        }[]
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "creator"
