@@ -831,6 +831,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      force_check_timed_out_ideas: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          updated_count: number
+          failed_ideas: Json
+        }[]
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string

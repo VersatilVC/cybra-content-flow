@@ -14,7 +14,15 @@ export function useRetryIdea() {
     mutationFn: async (idea: ContentIdea) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      console.log('Retrying content idea:', idea.id);
+      // Check if idea has exceeded maximum retry attempts
+      const maxRetries = 3;
+      const currentRetries = idea.retry_count || 0;
+      
+      if (currentRetries >= maxRetries) {
+        throw new Error(`Maximum retry attempts (${maxRetries}) exceeded. Please create a new idea.`);
+      }
+
+      console.log(`Retrying content idea: ${idea.id} (attempt ${currentRetries + 1}/${maxRetries})`);
       
       // Set processing timestamps and increment retry count
       const now = new Date();
@@ -24,7 +32,7 @@ export function useRetryIdea() {
         status: 'processing',
         processing_started_at: now.toISOString(),
         processing_timeout_at: timeout.toISOString(),
-        retry_count: (idea.retry_count || 0) + 1,
+        retry_count: currentRetries + 1,
         last_error_message: null
       });
 

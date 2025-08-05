@@ -54,15 +54,20 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  console.log('Starting timeout monitoring for content ideas...');
+  const requestBody = req.method === 'POST' ? await req.json() : {};
+  const isAutomatedCheck = requestBody.automated_check === true;
+  
+  console.log(`Starting timeout monitoring for content ideas... ${isAutomatedCheck ? '(Automated)' : '(Manual)'}`);
 
   try {
     // Query for ideas that have timed out
     const { data: timedOutIdeas, error: queryError } = await supabase
       .from('content_ideas')
-      .select('id, user_id, title, retry_count')
+      .select('id, user_id, title, retry_count, processing_started_at, processing_timeout_at')
       .eq('status', 'processing')
       .lt('processing_timeout_at', new Date().toISOString());
+
+    console.log(`Checking for timed out ideas. Current time: ${new Date().toISOString()}`);
 
     if (queryError) {
       console.error('Error querying timed out ideas:', queryError);
@@ -84,6 +89,16 @@ Deno.serve(async (req) => {
 
     console.log(`Found ${timedOutIdeas.length} timed out ideas`);
 
+    if (timedOutIdeas.length > 0) {
+      // Log detailed information about timed out ideas
+      timedOutIdeas.forEach(idea => {
+        const processingDuration = idea.processing_started_at 
+          ? Math.round((new Date().getTime() - new Date(idea.processing_started_at).getTime()) / (1000 * 60))
+          : 'unknown';
+        console.log(`Timed out idea: ${idea.id} - "${idea.title}" (retry: ${idea.retry_count || 0}, processing for: ${processingDuration} minutes)`);
+      });
+    }
+
     // Update timed out ideas to failed status
     const ideaIds = timedOutIdeas.map(idea => idea.id);
     
@@ -93,7 +108,8 @@ Deno.serve(async (req) => {
         status: 'failed',
         last_error_message: 'Processing timed out after 30 minutes - please try again',
         processing_timeout_at: null,
-        processing_started_at: null
+        processing_started_at: null,
+        updated_at: new Date().toISOString()
       })
       .in('id', ideaIds);
 
