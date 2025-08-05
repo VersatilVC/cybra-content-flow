@@ -25,13 +25,15 @@ export async function triggerIdeaWebhooks(idea: ContentIdea, userId: string) {
     const sourceData = idea.source_data as Record<string, any>;
     if (sourceData.filename && typeof sourceData.filename === 'string') {
       try {
+        // For content ideas, files are stored in the private content-files bucket
+        // Generate a signed URL for secure access
         const { data: signedUrlData } = await supabase.storage
           .from('content-files')
           .createSignedUrl(`${userId}/${sourceData.filename}`, 3600); // 1 hour expiry
         
         if (signedUrlData?.signedUrl) {
           webhookPayload.file_download_url = signedUrlData.signedUrl;
-          console.log('Added file download URL to webhook payload');
+          console.log('Added signed file download URL to webhook payload for content-files bucket');
         }
       } catch (error) {
         console.error('Failed to generate file download URL:', error);

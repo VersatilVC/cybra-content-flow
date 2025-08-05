@@ -48,15 +48,40 @@ export async function handleTriggerAction(
     webhook_triggered_at: new Date().toISOString()
   });
 
-  // Prepare webhook payload
+  // Prepare webhook payload with correct bucket URL
+  let fileUrl = submission.file_url;
+  
+  // Generate the correct file URL based on the submission type and bucket
+  if (submission.file_path) {
+    // For knowledge base submissions, files are stored in the public knowledge-base-files bucket
+    if (submission.knowledge_base !== 'content_creation') {
+      fileUrl = `https://agbcslwigqthrlxnqbmc.supabase.co/storage/v1/object/public/knowledge-base-files/${submission.file_path}`;
+      console.log('Using public URL for knowledge-base-files bucket:', fileUrl);
+    } else {
+      // For content creation submissions, files might be in content-files bucket (private)
+      // Generate signed URL for secure access
+      try {
+        const { data: signedUrlData } = await supabase.storage
+          .from('content-files')
+          .createSignedUrl(submission.file_path, 3600); // 1 hour expiry
+        
+        if (signedUrlData?.signedUrl) {
+          fileUrl = signedUrlData.signedUrl;
+          console.log('Generated signed URL for content-files bucket');
+        }
+      } catch (error) {
+        console.error('Failed to generate signed URL for content-files:', error);
+        // Fallback to the original file_url if available
+      }
+    }
+  }
+
   const payload: WebhookPayload = {
     submission_id: submission.id,
     user_id: submission.user_id,
     knowledge_base: submission.knowledge_base,
     content_type: submission.content_type,
-    file_url: submission.file_path 
-      ? `https://agbcslwigqthrlxnqbmc.supabase.co/storage/v1/object/public/knowledge-base-files/${submission.file_path}` 
-      : submission.file_url,
+    file_url: fileUrl,
     original_filename: submission.original_filename,
     file_size: submission.file_size,
     mime_type: submission.mime_type,
