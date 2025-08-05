@@ -1,9 +1,47 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { createNotification } from "../process-idea-callback/notifications.ts";
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function createNotification({
+  user_id,
+  title,
+  message,
+  type,
+  related_entity_id,
+  related_entity_type,
+}: {
+  user_id: string;
+  title: string;
+  message: string;
+  type: string;
+  related_entity_id?: string | null;
+  related_entity_type?: 'submission' | 'idea' | 'brief' | 'content_item' | null;
+}) {
+  try {
+    const notificationData = {
+      user_id: user_id,
+      title: title,
+      message: message,
+      type: type,
+      related_entity_id: related_entity_id,
+      related_entity_type: related_entity_type || 'idea',
+    };
+
+    const { error: notificationError } = await supabase
+      .from('notifications')
+      .insert(notificationData);
+
+    if (notificationError) {
+      console.error('Failed to create notification:', notificationError);
+    } else {
+      console.log('Notification created successfully:', title);
+    }
+  } catch (error) {
+    console.error('Error creating notification:', error);
+  }
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
