@@ -831,12 +831,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      audit_content_idea_file_access: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_file_ideas: number
+          ideas_with_invalid_urls: number
+          ideas_missing_paths: number
+          ideas_with_mismatched_user_ids: number
+          path_user_ids_extracted: number
+        }[]
+      }
+      extract_user_id_from_path: {
+        Args: { file_path: string }
+        Returns: string
+      }
       force_check_timed_out_ideas: {
         Args: Record<PropertyKey, never>
         Returns: {
           updated_count: number
           failed_ideas: Json
         }[]
+      }
+      generate_signed_file_url: {
+        Args: {
+          bucket_name: string
+          file_path: string
+          expiry_seconds?: number
+        }
+        Returns: string
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
