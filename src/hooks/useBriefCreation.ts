@@ -89,8 +89,12 @@ export function useBriefCreation(ideas: ContentIdea[]) {
 
         // Get the parent idea if ideaId is provided
         let parentIdea = null;
-        if (ideaId || suggestion.content_idea_id) {
-          parentIdea = ideas.find(i => i.id === (ideaId || suggestion.content_idea_id));
+        const parentIdeaId = ideaId || suggestion.content_idea_id;
+        if (parentIdeaId) {
+          parentIdea = ideas.find(i => i.id === parentIdeaId);
+          
+          // Update parent idea status to 'brief_created' when a brief is created from any suggestion
+          await updateContentIdea(parentIdeaId, { status: 'brief_created' });
         }
 
         // Trigger webhook for brief creator with suggestion data - N8N will handle brief creation
