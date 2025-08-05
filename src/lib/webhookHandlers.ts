@@ -33,6 +33,10 @@ export async function triggerIdeaWebhooks(idea: ContentIdea, userId: string) {
         
         if (signedUrlData?.signedUrl) {
           webhookPayload.file_download_url = signedUrlData.signedUrl;
+          // Also replace the invalid public URL in source_data with the working signed URL
+          if (webhookPayload.idea && webhookPayload.idea.source_data) {
+            webhookPayload.idea.source_data.url = signedUrlData.signedUrl;
+          }
           console.log('Added signed file download URL to webhook payload for content-files bucket');
         }
       } catch (error) {
