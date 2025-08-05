@@ -162,6 +162,7 @@ export type Database = {
           content: string | null
           created_at: string
           description: string | null
+          file_summary: string | null
           id: string
           source_id: string
           source_type: string
@@ -176,6 +177,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           description?: string | null
+          file_summary?: string | null
           id?: string
           source_id: string
           source_type: string
@@ -190,6 +192,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           description?: string | null
+          file_summary?: string | null
           id?: string
           source_id?: string
           source_type?: string
@@ -274,8 +277,13 @@ export type Database = {
           content_type: string
           created_at: string
           description: string | null
+          file_summary: string | null
           id: string
           idea_research_summary: string | null
+          last_error_message: string | null
+          processing_started_at: string | null
+          processing_timeout_at: string | null
+          retry_count: number | null
           source_data: Json | null
           source_type: string
           status: string
@@ -288,8 +296,13 @@ export type Database = {
           content_type: string
           created_at?: string
           description?: string | null
+          file_summary?: string | null
           id?: string
           idea_research_summary?: string | null
+          last_error_message?: string | null
+          processing_started_at?: string | null
+          processing_timeout_at?: string | null
+          retry_count?: number | null
           source_data?: Json | null
           source_type: string
           status?: string
@@ -302,8 +315,13 @@ export type Database = {
           content_type?: string
           created_at?: string
           description?: string | null
+          file_summary?: string | null
           id?: string
           idea_research_summary?: string | null
+          last_error_message?: string | null
+          processing_started_at?: string | null
+          processing_timeout_at?: string | null
+          retry_count?: number | null
           source_data?: Json | null
           source_type?: string
           status?: string
@@ -320,6 +338,7 @@ export type Database = {
           content_brief_id: string | null
           content_type: string
           created_at: string
+          file_summary: string | null
           id: string
           multimedia_suggestions: string | null
           resources: string[] | null
@@ -338,6 +357,7 @@ export type Database = {
           content_brief_id?: string | null
           content_type?: string
           created_at?: string
+          file_summary?: string | null
           id?: string
           multimedia_suggestions?: string | null
           resources?: string[] | null
@@ -356,6 +376,7 @@ export type Database = {
           content_brief_id?: string | null
           content_type?: string
           created_at?: string
+          file_summary?: string | null
           id?: string
           multimedia_suggestions?: string | null
           resources?: string[] | null
@@ -446,6 +467,7 @@ export type Database = {
           content_type: string
           created_at: string
           description: string | null
+          file_summary: string | null
           id: string
           relevance_score: number | null
           source_title: string | null
@@ -458,6 +480,7 @@ export type Database = {
           content_type: string
           created_at?: string
           description?: string | null
+          file_summary?: string | null
           id?: string
           relevance_score?: number | null
           source_title?: string | null
@@ -470,6 +493,7 @@ export type Database = {
           content_type?: string
           created_at?: string
           description?: string | null
+          file_summary?: string | null
           id?: string
           relevance_score?: number | null
           source_title?: string | null

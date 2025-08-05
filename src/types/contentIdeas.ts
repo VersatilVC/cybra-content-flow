@@ -5,12 +5,16 @@ export interface ContentIdea {
   description: string | null;
   content_type: 'Blog Post' | 'Guide' | 'Blog Post (Topical)';
   target_audience: 'Private Sector' | 'Government Sector';
-  status: 'processing' | 'ready' | 'brief_created' | 'discarded';
+  status: 'processing' | 'ready' | 'brief_created' | 'discarded' | 'failed';
   source_type: 'manual' | 'file' | 'url' | 'auto_generated';
   source_data: any;
   created_at: string;
   updated_at: string;
   idea_research_summary?: string;
+  processing_started_at?: string;
+  processing_timeout_at?: string;
+  retry_count?: number;
+  last_error_message?: string;
 }
 
 export interface ContentIdeaFilters {
@@ -25,9 +29,12 @@ export interface CreateContentIdeaData {
   description: string | null;
   content_type: 'Blog Post' | 'Guide' | 'Blog Post (Topical)';
   target_audience: 'Private Sector' | 'Government Sector';
-  status: 'processing' | 'ready' | 'brief_created' | 'discarded';
+  status: 'processing' | 'ready' | 'brief_created' | 'discarded' | 'failed';
   source_type: 'manual' | 'file' | 'url' | 'auto_generated';
   source_data: any;
+  processing_started_at?: string;
+  processing_timeout_at?: string;
+  retry_count?: number;
 }
 
 export interface ContentSuggestion {

@@ -39,8 +39,8 @@ export function useBriefCreation(ideas: ContentIdea[]) {
           throw new Error('Brief already exists for this idea');
         }
 
-        // Update idea status to show it's being processed
-        await updateContentIdea(id, { status: 'processing' });
+        // Update idea status to show brief is being created
+        await updateContentIdea(id, { status: 'brief_created' });
 
         // Get idea data for webhook
         const idea = ideas.find(i => i.id === id);

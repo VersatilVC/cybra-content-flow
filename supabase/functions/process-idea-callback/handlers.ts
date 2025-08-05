@@ -231,8 +231,48 @@ export async function handleIdeaProcessingCallback(supabase: any, body: any) {
       return;
     }
 
-    await updateIdeaStatus(supabase, body.content_idea_id, 'ready');
-    await createIdeaCompletionNotification(supabase, body.user_id, body.content_idea_id, body.title || 'Content Idea');
+    if (body.status === 'success') {
+      // Update the content idea status to ready and clear timeout fields
+      await supabase
+        .from('content_ideas')
+        .update({ 
+          status: 'ready',
+          updated_at: new Date().toISOString(),
+          processing_started_at: null,
+          processing_timeout_at: null,
+          last_error_message: null
+        })
+        .eq('id', body.content_idea_id);
+
+      await createIdeaCompletionNotification(supabase, body.user_id, body.content_idea_id, body.title || 'Content Idea');
+      console.log('Updated idea status to ready');
+    } else {
+      // Handle failure case
+      await supabase
+        .from('content_ideas')
+        .update({ 
+          status: 'failed',
+          updated_at: new Date().toISOString(),
+          processing_started_at: null,
+          processing_timeout_at: null,
+          last_error_message: body.error_message || 'Processing failed - please try again'
+        })
+        .eq('id', body.content_idea_id);
+
+      // Create failure notification
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: body.user_id,
+          title: 'Idea Processing Failed',
+          message: body.error_message || 'Your content idea processing failed. Please try again.',
+          type: 'error',
+          related_entity_id: body.content_idea_id,
+          related_entity_type: 'idea'
+        });
+
+      console.log('Updated idea status to failed');
+    }
     
     console.log('Idea processing callback completed successfully');
   } catch (error) {

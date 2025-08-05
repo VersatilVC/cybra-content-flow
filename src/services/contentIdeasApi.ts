@@ -36,12 +36,16 @@ export const fetchContentIdeas = async (userId: string, filters?: ContentIdeaFil
     description: item.description,
     content_type: item.content_type as 'Blog Post' | 'Guide' | 'Blog Post (Topical)',
     target_audience: item.target_audience as 'Private Sector' | 'Government Sector',
-    status: item.status as 'processing' | 'ready' | 'brief_created' | 'discarded',
+    status: item.status as 'processing' | 'ready' | 'brief_created' | 'discarded' | 'failed',
     source_type: item.source_type as 'manual' | 'file' | 'url' | 'auto_generated',
     source_data: item.source_data,
     created_at: item.created_at,
     updated_at: item.updated_at,
     idea_research_summary: item.idea_research_summary,
+    processing_started_at: item.processing_started_at,
+    processing_timeout_at: item.processing_timeout_at,
+    retry_count: item.retry_count,
+    last_error_message: item.last_error_message,
   }));
 };
 
