@@ -41,7 +41,7 @@ export async function fetchContentItems(userId: string): Promise<ContentItem[]> 
   // With company-wide access, we fetch all content items (RLS will filter appropriately)
   const { data, error } = await supabase
     .from('content_items')
-    .select('*')
+    .select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -57,7 +57,7 @@ export async function fetchContentItemsByBrief(briefId: string): Promise<Content
   
   const { data, error } = await supabase
     .from('content_items')
-    .select('*')
+    .select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at')
     .eq('content_brief_id', briefId)
     .order('created_at', { ascending: false });
 
@@ -75,7 +75,7 @@ export async function createContentItem(itemData: CreateContentItemData): Promis
   const { data, error } = await supabase
     .from('content_items')
     .insert([itemData])
-    .select()
+.select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at')
     .single();
 
   if (error) {
@@ -93,7 +93,7 @@ export async function updateContentItem(id: string, updates: Partial<ContentItem
     .from('content_items')
     .update(updates)
     .eq('id', id)
-    .select()
+.select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at')
     .single();
 
   if (error) {

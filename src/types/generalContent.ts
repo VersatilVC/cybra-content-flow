@@ -27,6 +27,8 @@ export interface GeneralContentFilters {
   derivativeType: string;
   status: string;
   search: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface CreateGeneralContentRequest {

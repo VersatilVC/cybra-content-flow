@@ -6,7 +6,7 @@ import { z } from 'zod';
 export const sanitizeHtml = (input: string): string => {
   return DOMPurify.sanitize(input, {
     ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a'],
-    ALLOWED_ATTR: ['href', 'target'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
     ALLOW_DATA_ATTR: false,
   });
 };

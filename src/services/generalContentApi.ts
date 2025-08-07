@@ -132,37 +132,16 @@ export const deleteGeneralContent = async (id: string): Promise<void> => {
 };
 
 async function triggerGeneralContentWebhook(content: GeneralContentItem, userId: string, derivativeTypes?: string[]): Promise<void> {
-  console.log('Triggering general content webhook for:', content.id);
-  
-  // Get the webhook configuration for general content processing
-  const { data: webhooks, error: webhookError } = await supabase
-    .from('webhook_configurations')
-    .select('id,name,webhook_url,is_active,webhook_type,created_by')
-    .eq('webhook_type', 'knowledge_base')
-    .eq('is_active', true);
+  console.log('Triggering webhook via edge function for:', content.id);
 
-  if (webhookError) {
-    console.error('Error fetching webhook configuration:', webhookError);
-    throw new Error(`Webhook configuration error: ${webhookError.message}`);
-  }
-
-  if (!webhooks || webhooks.length === 0) {
-    console.log('No active general content webhook configured');
-    throw new Error('No active general content webhook configured');
-  }
-
-  const webhook = webhooks[0];
-  console.log('Using webhook:', webhook.name, webhook.webhook_url);
-
-  // Prepare webhook payload with both single and array derivative types
   const payload = {
     type: 'general_content_submission',
     general_content_id: content.id,
     user_id: userId,
     title: content.title,
     content: content.content,
-    derivative_type: content.derivative_type, // Keep for backward compatibility
-    derivative_types: derivativeTypes || [content.derivative_type], // Array for N8N Split Out node
+    derivative_type: content.derivative_type,
+    derivative_types: derivativeTypes || [content.derivative_type],
     category: content.category,
     source_type: content.source_type,
     source_data: content.source_data,
@@ -180,25 +159,17 @@ async function triggerGeneralContentWebhook(content: GeneralContentItem, userId:
     }
   };
 
-  console.log('Triggering webhook with payload:', payload);
+  const { error: fnError } = await supabase.functions.invoke('dispatch-webhook', {
+    body: {
+      webhook_type: 'knowledge_base',
+      payload,
+    },
+  });
 
-  try {
-    const response = await fetch(webhook.webhook_url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const responseText = await response.text();
-      throw new Error(`Webhook failed with status ${response.status}: ${responseText}`);
-    }
-
-    console.log('General content webhook triggered successfully');
-  } catch (error) {
-    console.error('Error calling general content webhook:', error);
-    throw new Error(`Failed to trigger general content webhook: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  if (fnError) {
+    console.error('Edge function dispatch-webhook failed:', fnError);
+    throw new Error(`Failed to trigger general content webhook: ${fnError.message}`);
   }
+
+  console.log('General content webhook enqueued via edge function');
 }

@@ -28,7 +28,19 @@ const FeedbackManagement = lazy(() => import("./pages/FeedbackManagement"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 import { ProductionDashboard } from "@/components/ProductionDashboard";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      gcTime: 300_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

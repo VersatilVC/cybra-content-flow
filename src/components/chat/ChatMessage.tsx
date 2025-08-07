@@ -2,6 +2,7 @@
 import React from 'react';
 import { Bot, User } from 'lucide-react';
 import { convertMarkdownToHtml } from '@/utils/markdownToHtml';
+import { sanitizeHtml } from '@/lib/security';
 
 interface ChatMessageProps {
   id: string;
@@ -14,8 +15,8 @@ interface ChatMessageProps {
 export function ChatMessage({ role, content, sources, created_at }: ChatMessageProps) {
   const isUser = role === 'user';
   
-  // For AI responses, convert markdown to HTML
-  const displayContent = !isUser ? convertMarkdownToHtml(content) : content;
+  // For AI responses, convert markdown to HTML and sanitize
+  const displayContent = !isUser ? sanitizeHtml(convertMarkdownToHtml(content)) : content;
 
   return (
     <div className={`flex gap-4 ${isUser ? 'justify-end' : ''}`}>

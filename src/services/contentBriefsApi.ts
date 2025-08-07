@@ -21,7 +21,7 @@ export async function fetchContentBriefs(userId: string, filters?: ContentBriefF
   // The RLS policies will handle access control based on company domain
   let query = supabase
     .from('content_briefs')
-    .select('*')
+    .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,file_summary,created_at,updated_at')
     .order('created_at', { ascending: false });
 
   if (filters?.briefType && filters.briefType !== 'All Brief Types') {
@@ -56,7 +56,7 @@ export async function createContentBrief(briefData: CreateContentBriefData): Pro
   const { data, error } = await supabase
     .from('content_briefs')
     .insert([briefData])
-    .select()
+.select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,file_summary,created_at,updated_at')
     .single();
 
   if (error) {
@@ -71,7 +71,7 @@ export async function updateContentBrief(id: string, updates: Partial<ContentBri
     .from('content_briefs')
     .update(updates)
     .eq('id', id)
-    .select()
+.select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,file_summary,created_at,updated_at')
     .single();
 
   if (error) {
@@ -95,7 +95,7 @@ export async function deleteContentBrief(id: string): Promise<void> {
 export async function getBriefBySourceId(sourceId: string, sourceType: 'idea' | 'suggestion'): Promise<ContentBrief | null> {
   const { data, error } = await supabase
     .from('content_briefs')
-    .select('*')
+    .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,file_summary,created_at,updated_at')
     .eq('source_id', sourceId)
     .eq('source_type', sourceType)
     .maybeSingle();

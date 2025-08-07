@@ -103,6 +103,8 @@ const ViewFullPostModal: React.FC<ViewFullPostModalProps> = ({
                 src={imageUrl}
                 alt={`${platformName} post image`}
                 className="w-full max-w-md mx-auto rounded-lg shadow-sm border"
+                loading="lazy"
+                decoding="async"
                 onError={(e) => {
                   console.error('Failed to load image:', imageUrl);
                   e.currentTarget.style.display = 'none';

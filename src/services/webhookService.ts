@@ -5,7 +5,7 @@ export const triggerWebhook = async (webhookType: string, payload: any) => {
   
   const webhooks = await supabase
     .from('webhook_configurations')
-    .select('*')
+    .select('id,name,webhook_url,is_active,webhook_type,created_by')
     .eq('webhook_type', webhookType)
     .eq('is_active', true);
 
@@ -85,7 +85,7 @@ export const triggerContentProcessingWebhook = async (briefId: string, userId: s
     // Check for active content_processing webhooks (N8N)
     const { data: webhooks, error: webhookError } = await supabase
       .from('webhook_configurations')
-      .select('*')
+      .select('id,name,webhook_url,is_active,webhook_type,created_by')
       .eq('webhook_type', 'content_processing')
       .eq('is_active', true);
 

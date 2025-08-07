@@ -6,7 +6,7 @@ export const fetchContentIdeas = async (userId: string, filters?: ContentIdeaFil
   // With company-wide access, we fetch all content ideas (RLS will filter appropriately)
   let query = supabase
     .from('content_ideas')
-    .select('*')
+    .select('id,title,description,content_type,target_audience,status,source_type,source_data,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
     .order('created_at', { ascending: false });
 
   if (filters?.contentType && filters.contentType !== 'All Content Types') {
@@ -57,7 +57,7 @@ export const createContentIdea = async (userId: string, ideaData: CreateContentI
       ...ideaData,
       user_id: userId,
     })
-    .select()
+.select('id,title,description,content_type,target_audience,status,source_type,source_data,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
     .single();
 
   if (error) {
@@ -74,7 +74,7 @@ export const updateContentIdea = async (id: string, updates: Partial<ContentIdea
     .from('content_ideas')
     .update(updates)
     .eq('id', id)
-    .select()
+.select('id,title,description,content_type,target_audience,status,source_type,source_data,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
     .single();
 
   if (error) {

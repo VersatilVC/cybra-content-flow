@@ -44,7 +44,7 @@ export async function fetchContentDerivatives(contentItemId: string): Promise<Co
   
   const { data, error } = await supabase
     .from('content_derivatives')
-    .select('*')
+    .select('id,content_item_id,user_id,title,content,derivative_type,category,status,metadata,word_count,content_type,file_url,file_path,mime_type,file_size,created_at,updated_at')
     .eq('content_item_id', contentItemId)
     .order('created_at', { ascending: false });
 
@@ -65,7 +65,7 @@ export async function createContentDerivative(derivativeData: CreateContentDeriv
       ...derivativeData,
       content_type: derivativeData.content_type || 'text'
     }])
-    .select()
+.select('id,content_item_id,user_id,title,content,derivative_type,category,status,metadata,word_count,content_type,file_url,file_path,mime_type,file_size,created_at,updated_at')
     .single();
 
   if (error) {
@@ -83,7 +83,7 @@ export async function updateContentDerivative(id: string, updates: Partial<Conte
     .from('content_derivatives')
     .update(updates)
     .eq('id', id)
-    .select()
+.select('id,content_item_id,user_id,title,content,derivative_type,category,status,metadata,word_count,content_type,file_url,file_path,mime_type,file_size,created_at,updated_at')
     .single();
 
   if (error) {
@@ -137,7 +137,7 @@ export async function triggerDerivativeGeneration(
   // Get the content item for context
   const { data: contentItem, error: contentError } = await supabase
     .from('content_items')
-    .select('*')
+    .select('id,user_id,title,content,summary,content_type,status,created_at,updated_at')
     .eq('id', contentItemId)
     .single();
 
