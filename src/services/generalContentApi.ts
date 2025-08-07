@@ -8,11 +8,21 @@ export const fetchGeneralContent = async (filters: {
   derivativeType?: string;
   status?: string;
   search?: string;
+  page?: number;
+  pageSize?: number;
 }): Promise<GeneralContentItem[]> => {
+  const page = Math.max(1, filters.page || 1);
+  const pageSize = Math.max(1, Math.min(50, filters.pageSize || 12));
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
   let query = supabase
     .from('general_content_items')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .select(
+      'id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,created_at,updated_at'
+    )
+    .order('created_at', { ascending: false })
+    .range(from, to);
 
   if (filters.category && filters.category !== 'all') {
     query = query.eq('category', filters.category);
@@ -69,7 +79,7 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
   const { data: result, error } = await supabase
     .from('general_content_items')
     .insert([insertData])
-    .select()
+.select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,created_at,updated_at')
     .single();
 
   if (error) {
@@ -98,7 +108,7 @@ export const updateGeneralContent = async (id: string, data: Partial<CreateGener
     .from('general_content_items')
     .update(data)
     .eq('id', id)
-    .select()
+    .select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,created_at,updated_at')
     .single();
 
   if (error) {
@@ -127,7 +137,7 @@ async function triggerGeneralContentWebhook(content: GeneralContentItem, userId:
   // Get the webhook configuration for general content processing
   const { data: webhooks, error: webhookError } = await supabase
     .from('webhook_configurations')
-    .select('*')
+    .select('id,name,webhook_url,is_active,webhook_type,created_by')
     .eq('webhook_type', 'knowledge_base')
     .eq('is_active', true);
 

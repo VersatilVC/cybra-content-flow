@@ -25,8 +25,37 @@ serve(async (req) => {
   try {
     // Parse and validate the request body
     const rawBody = await req.text();
-    console.log('Callback raw body:', rawBody);
-    
+    console.log('Callback raw body length:', rawBody.length);
+
+    // Optional: HMAC SHA-256 signature verification
+    const signingSecret = Deno.env.get('CALLBACK_SIGNING_SECRET');
+    const signatureHeader = req.headers.get('x-signature') || req.headers.get('x-signature-sha256');
+
+    if (signingSecret) {
+      if (!signatureHeader) {
+        console.warn('Missing signature header');
+        return new Response(
+          JSON.stringify({ error: 'Missing signature' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const expected = await hmacHex(signingSecret, rawBody);
+      const provided = (signatureHeader.startsWith('sha256=')
+        ? signatureHeader.slice(7)
+        : signatureHeader).toLowerCase();
+
+      if (provided !== expected) {
+        console.error('Invalid signature');
+        return new Response(
+          JSON.stringify({ error: 'Invalid signature' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      console.warn('CALLBACK_SIGNING_SECRET not set; skipping signature verification');
+    }
+
     let body;
     try {
       body = JSON.parse(rawBody);
@@ -38,7 +67,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Callback received:', body);
+    console.log('Callback received:', body?.type);
 
     // Basic validation - check for required type field
     if (!body.type) {
@@ -72,12 +101,27 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
-        message: error.message 
+        message: (error as Error).message 
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
+
+async function hmacHex(secret: string, data: string): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(data));
+  return Array.from(new Uint8Array(sig))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
 
 async function processCallbackInBackground(body: any) {
   console.log('Starting background processing for callback type:', body.type);

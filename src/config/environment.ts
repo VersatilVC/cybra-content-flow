@@ -67,10 +67,9 @@ export const getEdgeFunctionUrl = (functionName: string, params?: string): strin
 };
 
 export const getStorageUrl = (bucket: string, path?: string): string => {
-  if (path) {
-    return `${config.supabase.url}/storage/v1/object/public/${bucket}/${path}`;
-  }
-  return `${config.supabase.url}/storage/v1/object/public/${bucket}`;
+  const isPublicBucket = bucket === 'content-derivatives' || bucket === 'knowledge-base-files';
+  const base = `${config.supabase.url}/storage/v1/object/${isPublicBucket ? 'public/' : ''}${bucket}`;
+  return path ? `${base}/${path}` : base;
 };
 
 export const getCallbackUrl = (functionName: string): string => {
