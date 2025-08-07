@@ -2,15 +2,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "./cors.ts";
-import { 
-  handleIdeaProcessingCallback, 
-  handleBriefCreationCallback, 
+import {
+  handleIdeaProcessingCallback,
+  handleBriefCreationCallback,
   handleContentCreationCallback,
   handleAutoGenerationCallback,
   handleWordPressPublishingCallback,
   handleDerivativeGenerationCallback,
   handleContentItemFixCallback,
-  handleDerivativeGenerationSubmissionCallback
+  handleDerivativeGenerationSubmissionCallback,
+  handleGeneralContentProcessingCallback
 } from "./handlers.ts";
 
 serve(async (req) => {
@@ -118,6 +119,10 @@ async function processCallbackInBackground(body: any) {
       case 'content_item_fix_complete':
       case 'content_item_fix_failed':
         await handleContentItemFixCallback(supabase, body);
+        break;
+      
+      case 'general_content_processing_complete':
+        await handleGeneralContentProcessingCallback(supabase, body);
         break;
       
       default:

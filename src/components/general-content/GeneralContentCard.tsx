@@ -3,25 +3,31 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Trash2, Edit } from 'lucide-react';
+import { MoreHorizontal, Trash2, Edit, RotateCcw, Clock } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { GeneralContentItem } from '@/types/generalContent';
 import { getStatusInfo, formatDate } from '@/utils/contentItemStatusHelpers';
 import { derivativeTypes, getContentTypeIcon } from '@/components/content-item/derivativeTypes';
+import { useGeneralContent } from '@/hooks/useGeneralContent';
 
 interface GeneralContentCardProps {
   item: GeneralContentItem;
   onDelete: (id: string) => void;
   isDeleting: boolean;
+  onRetry?: (id: string) => void;
 }
 
 const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
   item,
   onDelete,
-  isDeleting
+  isDeleting,
+  onRetry
 }) => {
   const statusInfo = getStatusInfo(item.status);
   const StatusIcon = statusInfo.icon;
+  
+  // Show processing status
+  const isProcessing = item.status === 'draft' && !item.content;
 
   // Find the derivative type info
   const allDerivativeTypes = [
@@ -74,6 +80,15 @@ const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
                 <Edit className="w-4 h-4 mr-2" />
                 Edit
               </DropdownMenuItem>
+              {item.status === 'failed' && onRetry && (
+                <DropdownMenuItem 
+                  onClick={() => onRetry(item.id)}
+                  className="text-blue-600"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Retry
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem 
                 onClick={() => onDelete(item.id)}
                 disabled={isDeleting}
@@ -95,10 +110,21 @@ const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
           )}
           
           <div className="flex items-center gap-2">
-            <StatusIcon className="w-4 h-4" />
-            <span className={`text-xs px-2 py-1 rounded-full ${statusInfo.color}`}>
-              {statusInfo.label}
-            </span>
+            {isProcessing ? (
+              <>
+                <Clock className="w-4 h-4 animate-pulse text-blue-500" />
+                <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                  Processing...
+                </span>
+              </>
+            ) : (
+              <>
+                <StatusIcon className="w-4 h-4" />
+                <span className={`text-xs px-2 py-1 rounded-full ${statusInfo.color}`}>
+                  {statusInfo.label}
+                </span>
+              </>
+            )}
           </div>
           
           <div className="flex items-center justify-between text-xs text-gray-500">

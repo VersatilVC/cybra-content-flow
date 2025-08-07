@@ -3,6 +3,7 @@ import React from 'react';
 import { GeneralContentItem } from '@/types/generalContent';
 import GeneralContentCard from './GeneralContentCard';
 import EmptyGeneralContentState from './EmptyGeneralContentState';
+import { useGeneralContentRetry } from '@/hooks/useGeneralContentRetry';
 
 interface GeneralContentGridProps {
   items: GeneralContentItem[];
@@ -17,6 +18,8 @@ const GeneralContentGrid: React.FC<GeneralContentGridProps> = ({
   isDeleting,
   onCreateContent
 }) => {
+  const { retryGeneralContent, isRetrying } = useGeneralContentRetry();
+
   if (items.length === 0) {
     return <EmptyGeneralContentState onCreateContent={onCreateContent} />;
   }
@@ -29,6 +32,7 @@ const GeneralContentGrid: React.FC<GeneralContentGridProps> = ({
           item={item}
           onDelete={onDelete}
           isDeleting={isDeleting}
+          onRetry={retryGeneralContent}
         />
       ))}
     </div>

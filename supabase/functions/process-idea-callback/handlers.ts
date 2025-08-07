@@ -504,25 +504,57 @@ export async function handleDerivativeGenerationSubmissionCallback(supabase: any
       .update(updateData)
       .eq('id', body.submission_id);
 
-    // Create notification for derivative generation completion
-    const isSuccess = body.status === 'completed' && !body.error_message;
-    
-    await supabase
-      .from('notifications')
-      .insert({
-        user_id: submission.user_id,
-        title: isSuccess ? 'Content Derivatives Generated' : 'Derivative Generation Failed',
-        message: isSuccess 
-          ? 'Your content derivatives have been generated successfully. Check the Derivatives tab to view them.'
-          : `Derivative generation failed: ${body.error_message || 'Unknown error'}`,
-        type: isSuccess ? 'success' : 'error',
-        related_entity_id: body.content_item_id,
-        related_entity_type: 'content_item',
-        related_submission_id: body.submission_id
-      });
-
     console.log('Derivative generation submission callback completed successfully');
   } catch (error) {
     console.error('Error in handleDerivativeGenerationSubmissionCallback:', error);
+  }
+}
+
+export async function handleGeneralContentProcessingCallback(supabase: any, body: any) {
+  try {
+    console.log('Processing general content callback:', body);
+    
+    if (!body.general_content_id || !body.user_id) {
+      console.error('Missing required fields for general content callback:', body);
+      return;
+    }
+
+    const isSuccess = body.status === 'completed' || body.status === 'success';
+    const updateData = {
+      status: isSuccess ? 'ready' : 'failed',
+      updated_at: new Date().toISOString()
+    };
+
+    // Add error message if failed
+    if (!isSuccess && body.error_message) {
+      updateData.metadata = { error_message: body.error_message };
+    }
+
+    // Update the general content item status
+    await supabase
+      .from('general_content_items')
+      .update(updateData)
+      .eq('id', body.general_content_id);
+
+    // Create notification
+    const title = isSuccess ? 'General Content Ready' : 'General Content Processing Failed';
+    const message = isSuccess
+      ? `Your general content "${body.title}" has been processed and is ready for review.`
+      : `Failed to process general content "${body.title}". ${body.error_message || 'Please try again.'}`;
+
+    await supabase
+      .from('notifications')
+      .insert({
+        user_id: body.user_id,
+        title: title,
+        message: message,
+        type: isSuccess ? 'success' : 'error',
+        related_entity_id: body.general_content_id,
+        related_entity_type: 'general_content'
+      });
+
+    console.log('General content processing callback completed successfully');
+  } catch (error) {
+    console.error('Error in handleGeneralContentProcessingCallback:', error);
   }
 }
