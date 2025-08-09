@@ -1,5 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { 
   fetchGeneralContent, 
   createGeneralContent, 
@@ -81,6 +82,18 @@ export const useGeneralContent = (filters: GeneralContentFilters) => {
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
+
+  useEffect(() => {
+    const currentPage = filters.page ?? 1;
+    const nextPage = currentPage + 1;
+    if (nextPage <= totalPages) {
+      const nextFilters = { ...filters, page: nextPage };
+      queryClient.prefetchQuery({
+        queryKey: ['general-content', nextFilters],
+        queryFn: () => fetchGeneralContent(nextFilters),
+      });
+    }
+  }, [filters, totalPages, queryClient]);
 
   return {
     generalContent: items,

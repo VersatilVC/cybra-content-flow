@@ -23,6 +23,7 @@ export const fetchGeneralContent = async (filters: {
   const pageSize = Math.max(1, Math.min(50, filters.pageSize || 12));
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
+  const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
   let query = supabase
     .from('general_content_items')
@@ -58,6 +59,8 @@ export const fetchGeneralContent = async (filters: {
 
   const total = count || 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+  console.debug('GeneralContent fetch', { page, pageSize, total, totalPages, durationMs: Math.round(duration as number) });
 
   return {
     items: (data || []) as GeneralContentItem[],
