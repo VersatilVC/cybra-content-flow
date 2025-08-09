@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { useContentItems } from '@/hooks/useContentItems';
@@ -8,22 +8,29 @@ import ContentItemsHeader from '@/components/content-items/ContentItemsHeader';
 import ContentItemsFilters from '@/components/content-items/ContentItemsFilters';
 import ContentItemCard from '@/components/content-items/ContentItemCard';
 import EmptyContentItemsState from '@/components/content-items/EmptyContentItemsState';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const ContentItems = () => {
   const navigate = useNavigate();
-  const { contentItems, isLoading, error } = useContentItems({ page: 1, pageSize: 20 });
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+  const { contentItems, isLoading, error } = useContentItems({ page, pageSize });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
 
-  const filteredItems = contentItems.filter((item: ContentItem) => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.summary?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-    const matchesType = typeFilter === 'all' || item.content_type === typeFilter;
-    
-    return matchesSearch && matchesStatus && matchesType;
-  });
+useEffect(() => {
+  setPage(1);
+}, [searchTerm, statusFilter, typeFilter]);
+
+const filteredItems = contentItems.filter((item: ContentItem) => {
+  const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       item.summary?.toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+  const matchesType = typeFilter === 'all' || item.content_type === typeFilter;
+  
+  return matchesSearch && matchesStatus && matchesType;
+});
 
   const handleViewItem = (itemId: string, activeTab?: string) => {
     if (activeTab) {
@@ -79,16 +86,46 @@ const ContentItems = () => {
           typeFilter={typeFilter}
         />
       ) : (
-        <div className="space-y-4">
-          {filteredItems.map((item: ContentItem) => (
-            <ContentItemCard
-              key={item.id}
-              item={item}
-              onViewItem={handleViewItem}
-              onNavigateToDerivatives={handleNavigateToDerivatives}
-            />
-          ))}
-        </div>
+<> 
+          <div className="space-y-4">
+            {filteredItems.map((item: ContentItem) => (
+              <ContentItemCard
+                key={item.id}
+                item={item}
+                onViewItem={handleViewItem}
+                onNavigateToDerivatives={handleNavigateToDerivatives}
+              />
+            ))}
+          </div>
+
+          <Pagination className="mt-6">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page > 1) setPage(page - 1);
+                  }}
+                  className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <span className="px-3 py-2 text-sm">Page {page}</span>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (filteredItems.length >= pageSize) setPage(page + 1);
+                  }}
+                  className={filteredItems.length < pageSize ? 'pointer-events-none opacity-50' : ''}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </>
       )}
     </div>
   );

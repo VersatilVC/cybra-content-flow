@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -13,6 +13,7 @@ import ContentBriefsFilters from '@/components/content-briefs/ContentBriefsFilte
 import BriefsGrid from '@/components/content-briefs/BriefsGrid';
 import { useContentBriefsState } from '@/hooks/useContentBriefsState';
 import { useContentBriefsActions } from '@/hooks/useContentBriefsActions';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const ContentBriefs = () => {
   const { user, loading: authLoading } = useAuth();
@@ -35,16 +36,19 @@ const ContentBriefs = () => {
     setIsCreatingContent,
     setPendingBriefId,
     toast,
-  } = useContentBriefsState();
+} = useContentBriefsState();
 
-  const { 
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
+
+const { 
     briefs, 
     isLoading, 
     error,
     deleteBrief,
     updateBrief,
     isUpdating 
-  } = useContentBriefs(filters, { page: 1, pageSize: 12 });
+  } = useContentBriefs(filters, { page, pageSize });
 
   const { handleSaveBrief, handleCreateContentItem } = useContentBriefsActions({
     briefs,
@@ -69,6 +73,11 @@ const ContentBriefs = () => {
     briefsCount: briefs.length,
     retryCount
   });
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [JSON.stringify(filters)]);
 
   // Show loading while auth is still loading
   if (authLoading) {
@@ -144,6 +153,34 @@ const ContentBriefs = () => {
         onCreateContentItem={handleCreateContentItem}
         onView={handleView}
       />
+
+      <Pagination className="mt-6">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                if (page > 1) setPage(page - 1);
+              }}
+              className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
+            />
+          </PaginationItem>
+          <PaginationItem>
+            <span className="px-3 py-2 text-sm">Page {page}</span>
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationNext
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                if (briefs.length >= pageSize) setPage(page + 1);
+              }}
+              className={briefs.length < pageSize ? 'pointer-events-none opacity-50' : ''}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
 
       {/* Modals */}
       <ViewBriefModal
