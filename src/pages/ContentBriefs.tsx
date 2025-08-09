@@ -44,7 +44,7 @@ const ContentBriefs = () => {
     deleteBrief,
     updateBrief,
     isUpdating 
-  } = useContentBriefs(filters);
+  } = useContentBriefs(filters, { page: 1, pageSize: 12 });
 
   const { handleSaveBrief, handleCreateContentItem } = useContentBriefsActions({
     briefs,

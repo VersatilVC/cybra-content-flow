@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { ContentBrief, ContentBriefFilters, CreateContentBriefData } from '@/types/contentBriefs';
 
 export async function fetchContentBriefs(userId: string, filters?: ContentBriefFilters, options?: { page?: number; pageSize?: number }): Promise<ContentBrief[]> {
-  console.log('fetchContentBriefs called with:', { userId, filters });
+  console.log('fetchContentBriefs called with:', { userId, filters, options });
+  const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
   
   // Check if we have a valid session
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -48,15 +49,16 @@ export async function fetchContentBriefs(userId: string, filters?: ContentBriefF
     query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
   }
 
-  console.log('Executing query...');
+  // Execute and measure
   const { data, error } = await query;
+  const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
 
   if (error) {
     console.error('Query error:', error);
     throw new Error(`Failed to fetch content briefs: ${error.message}`);
   }
 
-  console.log('Query successful, returned', data?.length || 0, 'briefs');
+  console.debug('ContentBriefs fetch', { count: data?.length || 0, durationMs: Math.round(duration as number) });
   return (data || []) as ContentBrief[];
 }
 

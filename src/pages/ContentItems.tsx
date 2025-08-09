@@ -11,7 +11,7 @@ import EmptyContentItemsState from '@/components/content-items/EmptyContentItems
 
 const ContentItems = () => {
   const navigate = useNavigate();
-  const { contentItems, isLoading, error } = useContentItems();
+  const { contentItems, isLoading, error } = useContentItems({ page: 1, pageSize: 20 });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');

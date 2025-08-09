@@ -1,5 +1,6 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -12,15 +13,16 @@ import {
   CreateContentItemData
 } from '@/services/contentItemsApi';
 
-export function useContentItems() {
+export function useContentItems(options?: { page?: number; pageSize?: number }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: contentItems = [], isLoading, error } = useQuery({
-    queryKey: ['content-items', user?.id],
-    queryFn: () => fetchContentItems(user?.id || ''),
+    queryKey: ['content-items', user?.id, options],
+    queryFn: () => fetchContentItems(user?.id || '', options),
     enabled: !!user?.id,
+    placeholderData: keepPreviousData,
     retry: (failureCount, error) => {
       if (failureCount < 2 && !error.message.includes('auth') && !error.message.includes('JWT')) {
         return true;
@@ -28,6 +30,17 @@ export function useContentItems() {
       return false;
     },
   });
+
+  // Prefetch next page if pagination options provided
+  useEffect(() => {
+    if (user?.id && options?.page && options?.pageSize) {
+      const nextOptions = { ...options, page: options.page + 1 };
+      queryClient.prefetchQuery({
+        queryKey: ['content-items', user.id, nextOptions],
+        queryFn: () => fetchContentItems(user.id, nextOptions),
+      });
+    }
+  }, [user?.id, options?.page, options?.pageSize, queryClient]);
 
   const createMutation = useMutation({
     mutationFn: createContentItem,
