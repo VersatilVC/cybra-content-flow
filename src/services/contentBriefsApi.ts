@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ContentBrief, ContentBriefFilters, CreateContentBriefData } from '@/types/contentBriefs';
 
-export async function fetchContentBriefs(userId: string, filters?: ContentBriefFilters): Promise<ContentBrief[]> {
+export async function fetchContentBriefs(userId: string, filters?: ContentBriefFilters, options?: { page?: number; pageSize?: number }): Promise<ContentBrief[]> {
   console.log('fetchContentBriefs called with:', { userId, filters });
   
   // Check if we have a valid session
@@ -23,6 +23,14 @@ export async function fetchContentBriefs(userId: string, filters?: ContentBriefF
     .from('content_briefs')
     .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,file_summary,created_at,updated_at')
     .order('created_at', { ascending: false });
+
+  if (options?.page && options?.pageSize) {
+    const page = Math.max(1, options.page);
+    const pageSize = Math.max(1, Math.min(50, options.pageSize));
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    query = query.range(from, to);
+  }
 
   if (filters?.briefType && filters.briefType !== 'All Brief Types') {
     query = query.eq('brief_type', filters.briefType);

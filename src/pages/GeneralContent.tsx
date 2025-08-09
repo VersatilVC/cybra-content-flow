@@ -23,7 +23,9 @@ const GeneralContent = () => {
     generalContent, 
     isLoading, 
     deleteGeneralContent, 
-    isDeleting 
+    isDeleting,
+    total,
+    totalPages
   } = useGeneralContent(filters);
 
   const handleFilterChange = (key: keyof GeneralContentFilters, value: string | number) => {
@@ -62,11 +64,11 @@ const GeneralContent = () => {
         >
           Previous
         </Button>
-        <div className="text-sm opacity-70">Page {filters.page}</div>
+        <div className="text-sm opacity-70">Page {filters.page} of {totalPages}</div>
         <Button
           variant="outline"
-          onClick={() => setFilters(prev => ({ ...prev, page: (prev.page || 1) + 1 }))}
-          disabled={(generalContent?.length || 0) < (filters.pageSize || 12)}
+          onClick={() => setFilters(prev => ({ ...prev, page: Math.min(totalPages, (prev.page || 1) + 1) }))}
+          disabled={(filters.page || 1) >= totalPages}
         >
           Next
         </Button>

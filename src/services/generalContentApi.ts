@@ -3,6 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { getCallbackUrl } from '@/config/environment';
 import { CreateGeneralContentRequest, GeneralContentItem } from '@/types/generalContent';
 
+export interface GeneralContentPage {
+  items: GeneralContentItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export const fetchGeneralContent = async (filters: {
   category?: string;
   derivativeType?: string;
@@ -10,7 +18,7 @@ export const fetchGeneralContent = async (filters: {
   search?: string;
   page?: number;
   pageSize?: number;
-}): Promise<GeneralContentItem[]> => {
+}): Promise<GeneralContentPage> => {
   const page = Math.max(1, filters.page || 1);
   const pageSize = Math.max(1, Math.min(50, filters.pageSize || 12));
   const from = (page - 1) * pageSize;
@@ -19,7 +27,8 @@ export const fetchGeneralContent = async (filters: {
   let query = supabase
     .from('general_content_items')
     .select(
-      'id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,created_at,updated_at'
+      'id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,created_at,updated_at',
+      { count: 'exact' }
     )
     .order('created_at', { ascending: false })
     .range(from, to);
@@ -40,14 +49,23 @@ export const fetchGeneralContent = async (filters: {
     query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`);
   }
 
-  const { data, error } = await query;
+  const { data, error, count } = await query;
 
   if (error) {
     console.error('Error fetching general content:', error);
     throw new Error('Failed to fetch general content');
   }
 
-  return (data || []) as GeneralContentItem[];
+  const total = count || 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  return {
+    items: (data || []) as GeneralContentItem[],
+    total,
+    page,
+    pageSize,
+    totalPages,
+  };
 };
 
 export const createGeneralContent = async (data: CreateGeneralContentRequest): Promise<GeneralContentItem> => {

@@ -1,5 +1,5 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { 
   fetchGeneralContent, 
   createGeneralContent, 
@@ -13,13 +13,14 @@ export const useGeneralContent = (filters: GeneralContentFilters) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { 
-    data: generalContent = [], 
-    isLoading, 
-    error 
+  const {
+    data,
+    isLoading,
+    error
   } = useQuery({
     queryKey: ['general-content', filters],
     queryFn: () => fetchGeneralContent(filters),
+    placeholderData: keepPreviousData,
   });
 
   const createMutation = useMutation({
@@ -77,8 +78,16 @@ export const useGeneralContent = (filters: GeneralContentFilters) => {
     },
   });
 
+  const items = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = data?.totalPages ?? 1;
+
   return {
-    generalContent,
+    generalContent: items,
+    total,
+    totalPages,
+    page: filters.page ?? 1,
+    pageSize: filters.pageSize ?? 12,
     isLoading,
     error,
     createGeneralContent: createMutation.mutate,

@@ -35,14 +35,24 @@ export interface CreateContentItemData {
   word_count?: number;
 }
 
-export async function fetchContentItems(userId: string): Promise<ContentItem[]> {
+export async function fetchContentItems(userId: string, options?: { page?: number; pageSize?: number }): Promise<ContentItem[]> {
   console.log('Fetching content items for user:', userId);
   
   // With company-wide access, we fetch all content items (RLS will filter appropriately)
-  const { data, error } = await supabase
+  let query = supabase
     .from('content_items')
     .select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at')
     .order('created_at', { ascending: false });
+  
+  if (options?.page && options?.pageSize) {
+    const page = Math.max(1, options.page);
+    const pageSize = Math.max(1, Math.min(50, options.pageSize));
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    query = query.range(from, to);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching content items:', error);

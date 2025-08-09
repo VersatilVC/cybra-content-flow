@@ -11,7 +11,7 @@ export function useContentBriefs(filters: ContentBriefFilters) {
     queryFn: async () => {
       let query = supabase
         .from('content_briefs')
-        .select('*')
+        .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,file_summary,created_at,updated_at')
         .order('created_at', { ascending: false });
 
       if (filters.briefType && filters.briefType !== 'All Brief Types') {

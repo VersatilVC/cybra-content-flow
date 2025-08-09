@@ -2,12 +2,24 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ContentIdea, ContentIdeaFilters, CreateContentIdeaData } from '@/types/contentIdeas';
 
-export const fetchContentIdeas = async (userId: string, filters?: ContentIdeaFilters): Promise<ContentIdea[]> => {
+export const fetchContentIdeas = async (
+  userId: string,
+  filters?: ContentIdeaFilters,
+  options?: { page?: number; pageSize?: number }
+): Promise<ContentIdea[]> => {
   // With company-wide access, we fetch all content ideas (RLS will filter appropriately)
   let query = supabase
     .from('content_ideas')
     .select('id,title,description,content_type,target_audience,status,source_type,source_data,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
     .order('created_at', { ascending: false });
+
+  if (options?.page && options?.pageSize) {
+    const page = Math.max(1, options.page);
+    const pageSize = Math.max(1, Math.min(50, options.pageSize));
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    query = query.range(from, to);
+  }
 
   if (filters?.contentType && filters.contentType !== 'All Content Types') {
     query = query.eq('content_type', filters.contentType);
