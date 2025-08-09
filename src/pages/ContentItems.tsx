@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useContentItems } from '@/hooks/useContentItems';
 import { ContentItem } from '@/services/contentItemsApi';
 import ContentItemsHeader from '@/components/content-items/ContentItemsHeader';
@@ -21,9 +22,10 @@ const ContentItems = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const { contentItems, totalCount, isLoading, error } = useContentItems(
     {
-      search: searchTerm || undefined,
+      search: debouncedSearch || undefined,
       status: statusFilter !== 'all' ? statusFilter : undefined,
       type: typeFilter !== 'all' ? typeFilter : undefined,
     },
@@ -62,18 +64,18 @@ useEffect(() => {
 
 useEffect(() => {
   setPage(1);
-}, [searchTerm, statusFilter, typeFilter, pageSize]);
+}, [debouncedSearch, statusFilter, typeFilter, pageSize]);
 
 useEffect(() => {
   if (!initializedRef.current) return;
   const params: Record<string, string> = {};
   if (page && page !== 1) params.page = String(page);
   if (pageSize && pageSize !== 20) params.pageSize = String(pageSize);
-  if (searchTerm) params.search = searchTerm;
+  if (debouncedSearch) params.search = debouncedSearch;
   if (statusFilter && statusFilter !== 'all') params.status = statusFilter;
   if (typeFilter && typeFilter !== 'all') params.type = typeFilter;
   setSearchParams(params, { replace: true });
-}, [page, pageSize, searchTerm, statusFilter, typeFilter, setSearchParams]);
+}, [page, pageSize, debouncedSearch, statusFilter, typeFilter, setSearchParams]);
 
 // Server-side filtering applied; no client-side filtering needed
 

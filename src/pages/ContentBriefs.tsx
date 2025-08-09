@@ -16,6 +16,7 @@ import { useContentBriefsActions } from '@/hooks/useContentBriefsActions';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSearchParams } from 'react-router-dom';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const ContentBriefs = () => {
   const { user, loading: authLoading } = useAuth();
@@ -39,6 +40,8 @@ const ContentBriefs = () => {
     setPendingBriefId,
     toast,
 } = useContentBriefsState();
+
+  const debouncedFilters = useDebounce(filters, 400);
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
@@ -85,7 +88,7 @@ const {
     deleteBrief,
     updateBrief,
     isUpdating 
-  } = useContentBriefs(filters, { page, pageSize });
+  } = useContentBriefs(debouncedFilters, { page, pageSize });
 
   const { handleSaveBrief, handleCreateContentItem } = useContentBriefsActions({
     briefs,
@@ -114,19 +117,19 @@ const {
   // Reset to first page when filters or page size change
   useEffect(() => {
     setPage(1);
-  }, [JSON.stringify(filters), pageSize]);
+  }, [JSON.stringify(debouncedFilters), pageSize]);
 
   useEffect(() => {
     if (!initializedRef.current) return;
     const params: Record<string, string> = {};
     if (page && page !== 1) params.page = String(page);
     if (pageSize && pageSize !== 12) params.pageSize = String(pageSize);
-    if (filters.search) params.search = filters.search;
-    if (filters.briefType && filters.briefType !== 'All Brief Types') params.briefType = filters.briefType;
-    if (filters.targetAudience && filters.targetAudience !== 'All Audiences') params.targetAudience = filters.targetAudience;
-    if (filters.status && filters.status !== 'All Statuses') params.status = filters.status;
+    if (debouncedFilters.search) params.search = debouncedFilters.search;
+    if (debouncedFilters.briefType && debouncedFilters.briefType !== 'All Brief Types') params.briefType = debouncedFilters.briefType;
+    if (debouncedFilters.targetAudience && debouncedFilters.targetAudience !== 'All Audiences') params.targetAudience = debouncedFilters.targetAudience;
+    if (debouncedFilters.status && debouncedFilters.status !== 'All Statuses') params.status = debouncedFilters.status;
     setSearchParams(params, { replace: true });
-  }, [page, pageSize, filters, setSearchParams]);
+  }, [page, pageSize, debouncedFilters, setSearchParams]);
 
   // Show loading while auth is still loading
   if (authLoading) {
