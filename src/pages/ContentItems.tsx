@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { useContentItems } from '@/hooks/useContentItems';
 import { ContentItem } from '@/services/contentItemsApi';
@@ -14,6 +14,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const ContentItems = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initializedRef = useRef(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,9 +33,10 @@ const ContentItems = () => {
 const { user } = useAuth();
 
 useEffect(() => {
+  const urlPageSize = new URLSearchParams(window.location.search).get('pageSize');
   const key = `ui:content-items:pageSize:${user?.id || 'anon'}`;
   const stored = localStorage.getItem(key);
-  if (stored) setPageSize(Number(stored));
+  if (!urlPageSize && stored) setPageSize(Number(stored));
 }, [user?.id]);
 
 useEffect(() => {
@@ -42,17 +45,37 @@ useEffect(() => {
 }, [pageSize, user?.id]);
 
 useEffect(() => {
+  if (initializedRef.current) return;
+  const params = new URLSearchParams(window.location.search);
+  const p = Number(params.get('page') || '1');
+  setPage(isNaN(p) || p < 1 ? 1 : p);
+  const ps = params.get('pageSize');
+  if (ps) setPageSize(Math.max(1, Number(ps)));
+  const s = params.get('search') || '';
+  if (s) setSearchTerm(s);
+  const st = params.get('status');
+  if (st) setStatusFilter(st);
+  const t = params.get('type');
+  if (t) setTypeFilter(t);
+  initializedRef.current = true;
+}, []);
+
+useEffect(() => {
   setPage(1);
 }, [searchTerm, statusFilter, typeFilter, pageSize]);
 
-const filteredItems = contentItems.filter((item: ContentItem) => {
-  const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       item.summary?.toLowerCase().includes(searchTerm.toLowerCase());
-  const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-  const matchesType = typeFilter === 'all' || item.content_type === typeFilter;
-  
-  return matchesSearch && matchesStatus && matchesType;
-});
+useEffect(() => {
+  if (!initializedRef.current) return;
+  const params: Record<string, string> = {};
+  if (page && page !== 1) params.page = String(page);
+  if (pageSize && pageSize !== 20) params.pageSize = String(pageSize);
+  if (searchTerm) params.search = searchTerm;
+  if (statusFilter && statusFilter !== 'all') params.status = statusFilter;
+  if (typeFilter && typeFilter !== 'all') params.type = typeFilter;
+  setSearchParams(params, { replace: true });
+}, [page, pageSize, searchTerm, statusFilter, typeFilter, setSearchParams]);
+
+// Server-side filtering applied; no client-side filtering needed
 
   const handleViewItem = (itemId: string, activeTab?: string) => {
     if (activeTab) {
@@ -90,7 +113,7 @@ const filteredItems = contentItems.filter((item: ContentItem) => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <ContentItemsHeader itemCount={filteredItems.length} />
+      <ContentItemsHeader itemCount={totalCount} />
       
       <ContentItemsFilters
         searchTerm={searchTerm}
@@ -118,7 +141,7 @@ const filteredItems = contentItems.filter((item: ContentItem) => {
       </div>
 
 
-      {filteredItems.length === 0 ? (
+      {contentItems.length === 0 ? (
         <EmptyContentItemsState
           searchTerm={searchTerm}
           statusFilter={statusFilter}
@@ -127,7 +150,7 @@ const filteredItems = contentItems.filter((item: ContentItem) => {
       ) : (
         <> 
           <div className="space-y-4">
-            {filteredItems.map((item: ContentItem) => (
+            {contentItems.map((item: ContentItem) => (
               <ContentItemCard
                 key={item.id}
                 item={item}

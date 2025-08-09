@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -15,6 +15,7 @@ import { useContentBriefsState } from '@/hooks/useContentBriefsState';
 import { useContentBriefsActions } from '@/hooks/useContentBriefsActions';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useSearchParams } from 'react-router-dom';
 
 const ContentBriefs = () => {
   const { user, loading: authLoading } = useAuth();
@@ -41,13 +42,15 @@ const ContentBriefs = () => {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initializedRef = useRef(false);
   // Persist page size per user in localStorage
-  useEffect(() => {
+useEffect(() => {
     if (!user) return;
     const key = `ui:briefs:pageSize:${user.id}`;
     const stored = localStorage.getItem(key);
-    if (stored) setPageSize(Number(stored));
+    const urlPageSize = new URLSearchParams(window.location.search).get('pageSize');
+    if (!urlPageSize && stored) setPageSize(Number(stored));
   }, [user?.id]);
 
   useEffect(() => {
@@ -55,6 +58,24 @@ const ContentBriefs = () => {
     const key = `ui:briefs:pageSize:${user.id}`;
     localStorage.setItem(key, String(pageSize));
   }, [pageSize, user?.id]);
+
+useEffect(() => {
+  if (initializedRef.current) return;
+  const params = new URLSearchParams(window.location.search);
+  const p = Number(params.get('page') || '1');
+  setPage(isNaN(p) || p < 1 ? 1 : p);
+  const ps = params.get('pageSize');
+  if (ps) setPageSize(Math.max(1, Number(ps)));
+  const s = params.get('search');
+  if (s !== null) handleFilterChange('search', s);
+  const bt = params.get('briefType');
+  if (bt) handleFilterChange('briefType', bt);
+  const ta = params.get('targetAudience');
+  if (ta) handleFilterChange('targetAudience', ta);
+  const stParam = params.get('status');
+  if (stParam) handleFilterChange('status', stParam);
+  initializedRef.current = true;
+}, []);
 
 const { 
     briefs, 
@@ -94,6 +115,18 @@ const {
   useEffect(() => {
     setPage(1);
   }, [JSON.stringify(filters), pageSize]);
+
+  useEffect(() => {
+    if (!initializedRef.current) return;
+    const params: Record<string, string> = {};
+    if (page && page !== 1) params.page = String(page);
+    if (pageSize && pageSize !== 12) params.pageSize = String(pageSize);
+    if (filters.search) params.search = filters.search;
+    if (filters.briefType && filters.briefType !== 'All Brief Types') params.briefType = filters.briefType;
+    if (filters.targetAudience && filters.targetAudience !== 'All Audiences') params.targetAudience = filters.targetAudience;
+    if (filters.status && filters.status !== 'All Statuses') params.status = filters.status;
+    setSearchParams(params, { replace: true });
+  }, [page, pageSize, filters, setSearchParams]);
 
   // Show loading while auth is still loading
   if (authLoading) {
