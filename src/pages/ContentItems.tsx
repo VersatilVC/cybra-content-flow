@@ -9,11 +9,12 @@ import ContentItemsFilters from '@/components/content-items/ContentItemsFilters'
 import ContentItemCard from '@/components/content-items/ContentItemCard';
 import EmptyContentItemsState from '@/components/content-items/EmptyContentItemsState';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ContentItems = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
-  const pageSize = 20;
+  const [pageSize, setPageSize] = useState(20);
   const { contentItems, totalCount, isLoading, error } = useContentItems({ page, pageSize });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -21,7 +22,7 @@ const ContentItems = () => {
 
 useEffect(() => {
   setPage(1);
-}, [searchTerm, statusFilter, typeFilter]);
+}, [searchTerm, statusFilter, typeFilter, pageSize]);
 
 const filteredItems = contentItems.filter((item: ContentItem) => {
   const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -78,6 +79,23 @@ const filteredItems = contentItems.filter((item: ContentItem) => {
         onStatusFilterChange={setStatusFilter}
         onTypeFilterChange={setTypeFilter}
       />
+
+      <div className="mt-4 flex justify-end">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Items per page</span>
+          <Select value={String(pageSize)} onValueChange={(v) => { setPage(1); setPageSize(Number(v)); }}>
+            <SelectTrigger className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
 
       {filteredItems.length === 0 ? (
         <EmptyContentItemsState

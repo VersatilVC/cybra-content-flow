@@ -14,6 +14,7 @@ import BriefsGrid from '@/components/content-briefs/BriefsGrid';
 import { useContentBriefsState } from '@/hooks/useContentBriefsState';
 import { useContentBriefsActions } from '@/hooks/useContentBriefsActions';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ContentBriefs = () => {
   const { user, loading: authLoading } = useAuth();
@@ -39,7 +40,7 @@ const ContentBriefs = () => {
 } = useContentBriefsState();
 
   const [page, setPage] = useState(1);
-  const pageSize = 12;
+  const [pageSize, setPageSize] = useState(12);
 
 const { 
     briefs, 
@@ -75,10 +76,10 @@ const {
     retryCount
   });
 
-  // Reset to first page when filters change
+  // Reset to first page when filters or page size change
   useEffect(() => {
     setPage(1);
-  }, [JSON.stringify(filters)]);
+  }, [JSON.stringify(filters), pageSize]);
 
   // Show loading while auth is still loading
   if (authLoading) {
@@ -146,6 +147,23 @@ const {
         filters={filters}
         onFilterChange={handleFilterChange}
       />
+
+      <div className="mt-4 flex justify-end">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Items per page</span>
+          <Select value={String(pageSize)} onValueChange={(v) => { setPage(1); setPageSize(Number(v)); }}>
+            <SelectTrigger className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="12">12</SelectItem>
+              <SelectItem value="24">24</SelectItem>
+              <SelectItem value="48">48</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
 
       <BriefsGrid
         briefs={briefs}
