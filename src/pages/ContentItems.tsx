@@ -10,6 +10,7 @@ import ContentItemCard from '@/components/content-items/ContentItemCard';
 import EmptyContentItemsState from '@/components/content-items/EmptyContentItemsState';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ContentItems = () => {
   const navigate = useNavigate();
@@ -19,6 +20,19 @@ const ContentItems = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+
+const { user } = useAuth();
+
+useEffect(() => {
+  const key = `ui:content-items:pageSize:${user?.id || 'anon'}`;
+  const stored = localStorage.getItem(key);
+  if (stored) setPageSize(Number(stored));
+}, [user?.id]);
+
+useEffect(() => {
+  const key = `ui:content-items:pageSize:${user?.id || 'anon'}`;
+  localStorage.setItem(key, String(pageSize));
+}, [pageSize, user?.id]);
 
 useEffect(() => {
   setPage(1);

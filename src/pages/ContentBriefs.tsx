@@ -42,6 +42,20 @@ const ContentBriefs = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
+  // Persist page size per user in localStorage
+  useEffect(() => {
+    if (!user) return;
+    const key = `ui:briefs:pageSize:${user.id}`;
+    const stored = localStorage.getItem(key);
+    if (stored) setPageSize(Number(stored));
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+    const key = `ui:briefs:pageSize:${user.id}`;
+    localStorage.setItem(key, String(pageSize));
+  }, [pageSize, user?.id]);
+
 const { 
     briefs, 
     totalCount,
