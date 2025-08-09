@@ -51,7 +51,7 @@ export async function fetchContentItems(
   let query = supabase
     .from('content_items')
     .select(
-      'id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at',
+      'id,user_id,content_brief_id,submission_id,title,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at',
       { count: 'exact' }
     )
     .order('created_at', { ascending: false });

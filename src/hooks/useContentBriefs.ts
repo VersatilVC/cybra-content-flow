@@ -16,7 +16,7 @@ export function useContentBriefs(
       const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
       let q = supabase
         .from('content_briefs')
-        .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,file_summary,created_at,updated_at', { count: 'exact' })
+        .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,created_at,updated_at', { count: 'exact' })
         .order('created_at', { ascending: false });
 
       if (options?.page && options?.pageSize) {
@@ -63,7 +63,7 @@ export function useContentBriefs(
         queryFn: async () => {
           let q = supabase
             .from('content_briefs')
-            .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,file_summary,created_at,updated_at')
+            .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,created_at,updated_at')
             .order('created_at', { ascending: false });
           const from = (nextPage - 1) * options.pageSize;
           const to = from + options.pageSize - 1;

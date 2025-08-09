@@ -124,6 +124,7 @@ useEffect(() => {
         onSearchChange={setSearchTerm}
         onStatusFilterChange={setStatusFilter}
         onTypeFilterChange={setTypeFilter}
+        onClear={() => { setSearchTerm(''); setStatusFilter('all'); setTypeFilter('all'); setPage(1); }}
       />
 
       <div className="mt-4 flex justify-end">
