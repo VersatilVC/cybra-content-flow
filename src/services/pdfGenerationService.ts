@@ -5,16 +5,20 @@ import React from 'react';
 export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> {
   try {
     console.log('pdfGenerationService: Generating professional PDF for content item:', contentItem.id);
-    console.log('pdfGenerationService: Using ProfessionalPDFTemplate');
-    
-    // Create the PDF document with Document wrapper
+
+    // Lazy-load react-pdf and the template to reduce bundle size and avoid DOM Document collisions
+    const { pdf, Document: PDFDocument } = await import('@react-pdf/renderer');
+    const { default: ProfessionalPDFTemplate } = await import('@/components/content-item/ProfessionalPDFTemplate');
+
+    // Create the PDF document with Document wrapper from react-pdf
     const pdfDocument = React.createElement(
-      Document,
+      PDFDocument as unknown as React.ComponentType<any>,
       {},
       React.createElement(ProfessionalPDFTemplate, { contentItem })
     );
+
     const pdfBlob = await pdf(pdfDocument).toBlob();
-    
+
     console.log('pdfGenerationService: Professional PDF generated successfully');
     return pdfBlob;
   } catch (error) {
