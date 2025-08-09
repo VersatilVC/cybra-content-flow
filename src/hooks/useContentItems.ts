@@ -18,7 +18,7 @@ export function useContentItems(options?: { page?: number; pageSize?: number }) 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: contentItems = [], isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['content-items', user?.id, options],
     queryFn: () => fetchContentItems(user?.id || '', options),
     enabled: !!user?.id,
@@ -101,7 +101,8 @@ export function useContentItems(options?: { page?: number; pageSize?: number }) 
   });
 
   return {
-    contentItems,
+    contentItems: data?.items ?? [],
+    totalCount: data?.totalCount ?? 0,
     isLoading,
     error,
     createContentItem: createMutation.mutate,

@@ -35,13 +35,12 @@ export interface CreateContentItemData {
   word_count?: number;
 }
 
-export async function fetchContentItems(userId: string, options?: { page?: number; pageSize?: number }): Promise<ContentItem[]> {
+export async function fetchContentItems(userId: string, options?: { page?: number; pageSize?: number }): Promise<{ items: ContentItem[]; totalCount: number }> {
   console.log('Fetching content items for user:', userId);
   
-  // With company-wide access, we fetch all content items (RLS will filter appropriately)
   let query = supabase
     .from('content_items')
-    .select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at')
+    .select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at', { count: 'exact' })
     .order('created_at', { ascending: false });
   
   if (options?.page && options?.pageSize) {
@@ -52,14 +51,14 @@ export async function fetchContentItems(userId: string, options?: { page?: numbe
     query = query.range(from, to);
   }
 
-  const { data, error } = await query;
+  const { data, error, count } = await query;
 
   if (error) {
     console.error('Error fetching content items:', error);
     throw new Error(`Failed to fetch content items: ${error.message}`);
   }
 
-  return data as ContentItem[];
+  return { items: (data || []) as ContentItem[], totalCount: count ?? 0 };
 }
 
 export async function fetchContentItemsByBrief(briefId: string): Promise<ContentItem[]> {

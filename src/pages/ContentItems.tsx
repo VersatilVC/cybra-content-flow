@@ -8,13 +8,13 @@ import ContentItemsHeader from '@/components/content-items/ContentItemsHeader';
 import ContentItemsFilters from '@/components/content-items/ContentItemsFilters';
 import ContentItemCard from '@/components/content-items/ContentItemCard';
 import EmptyContentItemsState from '@/components/content-items/EmptyContentItemsState';
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
 
 const ContentItems = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const pageSize = 20;
-  const { contentItems, isLoading, error } = useContentItems({ page, pageSize });
+  const { contentItems, totalCount, isLoading, error } = useContentItems({ page, pageSize });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -86,7 +86,7 @@ const filteredItems = contentItems.filter((item: ContentItem) => {
           typeFilter={typeFilter}
         />
       ) : (
-<> 
+        <> 
           <div className="space-y-4">
             {filteredItems.map((item: ContentItem) => (
               <ContentItemCard
@@ -98,33 +98,66 @@ const filteredItems = contentItems.filter((item: ContentItem) => {
             ))}
           </div>
 
-          <Pagination className="mt-6">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (page > 1) setPage(page - 1);
-                  }}
-                  className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
-                />
-              </PaginationItem>
-              <PaginationItem>
-                <span className="px-3 py-2 text-sm">Page {page}</span>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (filteredItems.length >= pageSize) setPage(page + 1);
-                  }}
-                  className={filteredItems.length < pageSize ? 'pointer-events-none opacity-50' : ''}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          {(() => {
+            const totalPages = Math.max(1, Math.ceil((totalCount || 0) / pageSize));
+            const pages: number[] = [];
+            const add = (n: number) => { if (n >= 1 && n <= totalPages && !pages.includes(n)) pages.push(n); };
+            if (totalPages <= 7) {
+              for (let i = 1; i <= totalPages; i++) add(i);
+            } else {
+              add(1);
+              add(2);
+              add(page - 1);
+              add(page);
+              add(page + 1);
+              add(totalPages - 1);
+              add(totalPages);
+              // Ensure sorted unique
+              pages.sort((a,b) => a - b);
+            }
+            return (
+              <Pagination className="mt-6">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); if (page > 1) setPage(page - 1); }}
+                      className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
+                    />
+                  </PaginationItem>
+                  {pages.map((p, idx) => {
+                    const prev = pages[idx - 1];
+                    const showEllipsis = prev !== undefined && p - prev > 1;
+                    return (
+                      <React.Fragment key={p}>
+                        {showEllipsis && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+                        <PaginationItem>
+                          <PaginationLink
+                            href="#"
+                            isActive={p === page}
+                            onClick={(e) => { e.preventDefault(); setPage(p); }}
+                          >
+                            {p}
+                          </PaginationLink>
+                        </PaginationItem>
+                      </React.Fragment>
+                    );
+                  })}
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); if (page < totalPages) setPage(page + 1); }}
+                      className={page >= totalPages ? 'pointer-events-none opacity-50' : ''}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            );
+          })()}
         </>
       )}
     </div>

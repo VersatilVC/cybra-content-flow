@@ -16,7 +16,7 @@ export function useContentBriefs(
       const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
       let q = supabase
         .from('content_briefs')
-        .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,file_summary,created_at,updated_at')
+        .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,file_summary,created_at,updated_at', { count: 'exact' })
         .order('created_at', { ascending: false });
 
       if (options?.page && options?.pageSize) {
@@ -43,12 +43,12 @@ export function useContentBriefs(
         q = q.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
       }
 
-      const { data, error } = await q;
+      const { data, error, count } = await q;
 
       if (error) throw error;
       const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
-      console.debug('useContentBriefs fetch', { count: data?.length || 0, durationMs: Math.round(duration as number), paged: !!(options?.page && options?.pageSize) });
-      return data as ContentBrief[];
+      console.debug('useContentBriefs fetch', { count: data?.length || 0, totalCount: count ?? 0, durationMs: Math.round(duration as number), paged: !!(options?.page && options?.pageSize) });
+      return { items: (data || []) as ContentBrief[], totalCount: count ?? 0 };
     },
     placeholderData: keepPreviousData,
   });
@@ -113,7 +113,8 @@ export function useContentBriefs(
   });
 
   return {
-    briefs: query.data || [],
+    briefs: query.data?.items || [],
+    totalCount: query.data?.totalCount ?? 0,
     isLoading: query.isLoading,
     error: query.error,
     deleteBrief: deleteBriefMutation.mutate,
