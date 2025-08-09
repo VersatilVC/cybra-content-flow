@@ -1,6 +1,5 @@
-
-import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 interface KnowledgeBaseStats {
   name: string;
@@ -24,93 +23,100 @@ interface ContentSubmission {
   error_message?: string;
 }
 
+const knowledgeBaseConfig: Array<Omit<KnowledgeBaseStats, "itemCount" | "lastUpdated">> = [
+  {
+    name: "Cyabra Knowledge Base",
+    description: "Company-specific resources",
+    color: "bg-purple-500",
+    tableName: "documents",
+    dbValue: "cyabra",
+  },
+  {
+    name: "Industry Knowledge Base",
+    description: "Industry trends and insights",
+    color: "bg-blue-500",
+    tableName: "documents_industry",
+    dbValue: "industry",
+  },
+  {
+    name: "News Knowledge Base",
+    description: "Current news and updates",
+    color: "bg-green-500",
+    tableName: "documents_news",
+    dbValue: "news",
+  },
+  {
+    name: "Competitor Knowledge Base",
+    description: "Competitive intelligence",
+    color: "bg-orange-500",
+    tableName: "documents_competitor",
+    dbValue: "competitor",
+  },
+];
+
 export function useKnowledgeBaseData() {
-  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBaseStats[]>([]);
-  const [recentItems, setRecentItems] = useState<ContentSubmission[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const kbQuery = useQuery<{ knowledgeBases: KnowledgeBaseStats[] }>({
+    queryKey: ["knowledge-bases", "stats"],
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const kbStats = await Promise.all(
+        knowledgeBaseConfig.map(async (kb) => {
+          // Run count and latest submission queries in parallel per KB
+          const [countRes, latestRes] = await Promise.all([
+            supabase
+              .from(kb.tableName as any)
+              .select("*", { count: "planned", head: true }),
+            supabase
+              .from("content_submissions")
+              .select("created_at")
+              .eq("knowledge_base", kb.dbValue)
+              .eq("processing_status", "completed")
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle(),
+          ]);
 
-  const knowledgeBaseConfig = [
-    {
-      name: "Cyabra Knowledge Base",
-      description: "Company-specific resources",
-      color: "bg-purple-500",
-      tableName: "documents",
-      dbValue: "cyabra"
-    },
-    {
-      name: "Industry Knowledge Base", 
-      description: "Industry trends and insights",
-      color: "bg-blue-500",
-      tableName: "documents_industry",
-      dbValue: "industry"
-    },
-    {
-      name: "News Knowledge Base",
-      description: "Current news and updates", 
-      color: "bg-green-500",
-      tableName: "documents_news",
-      dbValue: "news"
-    },
-    {
-      name: "Competitor Knowledge Base",
-      description: "Competitive intelligence",
-      color: "bg-orange-500", 
-      tableName: "documents_competitor",
-      dbValue: "competitor"
-    }
-  ];
+          const count = countRes.count || 0;
+          const latest = (latestRes as any)?.data as { created_at?: string } | null;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch counts for each knowledge base
-        const kbPromises = knowledgeBaseConfig.map(async (kb) => {
-          const { count } = await supabase
-            .from(kb.tableName as any)
-            .select('*', { count: 'exact', head: true });
-
-          // For last updated, we'll use content_submissions data with the correct dbValue
-          const { data: latestSubmission } = await supabase
-            .from('content_submissions')
-            .select('created_at')
-            .eq('knowledge_base', kb.dbValue)
-            .eq('processing_status', 'completed')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          let lastUpdated = 'No data';
-          if (latestSubmission?.created_at) {
-            lastUpdated = new Date(latestSubmission.created_at).toLocaleDateString();
+          let lastUpdated = "No data";
+          if (latest?.created_at) {
+            lastUpdated = new Date(latest.created_at).toLocaleDateString();
           }
 
           return {
             ...kb,
-            itemCount: count || 0,
-            lastUpdated
-          };
-        });
+            itemCount: count,
+            lastUpdated,
+          } as KnowledgeBaseStats;
+        })
+      );
 
-        const kbStats = await Promise.all(kbPromises);
-        setKnowledgeBases(kbStats);
+      return { knowledgeBases: kbStats };
+    },
+  });
 
-        // Fetch recent content submissions
-        const { data: submissions } = await supabase
-          .from('content_submissions')
-          .select('id,original_filename,file_url,knowledge_base,content_type,processing_status,file_size,created_at,error_message')
-          .order('created_at', { ascending: false })
-          .limit(10);
+  const recentQuery = useQuery<{ recentItems: ContentSubmission[] }>({
+    queryKey: ["knowledge-bases", "recent"],
+    staleTime: 15_000,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const { data: submissions } = await supabase
+        .from("content_submissions")
+        .select(
+          "id,original_filename,file_url,knowledge_base,content_type,processing_status,file_size,created_at,error_message"
+        )
+        .order("created_at", { ascending: false })
+        .limit(10);
 
-        setRecentItems(submissions || []);
-      } catch (error) {
-        console.error('Error fetching knowledge base data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      return { recentItems: submissions || [] };
+    },
+  });
 
-    fetchData();
-  }, []);
-
-  return { knowledgeBases, recentItems, isLoading };
+  return {
+    knowledgeBases: kbQuery.data?.knowledgeBases || [],
+    recentItems: recentQuery.data?.recentItems || [],
+    isLoading: kbQuery.isLoading || recentQuery.isLoading,
+  };
 }
