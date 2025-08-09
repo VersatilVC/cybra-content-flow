@@ -9,9 +9,24 @@ interface DerivativeSummaryProps {
 }
 
 const DerivativeSummary: React.FC<DerivativeSummaryProps> = ({ contentItemId }) => {
-const { derivatives, isLoading } = useContentDerivatives(contentItemId);
-...
+  const { derivatives, isLoading } = useContentDerivatives(contentItemId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        Loading derivatives...
+      </div>
+    );
+  }
+
 const totalCount = derivatives.length;
+
+  const categorizedCounts: Record<string, number> = derivatives.reduce((acc, d) => {
+    const cat = (d as any).category || 'Other';
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   if (totalCount === 0) {
     return (

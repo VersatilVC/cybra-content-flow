@@ -32,6 +32,8 @@ const ContentItems = () => {
     },
     { page, pageSize }
   );
+const itemIds = contentItems.map((i: ContentItem) => i.id);
+const { data: derivativeCounts = {}, isLoading: isLoadingCounts } = useDerivativeCounts(itemIds);
 
 const { user } = useAuth();
 

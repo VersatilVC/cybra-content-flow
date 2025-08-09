@@ -19,7 +19,8 @@ const InlineDerivativeIndicator: React.FC<InlineDerivativeIndicatorProps> = ({
   categoryCounts: categoryCountsProp,
   isLoadingExternal = false,
 }) => {
-  const { derivatives, isLoading } = useContentDerivatives(contentItemId);
+  const contentItemIdToFetch = categoryCountsProp ? '' : contentItemId;
+  const { derivatives, isLoading } = useContentDerivatives(contentItemIdToFetch);
 
   // Build counts locally if not provided by parent
   const computedCategoryCounts = (derivatives || []).reduce((acc, derivative) => {
