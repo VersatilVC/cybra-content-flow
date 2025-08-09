@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ContentItem } from '@/services/contentItemsApi';
+import { logger } from '@/utils/logger';
 
 export function useContentItemByBrief(briefId: string) {
   return useQuery({
@@ -18,7 +19,7 @@ const { data, error } = await supabase
         .single();
 
       if (error) {
-        console.error('Error fetching content item by brief:', error);
+        logger.error('Error fetching content item by brief:', error);
         return null;
       }
       

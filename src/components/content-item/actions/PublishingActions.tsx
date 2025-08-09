@@ -4,6 +4,7 @@ import { Share, Globe, Loader2 } from 'lucide-react';
 import { ContentItem } from '@/services/contentItemsApi';
 import { publishToWordPress } from '@/services/wordpressPublishingService';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface PublishingActionsProps {
   contentItem: ContentItem;
@@ -48,7 +49,7 @@ export const PublishingActions: React.FC<PublishingActionsProps> = ({
         
         onRefetch();
       } else {
-        console.error('WordPress publishing failed with result:', result);
+        logger.error('WordPress publishing failed with result:', result);
         toast({
           title: 'WordPress Publishing Failed',
           description: result.error || 'Failed to publish to WordPress.',
@@ -56,9 +57,9 @@ export const PublishingActions: React.FC<PublishingActionsProps> = ({
         });
       }
     } catch (error) {
-      console.error('WordPress publishing failed:', error);
-      console.error('Error type:', typeof error);
-      console.error('Error message:', error instanceof Error ? error.message : error);
+      logger.error('WordPress publishing failed:', error);
+      logger.error('Error type:', typeof error);
+      logger.error('Error message:', error instanceof Error ? error.message : error);
       toast({
         title: 'WordPress Publishing Failed',
         description: error instanceof Error ? error.message : 'Failed to publish to WordPress.',

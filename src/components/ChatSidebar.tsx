@@ -8,6 +8,7 @@ import { MessageSquare, Plus, Trash2, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { EditableChatTitle } from '@/components/chat/EditableChatTitle';
 import { DeleteChatConfirmDialog } from '@/components/chat/DeleteChatConfirmDialog';
+import { logger } from '@/utils/logger';
 
 interface ChatSidebarProps {
   selectedSessionId: string | null;
@@ -30,7 +31,7 @@ export function ChatSidebar({ selectedSessionId, onSessionSelect, onNewChat }: C
       const newSession = await createSessionAsync('New Chat');
       onSessionSelect(newSession.id);
     } catch (error) {
-      console.error('Failed to create new session:', error);
+      logger.error('Failed to create new session:', error);
     }
   };
 

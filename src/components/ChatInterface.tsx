@@ -8,6 +8,7 @@ import { useChatSessions } from '@/hooks/useChatSessions';
 import { Send, Bot, MessageSquare } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { ChatMessage } from '@/components/chat/ChatMessage';
+import { logger } from '@/utils/logger';
 
 interface ChatInterfaceProps {
   sessionId: string | null;
@@ -59,7 +60,7 @@ export function ChatInterface({ sessionId, onSessionCreated }: ChatInterfaceProp
         onSessionCreated(newSession.id);
         sendMessage({ content: messageContent, sessionId: newSession.id });
       } catch (error) {
-        console.error('Failed to create session and send message:', error);
+        logger.error('Failed to create session and send message:', error);
         return;
       }
     } else {

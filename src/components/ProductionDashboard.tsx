@@ -10,6 +10,7 @@ import { BackupRecoverySystem } from '@/utils/backupRecovery';
 import { RollbackManager } from '@/utils/rollbackProcedures';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface SystemHealth {
   database: boolean;
@@ -45,7 +46,7 @@ export const ProductionDashboard: React.FC = () => {
       const health = await ProductionMonitoring.performHealthCheck();
       setSystemHealth(health);
     } catch (error) {
-      console.error('Failed to check system health:', error);
+      logger.error('Failed to check system health:', error);
       toast({
         title: 'Health Check Failed',
         description: 'Unable to retrieve system health status',
