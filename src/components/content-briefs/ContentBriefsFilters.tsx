@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContentBriefFilters } from '@/types/contentBriefs';
 
@@ -11,6 +12,18 @@ interface ContentBriefsFiltersProps {
 }
 
 export default function ContentBriefsFilters({ filters, onFilterChange }: ContentBriefsFiltersProps) {
+  const isDefault = ((filters.search ?? '') === ''
+    && filters.briefType === 'All Brief Types'
+    && filters.targetAudience === 'All Audiences'
+    && filters.status === 'All Statuses');
+
+  const handleClear = () => {
+    onFilterChange('search', '');
+    onFilterChange('briefType', 'All Brief Types');
+    onFilterChange('targetAudience', 'All Audiences');
+    onFilterChange('status', 'All Statuses');
+  };
+
   return (
     <div className="mb-6 space-y-4">
       <div className="flex gap-4 items-center">
@@ -65,6 +78,15 @@ export default function ContentBriefsFilters({ filters, onFilterChange }: Conten
             <SelectItem value="discarded">Discarded</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          onClick={handleClear}
+          disabled={isDefault}
+          className="ml-auto"
+          aria-label="Clear all filters"
+        >
+          <RotateCcw className="w-4 h-4 mr-2" /> Clear filters
+        </Button>
       </div>
     </div>
   );
