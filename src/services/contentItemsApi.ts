@@ -1,5 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 export interface ContentItem {
   id: string;
@@ -46,13 +46,13 @@ export async function fetchContentItems(
   filters?: ContentItemFilters,
   options?: { page?: number; pageSize?: number }
 ): Promise<{ items: ContentItem[]; totalCount: number }> {
-  console.log('Fetching content items for user:', userId, { filters, options });
+  logger.info('Fetching content items for user:', userId, { filters, options });
   
   let query = supabase
     .from('content_items')
     .select(
       'id,user_id,content_brief_id,submission_id,title,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at',
-      { count: 'exact' }
+      { count: 'planned' }
     )
     .order('created_at', { ascending: false });
 
@@ -81,7 +81,7 @@ export async function fetchContentItems(
   const { data, error, count } = await query;
 
   if (error) {
-    console.error('Error fetching content items:', error);
+    logger.error('Error fetching content items:', error);
     throw new Error(`Failed to fetch content items: ${error.message}`);
   }
 
@@ -89,7 +89,7 @@ export async function fetchContentItems(
 }
 
 export async function fetchContentItemsByBrief(briefId: string): Promise<ContentItem[]> {
-  console.log('Fetching content items for brief:', briefId);
+  logger.info('Fetching content items for brief:', briefId);
   
   const { data, error } = await supabase
     .from('content_items')
@@ -98,7 +98,7 @@ export async function fetchContentItemsByBrief(briefId: string): Promise<Content
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching content items by brief:', error);
+    logger.error('Error fetching content items by brief:', error);
     throw new Error(`Failed to fetch content items: ${error.message}`);
   }
 
@@ -106,7 +106,7 @@ export async function fetchContentItemsByBrief(briefId: string): Promise<Content
 }
 
 export async function createContentItem(itemData: CreateContentItemData): Promise<ContentItem> {
-  console.log('Creating content item:', itemData);
+  logger.info('Creating content item:', itemData);
   
   const { data, error } = await supabase
     .from('content_items')
@@ -115,7 +115,7 @@ export async function createContentItem(itemData: CreateContentItemData): Promis
     .single();
 
   if (error) {
-    console.error('Error creating content item:', error);
+    logger.error('Error creating content item:', error);
     throw new Error(`Failed to create content item: ${error.message}`);
   }
 
@@ -123,7 +123,7 @@ export async function createContentItem(itemData: CreateContentItemData): Promis
 }
 
 export async function updateContentItem(id: string, updates: Partial<ContentItem>): Promise<ContentItem> {
-  console.log('Updating content item:', id, updates);
+  logger.info('Updating content item:', id, updates);
   
   const { data, error } = await supabase
     .from('content_items')
@@ -133,7 +133,7 @@ export async function updateContentItem(id: string, updates: Partial<ContentItem
     .single();
 
   if (error) {
-    console.error('Error updating content item:', error);
+    logger.error('Error updating content item:', error);
     throw new Error(`Failed to update content item: ${error.message}`);
   }
 
@@ -141,7 +141,7 @@ export async function updateContentItem(id: string, updates: Partial<ContentItem
 }
 
 export async function deleteContentItem(id: string): Promise<void> {
-  console.log('Deleting content item:', id);
+  logger.info('Deleting content item:', id);
   
   const { error } = await supabase
     .from('content_items')
@@ -149,7 +149,7 @@ export async function deleteContentItem(id: string): Promise<void> {
     .eq('id', id);
 
   if (error) {
-    console.error('Error deleting content item:', error);
+    logger.error('Error deleting content item:', error);
     throw new Error(`Failed to delete content item: ${error.message}`);
   }
 }

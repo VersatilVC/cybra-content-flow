@@ -6,14 +6,16 @@ export type CategoryCounts = Record<string, { total: number; approved: number; p
 export type DerivativeCountsMap = Record<string, CategoryCounts>;
 
 export function useDerivativeCounts(contentItemIds: string[]) {
+  const ids = Array.isArray(contentItemIds) ? Array.from(new Set(contentItemIds)).sort() : [];
+  const key = ids.join(',');
   return useQuery({
-    queryKey: ['derivative-counts', ...contentItemIds],
-    enabled: Array.isArray(contentItemIds) && contentItemIds.length > 0,
+    queryKey: ['derivative-counts', key],
+    enabled: ids.length > 0,
     queryFn: async (): Promise<DerivativeCountsMap> => {
       const { data, error } = await supabase
         .from('content_derivatives')
         .select('content_item_id, category, status')
-        .in('content_item_id', contentItemIds);
+        .in('content_item_id', ids);
 
       if (error) throw error;
 

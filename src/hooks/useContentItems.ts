@@ -13,6 +13,7 @@ import {
   CreateContentItemData,
   ContentItemFilters,
 } from '@/services/contentItemsApi';
+import { logger } from '@/utils/logger';
 
 export function useContentItems(
   filters?: ContentItemFilters,
@@ -56,7 +57,7 @@ export function useContentItems(
       });
     },
     onError: (error: Error) => {
-      console.error('Create content item error:', error);
+      logger.error('Create content item error:', error);
       toast({
         title: 'Failed to create content item',
         description: error.message,
@@ -76,7 +77,7 @@ export function useContentItems(
       });
     },
     onError: (error: Error) => {
-      console.error('Update content item error:', error);
+      logger.error('Update content item error:', error);
       toast({
         title: 'Failed to update content item',
         description: error.message,
@@ -95,7 +96,7 @@ export function useContentItems(
       });
     },
     onError: (error: Error) => {
-      console.error('Delete content item error:', error);
+      logger.error('Delete content item error:', error);
       toast({
         title: 'Failed to delete content item',
         description: error.message,

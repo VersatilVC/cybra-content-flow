@@ -163,6 +163,7 @@ useEffect(() => {
                 onViewItem={handleViewItem}
                 onNavigateToDerivatives={handleNavigateToDerivatives}
                 categoryCounts={derivativeCounts[item.id]}
+                isLoadingExternal={isLoadingCounts}
               />
             ))}
           </div>

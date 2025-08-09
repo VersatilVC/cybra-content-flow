@@ -14,6 +14,7 @@ interface ContentItemCardProps {
   onViewItem: (itemId: string) => void;
   onNavigateToDerivatives: (itemId: string) => void;
   categoryCounts?: CategoryCounts;
+  isLoadingExternal?: boolean;
 }
 
 const ContentItemCard: React.FC<ContentItemCardProps> = ({
@@ -21,6 +22,7 @@ const ContentItemCard: React.FC<ContentItemCardProps> = ({
   onViewItem,
   onNavigateToDerivatives,
   categoryCounts,
+  isLoadingExternal,
 }) => {
   const statusInfo = getStatusInfo(item.status);
   const StatusIcon = statusInfo.icon;
@@ -62,6 +64,7 @@ const ContentItemCard: React.FC<ContentItemCardProps> = ({
   contentItemId={item.id}
   onNavigate={() => onNavigateToDerivatives(item.id)}
   categoryCounts={categoryCounts}
+  isLoadingExternal={isLoadingExternal}
 />
               </div>
             </div>
