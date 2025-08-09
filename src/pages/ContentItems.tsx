@@ -16,10 +16,17 @@ const ContentItems = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const { contentItems, totalCount, isLoading, error } = useContentItems({ page, pageSize });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const { contentItems, totalCount, isLoading, error } = useContentItems(
+    {
+      search: searchTerm || undefined,
+      status: statusFilter !== 'all' ? statusFilter : undefined,
+      type: typeFilter !== 'all' ? typeFilter : undefined,
+    },
+    { page, pageSize }
+  );
 
 const { user } = useAuth();
 

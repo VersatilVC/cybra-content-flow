@@ -10,17 +10,21 @@ import {
   updateContentItem, 
   deleteContentItem,
   ContentItem,
-  CreateContentItemData
+  CreateContentItemData,
+  ContentItemFilters,
 } from '@/services/contentItemsApi';
 
-export function useContentItems(options?: { page?: number; pageSize?: number }) {
+export function useContentItems(
+  filters?: ContentItemFilters,
+  options?: { page?: number; pageSize?: number }
+) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['content-items', user?.id, options],
-    queryFn: () => fetchContentItems(user?.id || '', options),
+    queryKey: ['content-items', user?.id, filters, options],
+    queryFn: () => fetchContentItems(user?.id || '', filters, options),
     enabled: !!user?.id,
     placeholderData: keepPreviousData,
     retry: (failureCount, error) => {
@@ -36,11 +40,11 @@ export function useContentItems(options?: { page?: number; pageSize?: number }) 
     if (user?.id && options?.page && options?.pageSize) {
       const nextOptions = { ...options, page: options.page + 1 };
       queryClient.prefetchQuery({
-        queryKey: ['content-items', user.id, nextOptions],
-        queryFn: () => fetchContentItems(user.id, nextOptions),
+        queryKey: ['content-items', user.id, filters, nextOptions],
+        queryFn: () => fetchContentItems(user.id, filters, nextOptions),
       });
     }
-  }, [user?.id, options?.page, options?.pageSize, queryClient]);
+  }, [user?.id, options?.page, options?.pageSize, queryClient, JSON.stringify(filters)]);
 
   const createMutation = useMutation({
     mutationFn: createContentItem,
