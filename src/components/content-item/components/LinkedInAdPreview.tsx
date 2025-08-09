@@ -74,6 +74,8 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({ derivative }) => 
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
               }}
+              loading="lazy"
+              decoding="async"
             />
           </div>
         )}

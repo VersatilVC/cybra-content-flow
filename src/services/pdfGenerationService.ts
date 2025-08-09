@@ -1,8 +1,6 @@
 
-import { pdf, Document } from '@react-pdf/renderer';
 import { ContentItem } from '@/services/contentItemsApi';
 import React from 'react';
-import ProfessionalPDFTemplate from '@/components/content-item/ProfessionalPDFTemplate';
 
 export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> {
   try {

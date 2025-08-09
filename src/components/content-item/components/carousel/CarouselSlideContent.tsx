@@ -27,6 +27,8 @@ const CarouselSlideContent: React.FC<CarouselSlideContentProps> = ({
           const target = e.target as HTMLImageElement;
           target.src = '/placeholder.svg';
         }}
+        loading="lazy"
+        decoding="async"
       />
       
       {/* Slide overlay with info */}

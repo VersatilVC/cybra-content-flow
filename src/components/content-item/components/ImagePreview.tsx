@@ -70,6 +70,8 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ derivative }) => {
               console.log('Image loaded successfully:', derivative.file_url);
               setImageError(false);
             }}
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">

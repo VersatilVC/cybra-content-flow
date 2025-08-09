@@ -22,7 +22,7 @@ export function useProfile() {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('*')
+          .select('id, email, role, status, first_name, last_name, created_at, updated_at, last_active')
           .eq('id', user.id)
           .maybeSingle();
 

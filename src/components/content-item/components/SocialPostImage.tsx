@@ -155,6 +155,8 @@ const SocialPostImage: React.FC<SocialPostImageProps> = ({ imageUrl, platform })
             onLoad={handleImageLoad}
             onError={handleImageError}
             style={{ display: imageError ? 'none' : 'block' }}
+            loading="lazy"
+            decoding="async"
           />
         </div>
       ) : (

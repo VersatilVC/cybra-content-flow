@@ -9,7 +9,7 @@ export function useContentSuggestions(ideaId: string) {
     queryFn: async (): Promise<ContentSuggestion[]> => {
       const { data, error } = await supabase
         .from('content_suggestions')
-        .select('*')
+        .select('id,content_idea_id,title,description,content_type,relevance_score,source_url,source_title,file_summary,created_at,updated_at')
         .eq('content_idea_id', ideaId)
         .order('relevance_score', { ascending: false });
 

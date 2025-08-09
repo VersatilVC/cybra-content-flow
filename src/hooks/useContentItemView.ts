@@ -26,7 +26,7 @@ export const useContentItemView = () => {
       
       const { data, error } = await supabase
         .from('content_items')
-        .select('*')
+        .select('id,user_id,title,content,content_type,status,summary,word_count,tags,resources,multimedia_suggestions,content_brief_id,submission_id,wordpress_url,created_at,updated_at,file_summary')
         .eq('id', id)
         .single();
 

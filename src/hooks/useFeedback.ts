@@ -40,7 +40,7 @@ export function useFeedback() {
       // First, fetch all feedback submissions
       const { data: feedbackData, error: feedbackError } = await supabase
         .from('feedback_submissions')
-        .select('*')
+        .select('id,title,description,category,priority,status,submitter_id,assigned_to,attachment_url,attachment_filename,internal_notes,created_at,updated_at')
         .order('created_at', { ascending: false });
 
       if (feedbackError) {

@@ -8,7 +8,7 @@ export function useBriefBySource(sourceId: string, sourceType: 'idea' | 'suggest
     queryFn: async () => {
       const { data, error } = await supabase
         .from('content_briefs')
-        .select('*')
+        .select('id,user_id,title,content,brief_type,target_audience,source_type,source_id,status,description,file_summary,created_at,updated_at')
         .eq('source_id', sourceId)
         .eq('source_type', sourceType)
         .maybeSingle();

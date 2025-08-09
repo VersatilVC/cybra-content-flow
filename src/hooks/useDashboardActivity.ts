@@ -24,7 +24,7 @@ export function useDashboardActivity() {
       // Get recent notifications
       const { data: notifications, error: notificationsError } = await supabase
         .from('notifications')
-        .select('*')
+         .select('id,user_id,title,message,type,related_entity_id,created_at,related_submission_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -34,7 +34,7 @@ export function useDashboardActivity() {
       // Get recent content submissions
       const { data: submissions, error: submissionsError } = await supabase
         .from('content_submissions')
-        .select('*')
+        .select('id,user_id,original_filename,processing_status,completed_at,created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(5);

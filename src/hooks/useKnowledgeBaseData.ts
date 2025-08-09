@@ -97,7 +97,7 @@ export function useKnowledgeBaseData() {
         // Fetch recent content submissions
         const { data: submissions } = await supabase
           .from('content_submissions')
-          .select('*')
+          .select('id,original_filename,file_url,knowledge_base,content_type,processing_status,file_size,created_at,error_message')
           .order('created_at', { ascending: false })
           .limit(10);
 

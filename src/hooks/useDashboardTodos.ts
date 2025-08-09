@@ -24,7 +24,7 @@ export function useDashboardTodos() {
       // Fetch content ideas that need review (ready status)
       const { data: ideasData, error: ideasError } = await supabase
         .from('content_ideas')
-        .select('*')
+         .select('id,title,description,content_type,target_audience,status,source_type,source_data,created_at,updated_at,idea_research_summary')
         .eq('user_id', user.id)
         .eq('status', 'ready')
         .order('created_at', { ascending: false })
@@ -35,7 +35,7 @@ export function useDashboardTodos() {
       // Fetch content briefs that need review (ready status)
       const { data: briefsData, error: briefsError } = await supabase
         .from('content_briefs')
-        .select('*')
+         .select('id,title,description,content, status, source_type, source_id, brief_type, target_audience, user_id, created_at, updated_at')
         .eq('user_id', user.id)
         .eq('status', 'ready')
         .order('created_at', { ascending: false })
@@ -46,7 +46,7 @@ export function useDashboardTodos() {
       // Fetch content items that need review (ready_for_review or needs_revision status)
       const { data: itemsData, error: itemsError } = await supabase
         .from('content_items')
-        .select('*')
+        .select('id,title,content,content_type,status,summary,word_count,tags,resources,multimedia_suggestions,content_brief_id,submission_id,user_id,wordpress_url,created_at,updated_at')
         .eq('user_id', user.id)
         .in('status', ['ready_for_review', 'needs_revision', 'needs_fix'])
         .order('created_at', { ascending: false })
