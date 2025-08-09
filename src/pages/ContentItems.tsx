@@ -12,6 +12,7 @@ import EmptyContentItemsState from '@/components/content-items/EmptyContentItems
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDerivativeCounts } from '@/hooks/useDerivativeCounts';
 
 const ContentItems = () => {
   const navigate = useNavigate();
@@ -153,12 +154,13 @@ useEffect(() => {
       ) : (
         <> 
           <div className="space-y-4">
-            {contentItems.map((item: ContentItem) => (
+{contentItems.map((item: ContentItem) => (
               <ContentItemCard
                 key={item.id}
                 item={item}
                 onViewItem={handleViewItem}
                 onNavigateToDerivatives={handleNavigateToDerivatives}
+                categoryCounts={derivativeCounts[item.id]}
               />
             ))}
           </div>

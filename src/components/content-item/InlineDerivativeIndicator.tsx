@@ -4,37 +4,41 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Layers } from 'lucide-react';
 import { useContentDerivatives } from '@/hooks/useContentDerivatives';
+import type { CategoryCounts } from '@/hooks/useDerivativeCounts';
 
 interface InlineDerivativeIndicatorProps {
   contentItemId: string;
   onNavigate: () => void;
+  categoryCounts?: CategoryCounts;
+  isLoadingExternal?: boolean;
 }
 
 const InlineDerivativeIndicator: React.FC<InlineDerivativeIndicatorProps> = ({ 
   contentItemId, 
-  onNavigate 
+  onNavigate,
+  categoryCounts: categoryCountsProp,
+  isLoadingExternal = false,
 }) => {
   const { derivatives, isLoading } = useContentDerivatives(contentItemId);
 
-  if (isLoading || derivatives.length === 0) {
-    return null;
-  }
-
-  // Group derivatives by category
-  const categoryCounts = derivatives.reduce((acc, derivative) => {
-    const category = derivative.category;
+  // Build counts locally if not provided by parent
+  const computedCategoryCounts = (derivatives || []).reduce((acc, derivative) => {
+    const category = derivative.category as string;
     if (!acc[category]) {
-      acc[category] = {
-        total: 0,
-        approved: 0,
-        published: 0
-      };
+      acc[category] = { total: 0, approved: 0, published: 0 };
     }
     acc[category].total++;
     if (derivative.status === 'approved') acc[category].approved++;
     if (derivative.status === 'published') acc[category].published++;
     return acc;
-  }, {} as Record<string, { total: number; approved: number; published: number }>);
+  }, {} as CategoryCounts);
+
+  const categoryCounts = categoryCountsProp ?? computedCategoryCounts;
+  const loading = categoryCountsProp ? isLoadingExternal : isLoading;
+
+  if (loading || Object.keys(categoryCounts).length === 0) {
+    return null;
+  }
 
   const getCategoryBadgeInfo = (category: string) => {
     switch (category) {

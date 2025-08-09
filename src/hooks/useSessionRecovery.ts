@@ -1,11 +1,12 @@
 
 import { useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 export function useSessionRecovery() {
   const validateSession = useCallback(async () => {
     try {
-      console.log('SessionRecovery: Validating current session');
+logger.info('SessionRecovery: Validating current session');
       
       const { data: { session }, error } = await supabase.auth.getSession();
       
@@ -15,7 +16,7 @@ export function useSessionRecovery() {
       }
       
       if (!session) {
-        console.log('SessionRecovery: No session found');
+logger.info('SessionRecovery: No session found');
         return false;
       }
       
@@ -24,7 +25,7 @@ export function useSessionRecovery() {
       const expiresAt = session.expires_at;
       
       if (expiresAt && now >= expiresAt) {
-        console.log('SessionRecovery: Session expired, attempting refresh');
+logger.info('SessionRecovery: Session expired, attempting refresh');
         
         const { data: { session: refreshedSession }, error: refreshError } = 
           await supabase.auth.refreshSession();
@@ -34,11 +35,11 @@ export function useSessionRecovery() {
           return false;
         }
         
-        console.log('SessionRecovery: Session refreshed successfully');
+logger.info('SessionRecovery: Session refreshed successfully');
         return !!refreshedSession;
       }
       
-      console.log('SessionRecovery: Session is valid');
+      logger.info('SessionRecovery: Session is valid');
       return true;
     } catch (error) {
       console.error('SessionRecovery: Unexpected error during session validation:', error);
@@ -47,29 +48,29 @@ export function useSessionRecovery() {
   }, []);
 
   const recoverSession = useCallback(async () => {
-    console.log('SessionRecovery: Attempting session recovery');
+logger.info('SessionRecovery: Attempting session recovery');
     
     try {
       // First try to get the session from storage
       const storedSession = localStorage.getItem('supabase.auth.token');
       
       if (!storedSession) {
-        console.log('SessionRecovery: No stored session found');
+logger.info('SessionRecovery: No stored session found');
         return false;
       }
       
-      console.log('SessionRecovery: Found stored session, validating...');
+logger.info('SessionRecovery: Found stored session, validating...');
       
       // Validate the session
       const isValid = await validateSession();
       
       if (!isValid) {
-        console.log('SessionRecovery: Stored session is invalid, clearing storage');
+logger.info('SessionRecovery: Stored session is invalid, clearing storage');
         localStorage.removeItem('supabase.auth.token');
         return false;
       }
       
-      console.log('SessionRecovery: Session recovery successful');
+logger.info('SessionRecovery: Session recovery successful');
       return true;
     } catch (error) {
       console.error('SessionRecovery: Session recovery failed:', error);
@@ -81,12 +82,12 @@ export function useSessionRecovery() {
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'supabase.auth.token') {
-        console.log('SessionRecovery: Session storage changed externally');
+logger.info('SessionRecovery: Session storage changed externally');
         
         if (!e.newValue) {
-          console.log('SessionRecovery: Session was cleared externally');
+          logger.info('SessionRecovery: Session was cleared externally');
         } else {
-          console.log('SessionRecovery: Session was updated externally');
+          logger.info('SessionRecovery: Session was updated externally');
         }
       }
     };
@@ -99,7 +100,7 @@ export function useSessionRecovery() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        console.log('SessionRecovery: Tab became visible, validating session');
+logger.info('SessionRecovery: Tab became visible, validating session');
         validateSession();
       }
     };

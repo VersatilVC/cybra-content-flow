@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/logger';
 
 export function useAuthState() {
   const [user, setUser] = useState<User | null>(null);
@@ -13,14 +14,14 @@ export function useAuthState() {
 
     const getInitialSession = async () => {
       try {
-        console.log('AuthState: Getting initial session');
+        logger.info('AuthState: Getting initial session');
         
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('AuthState: Error getting initial session:', error);
         } else {
-          console.log('AuthState: Initial session result:', {
+logger.info('AuthState: Initial session result:', {
             hasSession: !!initialSession,
             userId: initialSession?.user?.id,
             email: initialSession?.user?.email,
@@ -37,7 +38,7 @@ export function useAuthState() {
         console.error('AuthState: Unexpected error getting initial session:', error);
       } finally {
         if (mounted) {
-          console.log('AuthState: Setting loading to false');
+          logger.info('AuthState: Setting loading to false');
           setLoading(false);
         }
       }
@@ -49,7 +50,7 @@ export function useAuthState() {
     // Then set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('AuthState: Auth state change event:', event, {
+logger.info('AuthState: Auth state change event:', event, {
           hasSession: !!session,
           userId: session?.user?.id,
           email: session?.user?.email,
@@ -66,13 +67,13 @@ export function useAuthState() {
 
         // Handle specific auth events
         switch (event) {
-          case 'INITIAL_SESSION':
-            console.log('AuthState: Initial session processed');
+case 'INITIAL_SESSION':
+            logger.info('AuthState: Initial session processed');
             break;
-          case 'SIGNED_IN':
-            console.log('AuthState: User signed in successfully');
+case 'SIGNED_IN':
+            logger.info('AuthState: User signed in successfully');
             if (session) {
-              console.log('AuthState: Session details:', {
+              logger.info('AuthState: Session details:', {
                 accessToken: session.access_token ? 'present' : 'missing',
                 refreshToken: session.refresh_token ? 'present' : 'missing',
                 expiresAt: session.expires_at,
@@ -80,35 +81,35 @@ export function useAuthState() {
               });
             }
             break;
-          case 'SIGNED_OUT':
-            console.log('AuthState: User signed out');
+case 'SIGNED_OUT':
+            logger.info('AuthState: User signed out');
             if (mounted) {
               setUser(null);
               setSession(null);
             }
             // Only redirect if not already on auth page
             if (window.location.pathname !== '/auth') {
-              console.log('AuthState: Redirecting to auth page after sign out');
+              logger.info('AuthState: Redirecting to auth page after sign out');
               window.location.href = '/auth';
             }
             break;
-          case 'TOKEN_REFRESHED':
-            console.log('AuthState: Token refreshed successfully');
+case 'TOKEN_REFRESHED':
+            logger.info('AuthState: Token refreshed successfully');
             if (session) {
-              console.log('AuthState: New token expires at:', session.expires_at);
+              logger.info('AuthState: New token expires at:', session.expires_at);
             }
             break;
-          case 'USER_UPDATED':
-            console.log('AuthState: User data updated');
+case 'USER_UPDATED':
+            logger.info('AuthState: User data updated');
             break;
           default:
-            console.log('AuthState: Unhandled auth event:', event);
+            logger.info('AuthState: Unhandled auth event:', event);
         }
       }
     );
 
     return () => {
-      console.log('AuthState: Cleaning up auth subscription');
+logger.info('AuthState: Cleaning up auth subscription');
       mounted = false;
       subscription.unsubscribe();
     };

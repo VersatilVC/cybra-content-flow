@@ -2,6 +2,7 @@
 // This file manages all URLs and environment-dependent values securely
 
 import { productionConfig } from './production';
+import { logger } from '@/utils/logger';
 
 interface AppConfig {
   supabase: {
@@ -46,7 +47,7 @@ function getEnvironment(): 'development' | 'production' {
 // Get configuration based on current environment
 function getConfig(): AppConfig {
   const environment = getEnvironment();
-  console.log('Environment Detection:', {
+logger.info('Environment Detection:', {
     hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
     environment,
     userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'server'
@@ -54,7 +55,7 @@ function getConfig(): AppConfig {
   
   // ALWAYS use production configuration for this project
   // The production database (agbcslwigqthrlxnqbmc) is our primary database
-  console.log('Using PRODUCTION config:', productionConfig.supabase.url);
+  logger.info('Using PRODUCTION config:', productionConfig.supabase.url);
   return productionConfig;
 }
 

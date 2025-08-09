@@ -7,17 +7,20 @@ import { FileText, Eye } from 'lucide-react';
 import { ContentItem } from '@/services/contentItemsApi';
 import { getStatusInfo, formatDate } from '@/utils/contentItemStatusHelpers';
 import InlineDerivativeIndicator from '@/components/content-item/InlineDerivativeIndicator';
+import type { CategoryCounts } from '@/hooks/useDerivativeCounts';
 
 interface ContentItemCardProps {
   item: ContentItem;
   onViewItem: (itemId: string) => void;
   onNavigateToDerivatives: (itemId: string) => void;
+  categoryCounts?: CategoryCounts;
 }
 
 const ContentItemCard: React.FC<ContentItemCardProps> = ({
   item,
   onViewItem,
-  onNavigateToDerivatives
+  onNavigateToDerivatives,
+  categoryCounts,
 }) => {
   const statusInfo = getStatusInfo(item.status);
   const StatusIcon = statusInfo.icon;
@@ -55,10 +58,11 @@ const ContentItemCard: React.FC<ContentItemCardProps> = ({
                 <Badge className={`px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color}`}>
                   {statusInfo.label}
                 </Badge>
-                <InlineDerivativeIndicator 
-                  contentItemId={item.id}
-                  onNavigate={() => onNavigateToDerivatives(item.id)}
-                />
+<InlineDerivativeIndicator 
+  contentItemId={item.id}
+  onNavigate={() => onNavigateToDerivatives(item.id)}
+  categoryCounts={categoryCounts}
+/>
               </div>
             </div>
           </div>

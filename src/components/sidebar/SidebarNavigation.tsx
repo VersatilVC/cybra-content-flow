@@ -28,6 +28,7 @@ import { useLocation, Link } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useUnreadFeedbackCount } from "@/hooks/useFeedback";
 import { SubmitFeedbackModal } from "@/components/feedback/SubmitFeedbackModal";
+import { logger } from '@/utils/logger';
 
 const navigationItems = [
   {
@@ -106,7 +107,7 @@ export function SidebarNavigation() {
   const { data: unreadCount = 0 } = useUnreadFeedbackCount();
   const isAdmin = profile?.role === 'super_admin' || profile?.role === 'admin';
 
-  console.log('SidebarNavigation render:', { 
+logger.info('SidebarNavigation render:', { 
     profile: profile ? { role: profile.role, email: profile.email } : null, 
     loading, 
     isAdmin,

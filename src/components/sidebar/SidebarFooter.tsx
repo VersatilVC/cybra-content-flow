@@ -4,6 +4,7 @@ import { SidebarFooter as UISidebarFooter } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { logger } from '@/utils/logger';
 
 export function SidebarFooter() {
   const { signOut, user } = useAuth();
@@ -11,7 +12,7 @@ export function SidebarFooter() {
 
   const handleSignOut = async () => {
     try {
-      console.log('SidebarFooter: Initiating sign out');
+logger.info('SidebarFooter: Initiating sign out');
       await signOut();
     } catch (error) {
       console.error('SidebarFooter: Error signing out:', error);
@@ -45,7 +46,7 @@ export function SidebarFooter() {
     
   const initials = firstName?.[0] || userEmail?.[0]?.toUpperCase() || 'U';
 
-  console.log('SidebarFooter render:', { 
+logger.info('SidebarFooter render:', { 
     profile: profile ? { ...profile, role: profile.role } : null, 
     user: user ? { id: user.id, email: user.email } : null, 
     displayName, 

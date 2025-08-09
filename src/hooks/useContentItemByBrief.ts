@@ -9,9 +9,9 @@ export function useContentItemByBrief(briefId: string) {
     queryFn: async (): Promise<ContentItem | null> => {
       if (!briefId) return null;
       
-      const { data, error } = await supabase
+const { data, error } = await supabase
         .from('content_items')
-        .select('id,user_id,title,content,content_type,status,summary,word_count,tags,resources,multimedia_suggestions,content_brief_id,submission_id,wordpress_url,created_at,updated_at,file_summary')
+        .select('id, content_brief_id, created_at')
         .eq('content_brief_id', briefId)
         .order('created_at', { ascending: false })
         .limit(1)

@@ -17,13 +17,24 @@ export function useDashboardStats() {
     queryFn: async (): Promise<DashboardStats> => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      // Get content items stats
-      const { data: contentItems, error: contentItemsError } = await supabase
-        .from('content_items')
-        .select('status, created_at')
-        .eq('user_id', user.id);
+// Get content items counts efficiently
+      const [
+        { count: totalContentCount, error: totalError },
+        { count: pendingCount, error: pendingError }
+      ] = await Promise.all([
+        supabase
+          .from('content_items')
+          .select('*', { count: 'planned', head: true })
+          .eq('user_id', user.id),
+        supabase
+          .from('content_items')
+          .select('*', { count: 'planned', head: true })
+          .eq('user_id', user.id)
+          .in('status', ['pending', 'draft', 'needs_fix'])
+      ]);
 
-      if (contentItemsError) throw contentItemsError;
+      if (totalError) throw totalError;
+      if (pendingError) throw pendingError;
 
       // Get knowledge base items count from all 4 tables
       const [
@@ -32,19 +43,15 @@ export function useDashboardStats() {
         { count: newsCount },
         { count: competitorCount }
       ] = await Promise.all([
-        supabase.from('documents').select('*', { count: 'exact', head: true }),
-        supabase.from('documents_industry').select('*', { count: 'exact', head: true }),
-        supabase.from('documents_news').select('*', { count: 'exact', head: true }),
-        supabase.from('documents_competitor').select('*', { count: 'exact', head: true })
+supabase.from('documents').select('*', { count: 'planned', head: true }),
+        supabase.from('documents_industry').select('*', { count: 'planned', head: true }),
+        supabase.from('documents_news').select('*', { count: 'planned', head: true }),
+        supabase.from('documents_competitor').select('*', { count: 'planned', head: true })
       ]);
 
-      const pendingItems = contentItems?.filter(item => 
-        ['pending', 'draft', 'needs_fix'].includes(item.status)
-      ) || [];
-
-      return {
-        totalContentItems: contentItems?.length || 0,
-        pendingContentItems: pendingItems.length,
+return {
+        totalContentItems: totalContentCount || 0,
+        pendingContentItems: pendingCount || 0,
         knowledgeBaseItems: (documentsCount || 0) + (industryCount || 0) + (newsCount || 0) + (competitorCount || 0),
       };
     },

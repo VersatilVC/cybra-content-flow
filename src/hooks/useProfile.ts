@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/utils/logger';
 
 export function useProfile() {
   const { user, session } = useAuth();
@@ -12,12 +13,12 @@ export function useProfile() {
   const { data: profile, isLoading, error, refetch } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async (): Promise<Profile | null> => {
-      if (!user?.id || !session) {
-        console.log('useProfile: No user ID or session available');
+if (!user?.id || !session) {
+        logger.info('useProfile: No user ID or session available');
         return null;
       }
       
-      console.log('useProfile: Fetching profile for user:', user.id);
+      logger.info('useProfile: Fetching profile for user:', user.id);
       
       try {
         const { data, error } = await supabase
@@ -31,12 +32,12 @@ export function useProfile() {
           throw error;
         }
 
-        if (!data) {
-          console.log('useProfile: No profile data found for user');
+if (!data) {
+          logger.info('useProfile: No profile data found for user');
           return null;
         }
 
-        console.log('useProfile: Profile data retrieved:', data);
+        logger.info('useProfile: Profile data retrieved:', data);
 
         return {
           ...data,
@@ -49,8 +50,8 @@ export function useProfile() {
       }
     },
     enabled: !!user?.id && !!session,
-    retry: (failureCount, error: any) => {
-      console.log('useProfile: Retry attempt', failureCount, 'for error:', error?.message);
+retry: (failureCount, error: any) => {
+      logger.info('useProfile: Retry attempt', failureCount, 'for error:', error?.message);
       // Retry up to 2 times for most errors
       return failureCount < 2;
     },
@@ -61,8 +62,8 @@ export function useProfile() {
 
   // Refetch profile when user changes
   useEffect(() => {
-    if (user?.id && session) {
-      console.log('useProfile: User/session changed, invalidating profile query');
+if (user?.id && session) {
+      logger.info('useProfile: User/session changed, invalidating profile query');
       queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
     }
   }, [user?.id, session, queryClient]);
