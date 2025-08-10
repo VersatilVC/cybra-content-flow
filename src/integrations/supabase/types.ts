@@ -164,9 +164,14 @@ export type Database = {
           description: string | null
           file_summary: string | null
           id: string
+          last_error_message: string | null
+          processing_started_at: string | null
+          processing_timeout_at: string | null
+          retry_count: number
           source_id: string
           source_type: string
           status: string
+          submission_id: string | null
           target_audience: string
           title: string
           updated_at: string
@@ -179,9 +184,14 @@ export type Database = {
           description?: string | null
           file_summary?: string | null
           id?: string
+          last_error_message?: string | null
+          processing_started_at?: string | null
+          processing_timeout_at?: string | null
+          retry_count?: number
           source_id: string
           source_type: string
           status?: string
+          submission_id?: string | null
           target_audience: string
           title: string
           updated_at?: string
@@ -194,9 +204,14 @@ export type Database = {
           description?: string | null
           file_summary?: string | null
           id?: string
+          last_error_message?: string | null
+          processing_started_at?: string | null
+          processing_timeout_at?: string | null
+          retry_count?: number
           source_id?: string
           source_type?: string
           status?: string
+          submission_id?: string | null
           target_audience?: string
           title?: string
           updated_at?: string
@@ -216,8 +231,12 @@ export type Database = {
           file_size: string | null
           file_url: string | null
           id: string
+          last_error_message: string | null
           metadata: Json | null
           mime_type: string | null
+          processing_started_at: string | null
+          processing_timeout_at: string | null
+          retry_count: number
           status: string
           title: string
           updated_at: string
@@ -235,8 +254,12 @@ export type Database = {
           file_size?: string | null
           file_url?: string | null
           id?: string
+          last_error_message?: string | null
           metadata?: Json | null
           mime_type?: string | null
+          processing_started_at?: string | null
+          processing_timeout_at?: string | null
+          retry_count?: number
           status?: string
           title: string
           updated_at?: string
@@ -254,8 +277,12 @@ export type Database = {
           file_size?: string | null
           file_url?: string | null
           id?: string
+          last_error_message?: string | null
           metadata?: Json | null
           mime_type?: string | null
+          processing_started_at?: string | null
+          processing_timeout_at?: string | null
+          retry_count?: number
           status?: string
           title?: string
           updated_at?: string
@@ -340,8 +367,12 @@ export type Database = {
           created_at: string
           file_summary: string | null
           id: string
+          last_error_message: string | null
           multimedia_suggestions: string | null
+          processing_started_at: string | null
+          processing_timeout_at: string | null
           resources: string[] | null
+          retry_count: number
           status: string
           submission_id: string | null
           summary: string | null
@@ -359,8 +390,12 @@ export type Database = {
           created_at?: string
           file_summary?: string | null
           id?: string
+          last_error_message?: string | null
           multimedia_suggestions?: string | null
+          processing_started_at?: string | null
+          processing_timeout_at?: string | null
           resources?: string[] | null
+          retry_count?: number
           status?: string
           submission_id?: string | null
           summary?: string | null
@@ -378,8 +413,12 @@ export type Database = {
           created_at?: string
           file_summary?: string | null
           id?: string
+          last_error_message?: string | null
           multimedia_suggestions?: string | null
+          processing_started_at?: string | null
+          processing_timeout_at?: string | null
           resources?: string[] | null
+          retry_count?: number
           status?: string
           submission_id?: string | null
           summary?: string | null
@@ -469,9 +508,14 @@ export type Database = {
           description: string | null
           file_summary: string | null
           id: string
+          last_error_message: string | null
+          processing_started_at: string | null
+          processing_timeout_at: string | null
           relevance_score: number | null
+          retry_count: number
           source_title: string | null
           source_url: string | null
+          status: string
           title: string
           updated_at: string
         }
@@ -482,9 +526,14 @@ export type Database = {
           description?: string | null
           file_summary?: string | null
           id?: string
+          last_error_message?: string | null
+          processing_started_at?: string | null
+          processing_timeout_at?: string | null
           relevance_score?: number | null
+          retry_count?: number
           source_title?: string | null
           source_url?: string | null
+          status?: string
           title: string
           updated_at?: string
         }
@@ -495,9 +544,14 @@ export type Database = {
           description?: string | null
           file_summary?: string | null
           id?: string
+          last_error_message?: string | null
+          processing_started_at?: string | null
+          processing_timeout_at?: string | null
           relevance_score?: number | null
+          retry_count?: number
           source_title?: string | null
           source_url?: string | null
+          status?: string
           title?: string
           updated_at?: string
         }
@@ -850,6 +904,13 @@ export type Database = {
         Returns: {
           updated_count: number
           failed_ideas: Json
+        }[]
+      }
+      force_check_timed_out_submissions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          updated_count: number
+          failed_submissions: Json
         }[]
       }
       generate_signed_file_url: {
