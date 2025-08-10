@@ -864,6 +864,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_derivative_counts: {
+        Args: { item_ids: string[] }
+        Returns: {
+          content_item_id: string
+          category: string
+          total: number
+          approved: number
+          published: number
+        }[]
+      }
       is_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean

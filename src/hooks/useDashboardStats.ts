@@ -30,7 +30,7 @@ export function useDashboardStats() {
           .from('content_items')
           .select('*', { count: 'planned', head: true })
           .eq('user_id', user.id)
-          .in('status', ['pending', 'draft', 'needs_fix'])
+          .in('status', ['pending', 'draft', 'needs_fix', 'ready_for_review'])
       ]);
 
       if (totalError) throw totalError;

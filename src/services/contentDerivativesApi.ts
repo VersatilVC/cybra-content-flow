@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { getCallbackUrl, getStorageUrl } from '@/config/environment';
+import { logger } from '@/utils/logger';
 
 export interface ContentDerivative {
   id: string;
@@ -40,7 +41,7 @@ export interface CreateContentDerivativeData {
 }
 
 export async function fetchContentDerivatives(contentItemId: string): Promise<ContentDerivative[]> {
-  console.log('Fetching content derivatives for item:', contentItemId);
+  logger.debug('Fetching content derivatives for item:', contentItemId);
   
   const { data, error } = await supabase
     .from('content_derivatives')
@@ -49,7 +50,7 @@ export async function fetchContentDerivatives(contentItemId: string): Promise<Co
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching content derivatives:', error);
+    logger.error('Error fetching content derivatives:', error);
     throw new Error(`Failed to fetch content derivatives: ${error.message}`);
   }
 
@@ -57,7 +58,7 @@ export async function fetchContentDerivatives(contentItemId: string): Promise<Co
 }
 
 export async function createContentDerivative(derivativeData: CreateContentDerivativeData): Promise<ContentDerivative> {
-  console.log('Creating content derivative:', derivativeData);
+  logger.info('Creating content derivative:', derivativeData);
   
   const { data, error } = await supabase
     .from('content_derivatives')
@@ -69,7 +70,7 @@ export async function createContentDerivative(derivativeData: CreateContentDeriv
     .single();
 
   if (error) {
-    console.error('Error creating content derivative:', error);
+    logger.error('Error creating content derivative:', error);
     throw new Error(`Failed to create content derivative: ${error.message}`);
   }
 
@@ -77,7 +78,7 @@ export async function createContentDerivative(derivativeData: CreateContentDeriv
 }
 
 export async function updateContentDerivative(id: string, updates: Partial<ContentDerivative>): Promise<ContentDerivative> {
-  console.log('Updating content derivative:', id, updates);
+  logger.info('Updating content derivative:', id, updates);
   
   const { data, error } = await supabase
     .from('content_derivatives')
@@ -87,7 +88,7 @@ export async function updateContentDerivative(id: string, updates: Partial<Conte
     .single();
 
   if (error) {
-    console.error('Error updating content derivative:', error);
+    logger.error('Error updating content derivative:', error);
     throw new Error(`Failed to update content derivative: ${error.message}`);
   }
 
@@ -95,7 +96,7 @@ export async function updateContentDerivative(id: string, updates: Partial<Conte
 }
 
 export async function deleteContentDerivative(id: string): Promise<void> {
-  console.log('Deleting content derivative:', id);
+  logger.info('Deleting content derivative:', id);
   
   const { error } = await supabase
     .from('content_derivatives')
@@ -103,7 +104,7 @@ export async function deleteContentDerivative(id: string): Promise<void> {
     .eq('id', id);
 
   if (error) {
-    console.error('Error deleting content derivative:', error);
+    logger.error('Error deleting content derivative:', error);
     throw new Error(`Failed to delete content derivative: ${error.message}`);
   }
 }
@@ -114,7 +115,7 @@ export async function triggerDerivativeGeneration(
   category: 'General' | 'Social' | 'Ads',
   userId: string
 ): Promise<void> {
-  console.log('Triggering derivative generation webhook');
+  logger.info('Triggering derivative generation webhook');
   
   // Check if there's an active derivative_generation webhook
   const { data: webhook, error: webhookError } = await supabase
@@ -125,12 +126,12 @@ export async function triggerDerivativeGeneration(
     .maybeSingle();
 
   if (webhookError) {
-    console.error('Error fetching webhook configuration:', webhookError);
+    logger.error('Error fetching webhook configuration:', webhookError);
     throw new Error(`Webhook configuration error: ${webhookError.message}`);
   }
 
   if (!webhook?.webhook_url) {
-    console.log('No active derivative generation webhook configured, creating derivatives locally');
+    logger.info('No active derivative generation webhook configured, creating derivatives locally');
     return;
   }
 
@@ -142,7 +143,7 @@ export async function triggerDerivativeGeneration(
     .single();
 
   if (contentError) {
-    console.error('Error fetching content item:', contentError);
+    logger.error('Error fetching content item:', contentError);
     throw new Error(`Failed to fetch content item: ${contentError.message}`);
   }
 
@@ -160,7 +161,7 @@ export async function triggerDerivativeGeneration(
     .single();
 
   if (submissionError) {
-    console.error('Error creating submission record:', submissionError);
+    logger.error('Error creating submission record:', submissionError);
     throw new Error(`Failed to create submission record: ${submissionError.message}`);
   }
 
@@ -214,9 +215,9 @@ export async function triggerDerivativeGeneration(
       .update({ processing_status: 'processing' })
       .eq('id', submission.id);
 
-    console.log('Derivative generation webhook triggered successfully');
+    logger.info('Derivative generation webhook triggered successfully');
   } catch (error) {
-    console.error('Error calling derivative generation webhook:', error);
+    logger.error('Error calling derivative generation webhook:', error);
     
     // Update submission status to failed
     await supabase
@@ -243,7 +244,7 @@ export async function downloadDerivativeFile(derivative: ContentDerivative): Pro
       .download(derivative.file_path);
 
     if (error) {
-      console.error('Download error:', error);
+      logger.error('Download error:', error);
       throw new Error(`Failed to download file: ${error.message}`);
     }
 
@@ -257,7 +258,7 @@ export async function downloadDerivativeFile(derivative: ContentDerivative): Pro
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   } catch (error) {
-    console.error('Error downloading file:', error);
+    logger.error('Error downloading file:', error);
     throw error;
   }
 }

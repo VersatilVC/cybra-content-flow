@@ -11,6 +11,7 @@ import {
   CreateContentDerivativeData 
 } from '@/services/contentDerivativesApi';
 import { updateContentItem } from '@/services/contentItemsApi';
+import { logger } from '@/utils/logger';
 
 export function useContentDerivatives(contentItemId: string) {
   const { user } = useAuth();
@@ -45,7 +46,7 @@ export function useContentDerivatives(contentItemId: string) {
           queryClient.invalidateQueries({ queryKey: ['content-items'] });
         }
       } catch (error) {
-        console.error('Failed to update content item status:', error);
+        logger.error('Failed to update content item status:', error);
       }
 
       queryClient.invalidateQueries({ queryKey: ['content-derivatives', contentItemId] });
@@ -55,7 +56,7 @@ export function useContentDerivatives(contentItemId: string) {
       });
     },
     onError: (error: Error) => {
-      console.error('Create derivative error:', error);
+      logger.error('Create derivative error:', error);
       toast({
         title: 'Failed to create derivative',
         description: error.message,
@@ -75,7 +76,7 @@ export function useContentDerivatives(contentItemId: string) {
       });
     },
     onError: (error: Error) => {
-      console.error('Update derivative error:', error);
+      logger.error('Update derivative error:', error);
       toast({
         title: 'Failed to update derivative',
         description: error.message,
@@ -94,7 +95,7 @@ export function useContentDerivatives(contentItemId: string) {
       });
     },
     onError: (error: Error) => {
-      console.error('Delete derivative error:', error);
+      logger.error('Delete derivative error:', error);
       toast({
         title: 'Failed to delete derivative',
         description: error.message,

@@ -11,24 +11,22 @@ export function useDerivativeCounts(contentItemIds: string[]) {
   return useQuery({
     queryKey: ['derivative-counts', key],
     enabled: ids.length > 0,
+    staleTime: 15000,
     queryFn: async (): Promise<DerivativeCountsMap> => {
       const { data, error } = await supabase
-        .from('content_derivatives')
-        .select('content_item_id, category, status')
-        .in('content_item_id', ids);
+        .rpc('get_derivative_counts', { item_ids: ids });
 
       if (error) throw error;
 
       const map: DerivativeCountsMap = {};
-      for (const d of (data as any[]) || []) {
-        const itemId = d.content_item_id as string;
-        const category = d.category as string;
-        const status = d.status as string;
+      for (const row of (data as any[]) || []) {
+        const itemId = row.content_item_id as string;
+        const category = row.category as string;
         if (!map[itemId]) map[itemId] = {};
         if (!map[itemId][category]) map[itemId][category] = { total: 0, approved: 0, published: 0 };
-        map[itemId][category].total++;
-        if (status === 'approved') map[itemId][category].approved++;
-        if (status === 'published') map[itemId][category].published++;
+        map[itemId][category].total += (row.total || 0);
+        map[itemId][category].approved += (row.approved || 0);
+        map[itemId][category].published += (row.published || 0);
       }
       return map;
     },
