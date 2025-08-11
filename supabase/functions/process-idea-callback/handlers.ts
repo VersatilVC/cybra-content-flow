@@ -291,8 +291,33 @@ export async function handleBriefCreationCallback(supabase: any, body: any) {
 
     // Handle both brief_id and content_idea_id for backward compatibility
     if (body.brief_id) {
-      await updateBriefStatus(supabase, body.brief_id, 'ready');
-      await createBriefCompletionNotification(supabase, body.user_id, body.brief_id, body.title || 'Content Brief');
+      if (body.status === 'success') {
+        // Update brief to completed and clear processing fields
+        await supabase
+          .from('content_briefs')
+          .update({ 
+            status: 'completed',
+            processing_started_at: null,
+            processing_timeout_at: null,
+            last_error_message: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', body.brief_id);
+        
+        await createBriefCompletionNotification(supabase, body.user_id, body.brief_id, body.title || 'Content Brief');
+      } else {
+        // Handle failure case
+        await supabase
+          .from('content_briefs')
+          .update({ 
+            status: 'failed',
+            processing_started_at: null,
+            processing_timeout_at: null,
+            last_error_message: body.error_message || 'Brief processing failed - please try again',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', body.brief_id);
+      }
     } else if (body.content_idea_id) {
       // If only content_idea_id is provided, find the brief associated with it
       const { data: brief } = await supabase
@@ -303,8 +328,31 @@ export async function handleBriefCreationCallback(supabase: any, body: any) {
         .single();
       
       if (brief) {
-      await updateBriefStatus(supabase, brief.id, 'ready');
-        await createBriefCompletionNotification(supabase, body.user_id, brief.id, brief.title || body.title || 'Content Brief');
+        if (body.status === 'success') {
+          await supabase
+            .from('content_briefs')
+            .update({ 
+              status: 'completed',
+              processing_started_at: null,
+              processing_timeout_at: null,
+              last_error_message: null,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', brief.id);
+          
+          await createBriefCompletionNotification(supabase, body.user_id, brief.id, brief.title || body.title || 'Content Brief');
+        } else {
+          await supabase
+            .from('content_briefs')
+            .update({ 
+              status: 'failed',
+              processing_started_at: null,
+              processing_timeout_at: null,
+              last_error_message: body.error_message || 'Brief processing failed - please try again',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', brief.id);
+        }
       } else {
         console.error('No brief found for content_idea_id:', body.content_idea_id);
       }
@@ -331,6 +379,33 @@ export async function handleContentCreationCallback(supabase: any, body: any) {
     // Handle content item creation if provided
     if (body.content_item_id) {
       console.log('Content item created:', body.content_item_id);
+      
+      if (body.status === 'success') {
+        // Update content item to completed and clear processing fields
+        await supabase
+          .from('content_items')
+          .update({ 
+            status: 'completed',
+            processing_started_at: null,
+            processing_timeout_at: null,
+            last_error_message: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', body.content_item_id);
+      } else {
+        // Handle failure case
+        await supabase
+          .from('content_items')
+          .update({ 
+            status: 'failed',
+            processing_started_at: null,
+            processing_timeout_at: null,
+            last_error_message: body.error_message || 'Content processing failed - please try again',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', body.content_item_id);
+      }
+      
       await createContentItemNotification(
         supabase, 
         body.user_id, 
@@ -340,20 +415,55 @@ export async function handleContentCreationCallback(supabase: any, body: any) {
         body.error_message
       );
 
-      // Update brief status to content_item_created if brief_id is provided
-      if (body.brief_id && body.status !== 'failed') {
-        await supabase
-          .from('content_briefs')
-          .update({ status: 'completed' })
-          .eq('id', body.brief_id);
+      // Update brief status if brief_id is provided
+      if (body.brief_id) {
+        if (body.status === 'success') {
+          await supabase
+            .from('content_briefs')
+            .update({ 
+              status: 'completed',
+              processing_started_at: null,
+              processing_timeout_at: null,
+              last_error_message: null,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', body.brief_id);
+        } else {
+          await supabase
+            .from('content_briefs')
+            .update({ 
+              status: 'failed',
+              processing_started_at: null,
+              processing_timeout_at: null,
+              last_error_message: body.error_message || 'Brief processing failed - please try again',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', body.brief_id);
+        }
         
-        console.log('Brief status updated to completed for brief:', body.brief_id);
+        console.log(`Brief status updated for brief: ${body.brief_id}`);
       }
     }
 
     // Update submission status if provided
     if (body.submission_id) {
-      await updateSubmissionStatus(supabase, body.submission_id, body.status || 'completed');
+      const updateData: any = {
+        processing_status: body.status || 'completed',
+        updated_at: new Date().toISOString()
+      };
+      
+      if (body.status === 'completed') {
+        updateData.completed_at = new Date().toISOString();
+      }
+      
+      if (body.error_message) {
+        updateData.error_message = body.error_message;
+      }
+      
+      await supabase
+        .from('content_submissions')
+        .update(updateData)
+        .eq('id', body.submission_id);
     }
 
     console.log('Content creation callback completed successfully');
@@ -422,6 +532,33 @@ export async function handleDerivativeGenerationCallback(supabase: any, body: an
     }
 
     const isSuccess = body.status === 'completed' && !body.error_message;
+    
+    // Update derivative status if derivative_id is provided
+    if (body.derivative_id) {
+      if (isSuccess) {
+        await supabase
+          .from('content_derivatives')
+          .update({ 
+            status: 'completed',
+            processing_started_at: null,
+            processing_timeout_at: null,
+            last_error_message: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', body.derivative_id);
+      } else {
+        await supabase
+          .from('content_derivatives')
+          .update({ 
+            status: 'failed',
+            processing_started_at: null,
+            processing_timeout_at: null,
+            last_error_message: body.error_message || 'Derivative generation failed - please try again',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', body.derivative_id);
+      }
+    }
     
     await createDerivativeGenerationNotification(
       supabase,
