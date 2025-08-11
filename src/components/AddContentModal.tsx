@@ -166,34 +166,17 @@ export function AddContentModal({ open, onOpenChange }: AddContentModalProps) {
   const triggerWebhook = async (submissionId: string) => {
     console.log('Triggering webhook for submission:', submissionId);
     
-    // Get the current session for authentication
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session?.access_token) {
-      throw new Error('No authentication session found');
+    // Use Supabase functions invoke method for secure API calls
+    const { data, error } = await supabase.functions.invoke('process-content', {
+      body: { submissionId },
+      method: 'POST'
+    });
+
+    if (error) {
+      console.error('Webhook invocation error:', error);
+      throw new Error(`Webhook failed: ${error.message}`);
     }
 
-    // Use direct fetch to call the edge function with proper body
-    const response = await fetch(
-      getEdgeFunctionUrl('process-content', 'action=trigger'),
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlamdqeXRtcXBjaWx3ZnJscGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNjY0ODAsImV4cCI6MjA1ODY0MjQ4MH0.KGvrDLND84FX-WEtSzLr_A0fFNP7WF5Jl8jnpxajJqU'
-        },
-        body: JSON.stringify({ submissionId })
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Webhook response error:', errorText);
-      throw new Error(`Webhook failed with status ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
     console.log('Webhook triggered successfully:', data);
   };
 
