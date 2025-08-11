@@ -40,7 +40,7 @@ export default function EditBriefModal({ brief, open, onClose, onSave, isUpdatin
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
   const [structuredContent, setStructuredContent] = useState<BriefContentData>({});
-  const [status, setStatus] = useState<'draft' | 'ready' | 'processing' | 'completed' | 'discarded'>('draft');
+  const [status, setStatus] = useState<'draft' | 'ready' | 'processing' | 'completed' | 'discarded' | 'failed'>('draft');
   const [briefType, setBriefType] = useState<'Blog Post' | 'Guide' | 'Blog Post (Topical)'>('Blog Post');
   const [targetAudience, setTargetAudience] = useState<'Private Sector' | 'Government Sector'>('Private Sector');
   const [activeTab, setActiveTab] = useState('basic');

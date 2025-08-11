@@ -13,11 +13,16 @@ export interface ContentItem {
   resources: string[] | null;
   multimedia_suggestions: string | null;
   content_type: string;
-  status: 'ready_for_review' | 'derivatives_created' | 'published' | 'discarded' | 'needs_revision' | 'needs_fix';
+  status: 'ready_for_review' | 'derivatives_created' | 'published' | 'discarded' | 'needs_revision' | 'needs_fix' | 'processing' | 'failed' | 'completed' | 'draft';
   word_count: number | null;
   wordpress_url: string | null;
   created_at: string;
   updated_at: string;
+  processing_started_at?: string;
+  processing_timeout_at?: string;
+  last_error_message?: string;
+  retry_count?: number;
+  file_summary?: string;
 }
 
 export interface CreateContentItemData {

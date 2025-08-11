@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, Edit, Trash2, Plus, Eye, Calendar, User } from 'lucide-react';
 import { ContentBrief } from '@/types/contentBriefs';
 import { useContentItemByBrief } from '@/hooks/useContentItemByBrief';
+import { ProcessingStatus } from '@/components/ProcessingStatus';
 
 interface ContentBriefCardProps {
   brief: ContentBrief;
@@ -112,9 +113,13 @@ export default function ContentBriefCard({
               )}
             </div>
           </div>
-          <Badge className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(brief.status)}`}>
-            {getStatusLabel(brief.status)}
-          </Badge>
+          <ProcessingStatus 
+            status={brief.status}
+            entityType="brief"
+            entityId={brief.id}
+            retryCount={brief.retry_count || 0}
+            errorMessage={brief.last_error_message || undefined}
+          />
         </div>
 
         <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">

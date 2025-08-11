@@ -5,6 +5,7 @@ import { Calendar, FileText } from 'lucide-react';
 import { ContentItem } from '@/services/contentItemsApi';
 import { getStatusInfo, formatDate } from '@/utils/contentItemStatus';
 import DerivativeSummary from './DerivativeSummary';
+import { ProcessingStatus } from '@/components/ProcessingStatus';
 
 interface ContentItemStatusProps {
   contentItem: ContentItem;
@@ -39,9 +40,13 @@ const ContentItemStatus: React.FC<ContentItemStatusProps> = ({ contentItem }) =>
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <Badge className={`px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color}`}>
-          {statusInfo.label}
-        </Badge>
+        <ProcessingStatus 
+          status={contentItem.status}
+          entityType="content_item"
+          entityId={contentItem.id}
+          retryCount={contentItem.retry_count || 0}
+          errorMessage={contentItem.last_error_message || undefined}
+        />
       </div>
     </div>
   );
