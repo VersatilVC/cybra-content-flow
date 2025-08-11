@@ -9,13 +9,13 @@ export function useContentSuggestions(ideaId: string) {
     queryFn: async (): Promise<ContentSuggestion[]> => {
       const { data, error } = await supabase
         .from('content_suggestions')
-        .select('id,content_idea_id,title,description,content_type,relevance_score,source_url,source_title,file_summary,created_at,updated_at')
+        .select('id,content_idea_id,title,description,content_type,relevance_score,source_url,source_title,file_summary,created_at,updated_at,status,processing_started_at,processing_timeout_at,last_error_message,retry_count')
         .eq('content_idea_id', ideaId)
         .order('relevance_score', { ascending: false });
 
       if (error) throw error;
       
-      return data || [];
+      return (data || []) as ContentSuggestion[];
     },
     enabled: !!ideaId,
   });

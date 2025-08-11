@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, LinkIcon, Edit, Trash2, Briefcase, Eye, Loader2 } from 'lucide-react';
 import { ContentSuggestion } from '@/types/contentIdeas';
 import { useBriefBySource } from '@/hooks/useBriefBySource';
+import { ProcessingStatus } from '@/components/ProcessingStatus';
 
 interface ContentSuggestionCardProps {
   suggestion: ContentSuggestion;
@@ -167,6 +168,14 @@ export default function ContentSuggestionCard({
             </div>
           </div>
           <div className="flex items-center gap-2 ml-4">
+            <ProcessingStatus 
+              status={suggestion.status}
+              entityType="suggestion"
+              entityId={suggestion.id}
+              retryCount={suggestion.retry_count || 0}
+              errorMessage={suggestion.last_error_message || undefined}
+              className="text-xs"
+            />
             {suggestion.relevance_score && (
               <Badge className={`px-2 py-1 rounded-full text-xs font-medium ${getRelevanceColor(suggestion.relevance_score)}`}>
                 {Math.round(suggestion.relevance_score * 100)}% match

@@ -5,10 +5,11 @@ import { RotateCcw, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { useRetryBrief } from '@/hooks/useRetryBrief';
 import { useRetryContentItemCreation } from '@/hooks/useRetryContentItemCreation';
 import { useRetryDerivativeGeneration } from '@/hooks/useRetryDerivativeGeneration';
+import { useRetryContentSuggestion } from '@/hooks/useRetryContentSuggestion';
 
 interface ProcessingStatusProps {
   status: string;
-  entityType: 'brief' | 'content_item' | 'derivative';
+  entityType: 'brief' | 'content_item' | 'derivative' | 'suggestion';
   entityId: string;
   retryCount?: number;
   errorMessage?: string;
@@ -26,6 +27,7 @@ export const ProcessingStatus: React.FC<ProcessingStatusProps> = ({
   const { retryBrief, isRetrying: isRetryingBrief } = useRetryBrief();
   const { retryContentItemCreation, isRetrying: isRetryingContent } = useRetryContentItemCreation();
   const { retryDerivativeGeneration, isRetrying: isRetryingDerivative } = useRetryDerivativeGeneration();
+  const { retryContentSuggestion, isRetrying: isRetryingSuggestion } = useRetryContentSuggestion();
 
   const getStatusDisplay = () => {
     switch (status) {
@@ -68,10 +70,13 @@ export const ProcessingStatus: React.FC<ProcessingStatusProps> = ({
       case 'derivative':
         retryDerivativeGeneration(entityId);
         break;
+      case 'suggestion':
+        retryContentSuggestion(entityId);
+        break;
     }
   };
 
-  const isRetrying = isRetryingBrief || isRetryingContent || isRetryingDerivative;
+  const isRetrying = isRetryingBrief || isRetryingContent || isRetryingDerivative || isRetryingSuggestion;
   const { badge, showRetry } = getStatusDisplay();
 
   return (

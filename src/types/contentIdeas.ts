@@ -46,6 +46,12 @@ export interface ContentSuggestion {
   relevance_score: number | null;
   source_url: string | null;
   source_title: string | null;
+  status: 'ready' | 'processing' | 'failed' | 'completed';
   created_at: string;
   updated_at: string;
+  processing_started_at?: string;
+  processing_timeout_at?: string;
+  last_error_message?: string;
+  retry_count?: number;
+  file_summary?: string;
 }

@@ -988,9 +988,11 @@ export type Database = {
         Returns: {
           idea_timeouts: number
           submission_timeouts: number
+          suggestion_timeouts: number
           total_processed: number
           failed_ideas: Json
           failed_submissions: Json
+          failed_suggestions: Json
         }[]
       }
       validate_content_idea_retry_state: {
