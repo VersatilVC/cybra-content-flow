@@ -1,150 +1,171 @@
-
-import { Settings as SettingsIcon, Save, Key, Bell, Shield } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DataCleanupPanel } from "@/components/admin/DataCleanupPanel";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const Settings = () => {
+  const { user, loading } = useAuth();
+  const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+  });
+
+  // Redirect if not authenticated
+  if (!loading && !user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+        })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="container mx-auto py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-        <p className="text-gray-600">Manage your application settings and preferences</p>
+        <h1 className="text-3xl font-bold">Settings</h1>
+        <p className="text-muted-foreground">
+          Manage your account settings and preferences.
+        </p>
       </div>
 
-      <div className="space-y-8">
-        {/* API Configuration */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Key className="w-5 h-5 text-purple-600" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900">API Configuration</h2>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                N8N Webhook Base URL
-              </label>
-              <input
-                type="url"
-                defaultValue="https://n8n.cyabra.com/webhook"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                API Authentication Key
-              </label>
-              <input
-                type="password"
-                defaultValue="••••••••••••••••"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-        </div>
+      <div className="max-w-4xl">
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+            {(user?.role === 'admin' || user?.role === 'super_admin') && (
+              <TabsTrigger value="cleanup">Data Cleanup</TabsTrigger>
+            )}
+          </TabsList>
 
-        {/* Notification Settings */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Bell className="w-5 h-5 text-blue-600" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900">Notifications</h2>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900">Email Notifications</h3>
-                <p className="text-sm text-gray-600">Receive email alerts for important updates</p>
-              </div>
-              <input type="checkbox" defaultChecked className="rounded" />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900">Browser Notifications</h3>
-                <p className="text-sm text-gray-600">Show desktop notifications in your browser</p>
-              </div>
-              <input type="checkbox" defaultChecked className="rounded" />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900">Processing Alerts</h3>
-                <p className="text-sm text-gray-600">Get notified when content processing completes</p>
-              </div>
-              <input type="checkbox" defaultChecked className="rounded" />
-            </div>
-          </div>
-        </div>
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile Information</CardTitle>
+                <CardDescription>
+                  Update your personal information and account details.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        value={formData.firstName}
+                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                        placeholder="Enter first name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        value={formData.lastName}
+                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                        placeholder="Enter last name"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={user?.email || ""}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Email cannot be changed. Contact support if needed.
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Role</Label>
+                    <Input
+                      value={user?.role || ""}
+                      disabled
+                      className="bg-muted capitalize"
+                    />
+                  </div>
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Changes
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Security Settings */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-              <Shield className="w-5 h-5 text-green-600" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900">Security</h2>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Allowed Email Domains
-              </label>
-              <input
-                type="text"
-                defaultValue="@cyabra.com, @versatil.vc"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">Comma-separated list of allowed email domains</p>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-gray-900">Two-Factor Authentication</h3>
-                <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
-              </div>
-              <button className="text-purple-600 hover:text-purple-700 text-sm font-medium">
-                Enable
-              </button>
-            </div>
-          </div>
-        </div>
+          <TabsContent value="webhooks">
+            <Card>
+              <CardHeader>
+                <CardTitle>Webhook Configuration</CardTitle>
+                <CardDescription>
+                  Configure webhooks for processing content and generating derivatives.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Webhook management functionality will be available here.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* WordPress Integration */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-              <SettingsIcon className="w-5 h-5 text-orange-600" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900">WordPress Integration</h2>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                WordPress Site URL
-              </label>
-              <input
-                type="url"
-                placeholder="https://blog.cyabra.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                WordPress API Key
-              </label>
-              <input
-                type="password"
-                placeholder="Enter WordPress API key"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-end">
-          <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors">
-            <Save className="w-4 h-4" />
-            Save Settings
-          </button>
-        </div>
+          {(user?.role === 'admin' || user?.role === 'super_admin') && (
+            <TabsContent value="cleanup">
+              <DataCleanupPanel />
+            </TabsContent>
+          )}
+        </Tabs>
       </div>
     </div>
   );

@@ -895,6 +895,22 @@ export type Database = {
           path_user_ids_extracted: number
         }[]
       }
+      cleanup_historical_data: {
+        Args: {
+          cleanup_older_than_days?: number
+          batch_size?: number
+          dry_run?: boolean
+        }
+        Returns: {
+          cleaned_ideas: number
+          cleaned_briefs: number
+          cleaned_items: number
+          cleaned_derivatives: number
+          cleaned_suggestions: number
+          total_cleaned: number
+          cleanup_summary: Json
+        }[]
+      }
       extract_user_id_from_path: {
         Args: { file_path: string }
         Returns: string
@@ -920,6 +936,18 @@ export type Database = {
           expiry_seconds?: number
         }
         Returns: string
+      }
+      get_cleanup_candidates: {
+        Args: { older_than_days?: number }
+        Returns: {
+          entity_type: string
+          entity_id: string
+          title: string
+          status: string
+          updated_at: string
+          retry_count: number
+          last_error_message: string
+        }[]
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
