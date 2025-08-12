@@ -4,18 +4,24 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { OptimizedAuthProvider } from "@/contexts/OptimizedAuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import OptimizedProtectedRoute from "@/components/performance/OptimizedProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import RoutePreloader from "@/components/performance/RoutePreloader";
+import PerformanceMonitor from "@/components/performance/PerformanceMonitor";
 
 import { lazy, Suspense } from "react";
 
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const DashboardPage = lazy(() => import("./pages/Dashboard"));
+const OptimizedDashboard = lazy(() => import("./pages/OptimizedDashboard"));
 const KnowledgeBases = lazy(() => import("./pages/KnowledgeBases"));
 const Chat = lazy(() => import("./pages/Chat"));
 const ContentIdeas = lazy(() => import("./pages/ContentIdeas"));
+
 const ContentBriefs = lazy(() => import("./pages/ContentBriefs"));
 const ContentItems = lazy(() => import("./pages/ContentItems"));
 const ContentItemView = lazy(() => import("./pages/ContentItemView"));
@@ -31,10 +37,16 @@ import { ProductionDashboard } from "@/components/ProductionDashboard";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30_000,
-      gcTime: 300_000,
-      retry: 1,
+      staleTime: 2 * 60 * 1000, // 2 minutes default
+      gcTime: 10 * 60 * 1000, // 10 minutes default
+      retry: (failureCount, error: any) => {
+        // Don't retry on 401/403 errors
+        if (error?.status === 401 || error?.status === 403) return false;
+        return failureCount < 2;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
       refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
     },
     mutations: {
       retry: 0,
@@ -44,26 +56,35 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
+    <OptimizedAuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
           <ErrorBoundary>
-            <Suspense fallback={<div className="p-8">Loading...</div>}>
+            <RoutePreloader />
+            <PerformanceMonitor />
+            <Suspense fallback={
+              <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50/50 to-white">
+                <div className="text-center space-y-4">
+                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <p className="text-muted-foreground">Loading application...</p>
+                </div>
+              </div>
+            }>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 
-                {/* Protected Routes */}
+                {/* Optimized Protected Routes */}
                 <Route 
                   path="/dashboard" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="dashboard">
                       <AppLayout>
-                        <DashboardPage />
+                        <OptimizedDashboard />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
@@ -89,11 +110,11 @@ const App = () => (
                 <Route 
                   path="/content-ideas" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
                         <ContentIdeas />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
@@ -206,7 +227,7 @@ const App = () => (
           </ErrorBoundary>
         </BrowserRouter>
       </TooltipProvider>
-    </AuthProvider>
+    </OptimizedAuthProvider>
   </QueryClientProvider>
 );
 
