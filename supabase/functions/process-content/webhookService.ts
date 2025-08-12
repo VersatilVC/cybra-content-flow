@@ -5,14 +5,19 @@ import { WebhookPayload } from "./types.ts";
 export async function getWebhookConfiguration(supabase: SupabaseClient, webhookType: string) {
   const { data: webhooks, error: webhookError } = await supabase
     .from('webhook_configurations')
-    .select('webhook_url')
+    .select('id, webhook_url, updated_at, created_at')
     .eq('webhook_type', webhookType)
     .eq('is_active', true)
-    .limit(1);
+    .order('updated_at', { ascending: false })
+    .order('created_at', { ascending: false });
 
   if (webhookError) {
     console.error('Error fetching webhook configuration:', webhookError);
     throw new Error(`Webhook configuration error: ${webhookError.message}`);
+  }
+
+  if ((webhooks?.length || 0) > 1) {
+    console.warn(`Multiple active webhooks found for type "${webhookType}". Using the most recently updated.`, webhooks?.map(w => w.id));
   }
 
   const webhook = webhooks?.[0];

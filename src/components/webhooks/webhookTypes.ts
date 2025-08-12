@@ -9,6 +9,12 @@ export const webhookTypes = [
     description: 'Process uploaded files and URLs into your knowledge base'
   },
   {
+    value: 'general_content',
+    label: 'General Content Processing',
+    icon: FileText,
+    description: 'Process general content submissions (text, links, or files)'
+  },
+  {
     value: 'derivative_generation',
     label: 'Derivative Generation',
     icon: Wand2,
@@ -58,6 +64,10 @@ export const getWebhookDefaults = (type: string) => {
       name: 'Knowledge Base Processor',
       description: 'Processes uploaded files and URLs into searchable knowledge base entries'
     },
+    general_content: {
+      name: 'General Content Processor',
+      description: 'Processes general content submissions (text, links, or files)'
+    },
     derivative_generation: {
       name: 'Content Derivative Generator',
       description: 'Generates social media posts, ads, and other content derivatives'
@@ -86,7 +96,7 @@ export const getWebhookDefaults = (type: string) => {
       name: 'WordPress Publisher',
       description: 'Publishes content items to WordPress sites with media attachments'
     }
-  };
+  } as const;
 
-  return defaults[type as keyof typeof defaults] || { name: '', description: '' };
+  return (defaults as Record<string, { name: string; description: string }>)[type] || { name: '', description: '' };
 };

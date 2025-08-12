@@ -49,7 +49,10 @@ export function useWebhooksData() {
   const toggleWebhookStatus = async (webhookId: string, currentStatus: boolean) => {
     try {
       console.log('useWebhooksData: Toggling webhook status:', webhookId, 'from', currentStatus, 'to', !currentStatus);
-      
+
+      // Find target webhook to know its type
+      const target = webhooks.find(w => w.id === webhookId);
+
       const { error } = await supabase
         .from('webhook_configurations')
         .update({ is_active: !currentStatus })
@@ -58,6 +61,27 @@ export function useWebhooksData() {
       if (error) {
         console.error('useWebhooksData: Error updating webhook:', error);
         throw error;
+      }
+
+      // If enabling this webhook, disable other active webhooks of the same type
+      if (!currentStatus && target?.webhook_type) {
+        const { error: disableError } = await supabase
+          .from('webhook_configurations')
+          .update({ is_active: false })
+          .eq('webhook_type', target.webhook_type)
+          .neq('id', webhookId)
+          .eq('is_active', true);
+
+        if (disableError) {
+          console.warn('useWebhooksData: Could not disable other active webhooks of the same type (likely due to permissions):', disableError);
+        } else {
+          // Reflect changes locally
+          setWebhooks(prev => prev.map(w =>
+            w.webhook_type === target.webhook_type && w.id !== webhookId
+              ? { ...w, is_active: false }
+              : w
+          ));
+        }
       }
 
       setWebhooks(prev => 

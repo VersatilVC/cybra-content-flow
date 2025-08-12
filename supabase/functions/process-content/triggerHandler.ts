@@ -39,7 +39,18 @@ export async function handleTriggerAction(
   }
 
   // For other submission types, get webhook configuration
-  const webhook = await getWebhookConfiguration(supabase, 'knowledge_base');
+  let webhook: { webhook_url: string };
+  if (submission.knowledge_base === 'general_content') {
+    try {
+      webhook = await getWebhookConfiguration(supabase, 'general_content');
+      console.log('Selected general_content webhook');
+    } catch (e) {
+      console.warn('No general_content webhook configured, falling back to knowledge_base', e?.message || e);
+      webhook = await getWebhookConfiguration(supabase, 'knowledge_base');
+    }
+  } else {
+    webhook = await getWebhookConfiguration(supabase, 'knowledge_base');
+  }
 
   console.log('Using webhook URL:', webhook.webhook_url);
 
