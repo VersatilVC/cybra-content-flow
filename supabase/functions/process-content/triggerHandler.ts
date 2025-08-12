@@ -87,7 +87,7 @@ export async function handleTriggerAction(
     }
   }
 
-  // Add general_content_id if available from request body
+  // Construct webhook payload with all available data
   const payload: WebhookPayload = {
     submission_id: submission.id,
     user_id: submission.user_id,
@@ -98,7 +98,14 @@ export async function handleTriggerAction(
     file_size: submission.file_size,
     mime_type: submission.mime_type,
     timestamp: new Date().toISOString(),
-    ...(body.general_content_id && { general_content_id: body.general_content_id })
+    // Include general content specific fields from request body
+    ...(body.general_content_id && { general_content_id: body.general_content_id }),
+    ...(body.title && { title: body.title }),
+    ...(body.category && { category: body.category }),
+    ...(body.derivative_types && { derivative_types: body.derivative_types }),
+    ...(body.source_type && { source_type: body.source_type }),
+    ...(body.source_data && { source_data: body.source_data }),
+    ...(body.target_audience && { target_audience: body.target_audience })
   };
 
   try {

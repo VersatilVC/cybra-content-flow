@@ -140,7 +140,7 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
 
   // Trigger the submission-based webhook processing
   try {
-    await triggerGeneralContentWebhook(createdContent, user.user.id, insertData.derivative_types, submissionId);
+    await triggerGeneralContentWebhook(createdContent, user.user.id, insertData, submissionId);
     console.log('General content webhook triggered successfully');
   } catch (webhookError) {
     console.error('General content webhook failed:', webhookError);
@@ -186,7 +186,7 @@ export const deleteGeneralContent = async (id: string): Promise<void> => {
   }
 };
 
-async function triggerGeneralContentWebhook(content: GeneralContentItem, userId: string, derivativeTypes?: string[], submissionId?: string): Promise<void> {
+async function triggerGeneralContentWebhook(content: GeneralContentItem, userId: string, formData: any, submissionId?: string): Promise<void> {
   console.log('Triggering process-content webhook for submission:', submissionId);
 
   // Use the process-content edge function with submission-based flow
@@ -197,6 +197,12 @@ async function triggerGeneralContentWebhook(content: GeneralContentItem, userId:
       general_content_id: content.id,
       user_id: userId,
       title: content.title,
+      category: content.category,
+      derivative_types: content.derivative_types || [content.derivative_type],
+      content_type: content.content_type,
+      source_type: content.source_type,
+      source_data: content.source_data,
+      target_audience: content.target_audience,
       timestamp: new Date().toISOString()
     },
   });
