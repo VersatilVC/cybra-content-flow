@@ -56,27 +56,29 @@ export default function BriefContent({ briefContent }: BriefContentProps) {
       )}
 
       {/* Content Sections */}
-      {briefContent.contentSections && Array.isArray(briefContent.contentSections) && briefContent.contentSections.length > 0 ? (
-        <div>
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
-            <FileText className="w-5 h-5 text-green-600" />
-            Content Sections
-          </h3>
+      <div>
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
+          <FileText className="w-5 h-5 text-green-600" />
+          Content Sections
+        </h3>
+        {briefContent.contentSections && Array.isArray(briefContent.contentSections) && briefContent.contentSections.length > 0 ? (
           <div className="space-y-4">
             {briefContent.contentSections.map((section, index) => (
               <BriefSection key={index} section={section} index={index} />
             ))}
           </div>
-        </div>
-      ) : (
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-2">
-            <FileText className="w-5 h-5 text-gray-600" />
-            Content Sections
-          </h3>
-          <p className="text-gray-600 italic">No content sections have been defined for this brief yet.</p>
-        </div>
-      )}
+        ) : (
+          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className="text-gray-600 italic">No content sections have been defined for this brief yet.</p>
+            <details className="mt-2 text-xs text-gray-500">
+              <summary className="cursor-pointer">Debug: Show raw content structure</summary>
+              <pre className="mt-2 p-2 bg-white rounded border text-xs overflow-x-auto">
+                {JSON.stringify(briefContent, null, 2)}
+              </pre>
+            </details>
+          </div>
+        )}
+      </div>
 
       {/* Supporting Research */}
       {briefContent.supportingResearch && Array.isArray(briefContent.supportingResearch) && briefContent.supportingResearch.length > 0 && (

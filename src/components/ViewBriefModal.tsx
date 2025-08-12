@@ -46,17 +46,61 @@ export default function ViewBriefModal({ brief, open, onClose, onEdit, onCreateC
   if (!brief) return null;
 
   const parseBriefContent = (content: string | null): BriefContent | null => {
-    if (!content) return null;
+    if (!content) {
+      console.log('No content to parse');
+      return null;
+    }
+    
+    // Check if content is already an object
+    if (typeof content === 'object') {
+      console.log('Content is already an object:', content);
+      return content as BriefContent;
+    }
     
     try {
       const parsed = JSON.parse(content) as BriefContent;
-      console.log('Parsed brief content:', parsed);
+      console.log('✅ Successfully parsed brief content:', parsed);
+      console.log('Content sections found:', parsed.contentSections?.length || 0);
       return parsed;
     } catch (error) {
-      console.error('Failed to parse brief content:', error);
-      console.log('Raw content:', content);
+      console.error('❌ Failed to parse brief content:', error);
+      console.log('Raw content type:', typeof content);
+      console.log('Raw content preview:', content.substring(0, 200) + '...');
+      
+      // Try to extract structured data from text content
+      const fallbackContent = tryExtractStructuredContent(content);
+      if (fallbackContent) {
+        console.log('✅ Extracted fallback structured content');
+        return fallbackContent;
+      }
+      
       return null;
     }
+  };
+
+  const tryExtractStructuredContent = (content: string): BriefContent | null => {
+    try {
+      // Look for section patterns in text content
+      const sections = content.split(/(?:^|\n)(?:\d+\.|#+\s*)/m).filter(s => s.trim());
+      if (sections.length > 1) {
+        const contentSections = sections.slice(1).map((sectionText, index) => {
+          const lines = sectionText.split('\n').filter(l => l.trim());
+          const title = lines[0]?.trim() || `Section ${index + 1}`;
+          const points = lines.slice(1).filter(l => l.trim().startsWith('-') || l.trim().startsWith('•'))
+            .map(l => l.replace(/^[-•]\s*/, '').trim());
+          
+          return {
+            sectionTitle: title,
+            sectionPoints: points.length > 0 ? points : [sectionText.trim()]
+          };
+        });
+        
+        return { contentSections };
+      }
+    } catch (error) {
+      console.error('Failed to extract structured content:', error);
+    }
+    return null;
   };
 
   const briefContent = parseBriefContent(brief.content);
@@ -228,16 +272,26 @@ export default function ViewBriefModal({ brief, open, onClose, onEdit, onCreateC
               <BriefContent briefContent={briefContent} />
               <CreateContentCTA brief={brief} onCreateContentItem={onCreateContentItem} />
             </div>
-          ) : (
-            /* Fallback for non-JSON content */
-            brief.content && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Content</h3>
-                <div className="p-4 bg-white border border-gray-200 rounded-lg max-h-96 overflow-y-auto">
+          ) : brief.content ? (
+            /* Enhanced fallback for non-JSON content */
+            <div className="space-y-4">
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <h3 className="text-lg font-semibold text-amber-900 mb-2">Raw Content</h3>
+                <p className="text-amber-800 text-sm mb-3">
+                  This content couldn't be parsed as structured data. It's displayed as raw text below.
+                </p>
+                <div className="p-3 bg-white border border-amber-200 rounded max-h-96 overflow-y-auto">
                   <p className="text-gray-700 whitespace-pre-wrap">{brief.content}</p>
                 </div>
               </div>
-            )
+              <CreateContentCTA brief={brief} onCreateContentItem={onCreateContentItem} />
+            </div>
+          ) : (
+            /* No content available */
+            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Content</h3>
+              <p className="text-gray-600 italic">No content has been defined for this brief yet.</p>
+            </div>
           )}
         </div>
       </DialogContent>
