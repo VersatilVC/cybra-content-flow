@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Eye } from 'lucide-react';
 import { ContentBrief } from '@/types/contentBriefs';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { triggerContentProcessingWebhook } from '@/services/webhookService';
 import { useContentItemByBrief } from '@/hooks/useContentItemByBrief';
@@ -14,7 +14,7 @@ interface CreateContentCTAProps {
 }
 
 export default function CreateContentCTA({ brief, onCreateContentItem }: CreateContentCTAProps) {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const [isCreating, setIsCreating] = useState(false);
   const { data: contentItem } = useContentItemByBrief(brief.id);

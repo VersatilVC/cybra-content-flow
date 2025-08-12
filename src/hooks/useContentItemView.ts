@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useContentItems } from '@/hooks/useContentItems';
 import { useContentDerivatives } from '@/hooks/useContentDerivatives';
@@ -12,7 +12,7 @@ import { ContentItem } from '@/services/contentItemsApi';
 export const useContentItemView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const { updateContentItem, deleteContentItem, isUpdating } = useContentItems();
   const { derivatives, deleteDerivative } = useContentDerivatives(id || '');

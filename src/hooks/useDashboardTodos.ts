@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ContentIdea } from '@/types/contentIdeas';
 import { ContentBrief } from '@/types/contentBriefs';
@@ -14,7 +14,7 @@ interface TodoSections {
 }
 
 export function useDashboardTodos() {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
 
   return useQuery({
     queryKey: ['dashboard-todos', user?.id],

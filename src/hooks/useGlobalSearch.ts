@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';
 
@@ -22,7 +22,7 @@ interface SearchResults {
 }
 
 export function useGlobalSearch(query: string) {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const [results, setResults] = useState<SearchResults>({
     contentItems: [],
     contentIdeas: [],

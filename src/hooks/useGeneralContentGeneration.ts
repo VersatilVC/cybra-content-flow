@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useGeneralContent } from '@/hooks/useGeneralContent';
 import { GeneralContentItem } from '@/types/generalContent';
@@ -7,7 +7,7 @@ import { generalContentTypes } from '@/components/general-content/generalContent
 import { triggerGeneralContentGeneration } from '@/services/generalContentApi';
 
 export function useGeneralContentGeneration() {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const { createGeneralContent, isCreating } = useGeneralContent({
     category: 'all',

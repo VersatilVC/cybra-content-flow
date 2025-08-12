@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useWebhookModal() {
@@ -12,7 +12,7 @@ export function useWebhookModal() {
   const [isTestingWebhook, setIsTestingWebhook] = useState(false);
   
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
 
   const validateUrl = (url: string) => {
     try {

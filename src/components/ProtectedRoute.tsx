@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false }) => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useOptimizedAuthContext();
   const { profile, loading: profileLoading } = useProfile();
   const location = useLocation();
 

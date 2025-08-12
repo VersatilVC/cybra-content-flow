@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -11,7 +11,7 @@ interface AccountLinkingEvent {
 }
 
 export function useAccountLinking() {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const [hasCheckedLinking, setHasCheckedLinking] = useState(false);
 

@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DashboardStats {
@@ -10,7 +10,7 @@ interface DashboardStats {
 }
 
 export function useDashboardStats() {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
 
   return useQuery({
     queryKey: ['dashboard-stats', user?.id],

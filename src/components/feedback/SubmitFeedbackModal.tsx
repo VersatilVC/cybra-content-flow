@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { Database } from '@/integrations/supabase/types';
 
 type FeedbackCategory = Database['public']['Enums']['feedback_category'];
@@ -27,7 +27,7 @@ export function SubmitFeedbackModal({ children }: SubmitFeedbackModalProps) {
   const [priority, setPriority] = useState<FeedbackPriority>('medium');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

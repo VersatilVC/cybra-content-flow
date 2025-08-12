@@ -1,6 +1,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ContentIdea, CreateContentIdeaData } from '@/types/contentIdeas';
 import { 
@@ -12,7 +12,7 @@ import { handleFileUpload } from '@/lib/fileUploadHandler';
 import { triggerIdeaWebhooks } from '@/lib/webhookHandlers';
 
 export function useIdeaMutations() {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

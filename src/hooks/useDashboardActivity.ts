@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ActivityItem {
@@ -14,7 +14,7 @@ interface ActivityItem {
 }
 
 export function useDashboardActivity() {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
 
   return useQuery({
     queryKey: ['dashboard-activity', user?.id],

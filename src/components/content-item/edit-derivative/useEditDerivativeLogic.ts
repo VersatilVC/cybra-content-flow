@@ -4,11 +4,11 @@ import { ContentDerivative } from '@/services/contentDerivativesApi';
 import { getStorageUrl } from '@/config/environment';
 import { useContentDerivatives } from '@/hooks/useContentDerivatives';
 import { handleDerivativeFileUpload } from '@/lib/fileUploadHandler';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 export function useEditDerivativeLogic(derivative: ContentDerivative, isOpen: boolean, onClose: () => void) {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const { updateDerivative, isUpdating } = useContentDerivatives(derivative.content_item_id);
   

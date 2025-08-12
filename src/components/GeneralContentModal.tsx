@@ -8,7 +8,7 @@ import { BasicFormFields } from '@/components/general-content/BasicFormFields';
 import { InputSourceSection } from '@/components/general-content/InputSourceSection';
 import { ContentTypeSelection } from '@/components/general-content/ContentTypeSelection';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 
 interface GeneralContentModalProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
   onClose
 }) => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const [formData, setFormData] = useState({
     title: '',
     content: '',

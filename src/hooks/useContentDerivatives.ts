@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { 
   fetchContentDerivatives, 
@@ -14,7 +14,7 @@ import { updateContentItem } from '@/services/contentItemsApi';
 import { logger } from '@/utils/logger';
 
 export function useContentDerivatives(contentItemId: string) {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

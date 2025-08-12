@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types/auth';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { logger } from '@/utils/logger';
 
 export function useProfile() {
-  const { user, session } = useAuth();
+  const { user, session } = useOptimizedAuthContext();
   const queryClient = useQueryClient();
   
   const { data: profile, isLoading, error, refetch } = useQuery({

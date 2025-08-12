@@ -1,6 +1,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ContentIdea, ContentSuggestion } from '@/types/contentIdeas';
 import { updateContentIdea } from '@/services/contentIdeasApi';
@@ -16,7 +16,7 @@ interface BriefCreationParams {
 }
 
 export function useBriefCreation(ideas: ContentIdea[]) {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [creatingBriefId, setCreatingBriefId] = useState<string | null>(null);

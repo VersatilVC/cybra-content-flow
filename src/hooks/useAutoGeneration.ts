@@ -1,12 +1,12 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { createContentIdea } from '@/services/contentIdeasApi';
 import { triggerAutoGenerationWebhooks } from '@/lib/webhookHandlers';
 
 export function useAutoGeneration() {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

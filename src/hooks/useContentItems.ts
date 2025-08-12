@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { 
   fetchContentItems, 
@@ -19,7 +19,7 @@ export function useContentItems(
   filters?: ContentItemFilters,
   options?: { page?: number; pageSize?: number }
 ) {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -120,7 +120,7 @@ export function useContentItems(
 }
 
 export function useContentItemsByBrief(briefId: string) {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
 
   return useQuery({
     queryKey: ['content-items-by-brief', briefId],

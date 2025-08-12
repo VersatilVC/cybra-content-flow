@@ -8,7 +8,7 @@ import { Activity, Shield, Database, AlertTriangle, Download, RefreshCw } from '
 import { ProductionMonitoring } from '@/utils/monitoring';
 import { BackupRecoverySystem } from '@/utils/backupRecovery';
 import { RollbackManager } from '@/utils/rollbackProcedures';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
 
@@ -27,7 +27,7 @@ export const ProductionDashboard: React.FC = () => {
   const [isLoadingHealth, setIsLoadingHealth] = useState(false);
   const [logs, setLogs] = useState<any[]>([]);
   const [isCreatingBackup, setIsCreatingBackup] = useState(false);
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
 
   // Load system health on component mount

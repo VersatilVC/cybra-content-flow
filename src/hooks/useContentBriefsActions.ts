@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 import { ContentBrief } from '@/types/contentBriefs';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { triggerContentProcessingWebhook } from '@/services/webhookService';
 
 interface UseContentBriefsActionsProps {
@@ -31,7 +31,7 @@ export function useContentBriefsActions({
   updateBrief,
   setEditModalOpen,
 }: UseContentBriefsActionsProps) {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
 
   // Handle opening brief when briefs are loaded and we have a pending brief ID
   useEffect(() => {

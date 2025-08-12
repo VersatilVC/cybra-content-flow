@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useContentDerivatives } from '@/hooks/useContentDerivatives';
 import { triggerDerivativeGeneration } from '@/services/contentDerivativesApi';
@@ -8,7 +8,7 @@ import { derivativeTypes } from '@/components/content-item/derivativeTypes';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useDerivativeGeneration(contentItemId: string) {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const { toast } = useToast();
   const { createDerivative, isCreating } = useContentDerivatives(contentItemId);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);

@@ -1,6 +1,6 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { ContentIdeaFilters } from '@/types/contentIdeas';
 import { fetchContentIdeas } from '@/services/contentIdeasApi';
 import { useIdeaMutations } from '@/hooks/useIdeaMutations';
@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
 
 export function useContentIdeas(filters?: ContentIdeaFilters) {
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
   const queryClient = useQueryClient();
 
   const { data: ideas = [], isLoading, error, refetch } = useQuery({
