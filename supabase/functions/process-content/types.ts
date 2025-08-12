@@ -29,4 +29,5 @@ export interface WebhookPayload {
   file_size?: number;
   mime_type?: string;
   timestamp: string;
+  general_content_id?: string;
 }

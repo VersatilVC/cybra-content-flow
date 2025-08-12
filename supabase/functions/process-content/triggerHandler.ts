@@ -19,9 +19,9 @@ export async function handleTriggerAction(
 
   const submission = await getSubmission(supabase, submissionId);
 
-  // For content creation and general content submissions, just update status to processing
+  // For content creation submissions, just update status to processing
   // N8N will handle the actual content generation and storage
-  if (submission.knowledge_base === 'content_creation' || submission.knowledge_base === 'general_content') {
+  if (submission.knowledge_base === 'content_creation') {
     console.log(`Processing ${submission.knowledge_base} submission - N8N will handle content storage`);
     
     await updateSubmissionStatus(supabase, submissionId, 'processing', {
@@ -76,6 +76,7 @@ export async function handleTriggerAction(
     }
   }
 
+  // Add general_content_id if available from request body
   const payload: WebhookPayload = {
     submission_id: submission.id,
     user_id: submission.user_id,
@@ -85,7 +86,8 @@ export async function handleTriggerAction(
     original_filename: submission.original_filename,
     file_size: submission.file_size,
     mime_type: submission.mime_type,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    ...(body.general_content_id && { general_content_id: body.general_content_id })
   };
 
   try {
