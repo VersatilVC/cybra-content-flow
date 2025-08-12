@@ -78,9 +78,12 @@ const GeneralContentTabs: React.FC = () => {
             key={category}
             category={category}
             items={categorizedContent[category]}
-            onDelete={deleteGeneralContent}
+            onDelete={deleteItem}
+            onDeleteMultiple={deleteMultiple}
             isDeleting={isDeleting}
             onCreateContent={() => setShowCreateModal(true)}
+            selectedItems={selectedItems}
+            onSelectionChange={setSelectedItems}
           />
         ))}
       </Tabs>
