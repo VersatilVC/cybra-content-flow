@@ -1,26 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Sparkles, FileText, Image, Video } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Sparkles, FileText, Image, Video, Wand2 } from 'lucide-react';
 import { GeneralContentItem } from '@/types/generalContent';
 import EnhancedGeneralContentCard from './EnhancedGeneralContentCard';
 import RichEmptyState from './RichEmptyState';
+import GeneralContentGenerationModal from './GeneralContentGenerationModal';
+import { GeneralContentAIFixModal } from './GeneralContentAIFixModal';
+import GeneralContentBatchActions from './GeneralContentBatchActions';
 
 interface GeneralContentTabContentProps {
   category: 'General' | 'Social' | 'Ads';
   items: GeneralContentItem[];
   onDelete: (id: string) => void;
+  onDeleteMultiple: (ids: string[]) => void;
   isDeleting: boolean;
   onCreateContent: () => void;
+  selectedItems: GeneralContentItem[];
+  onSelectionChange: (items: GeneralContentItem[]) => void;
 }
 
 const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
   category,
   items,
   onDelete,
+  onDeleteMultiple,
   isDeleting,
-  onCreateContent
+  onCreateContent,
+  selectedItems,
+  onSelectionChange
 }) => {
+  const [isGenerationModalOpen, setIsGenerationModalOpen] = useState(false);
+  const [isAIFixModalOpen, setIsAIFixModalOpen] = useState(false);
+  const [aiFixItem, setAIFixItem] = useState<GeneralContentItem | null>(null);
   const getCategoryIcon = (cat: string) => {
     switch (cat) {
       case 'General': return FileText;
@@ -43,6 +56,34 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
     }
   };
 
+  const handleItemSelect = (item: GeneralContentItem, isSelected: boolean) => {
+    if (isSelected) {
+      onSelectionChange([...selectedItems, item]);
+    } else {
+      onSelectionChange(selectedItems.filter(selected => selected.id !== item.id));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      onSelectionChange(items);
+    } else {
+      onSelectionChange([]);
+    }
+  };
+
+  const handleBulkAIFix = (items: GeneralContentItem[]) => {
+    // For simplicity, just open AI fix for the first item
+    // In a real implementation, you might want to handle multiple items differently
+    if (items.length > 0) {
+      setAIFixItem(items[0]);
+      setIsAIFixModalOpen(true);
+    }
+  };
+
+  const allSelected = items.length > 0 && selectedItems.length === items.length;
+  const someSelected = selectedItems.length > 0 && selectedItems.length < items.length;
+
   const Icon = getCategoryIcon(category);
   
   // Calculate stats
@@ -56,7 +97,7 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
   return (
     <TabsContent value={category} className="mt-6">
       <div className="space-y-6">
-        {/* Category header with stats */}
+        {/* Category header with stats and actions */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Icon className="w-6 h-6 text-purple-600" />
@@ -65,14 +106,24 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
               <p className="text-sm text-gray-600">{getCategoryDescription(category)}</p>
             </div>
           </div>
-          <Button 
-            onClick={onCreateContent}
-            variant="outline"
-            className="border-purple-200 text-purple-700 hover:bg-purple-50"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Generate {category}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setIsGenerationModalOpen(true)}
+              variant="outline"
+              className="border-purple-200 text-purple-700 hover:bg-purple-50"
+            >
+              <Wand2 className="w-4 h-4 mr-2" />
+              AI Generate
+            </Button>
+            <Button 
+              onClick={onCreateContent}
+              variant="outline"
+              className="border-purple-200 text-purple-700 hover:bg-purple-50"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Create {category}
+            </Button>
+          </div>
         </div>
 
         {/* Stats summary */}
@@ -97,6 +148,22 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
           </div>
         )}
 
+        {/* Bulk selection header */}
+        {items.length > 0 && (
+          <div className="flex items-center gap-2 py-2 border-b border-gray-200">
+            <Checkbox
+              checked={allSelected}
+              onCheckedChange={handleSelectAll}
+            />
+            <span className="text-sm text-gray-600">
+              {selectedItems.length > 0 
+                ? `${selectedItems.length} of ${items.length} selected`
+                : `Select all ${items.length} items`
+              }
+            </span>
+          </div>
+        )}
+
         {/* Content grid or empty state */}
         {items.length === 0 ? (
           <RichEmptyState 
@@ -106,14 +173,55 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.map((item) => (
-              <EnhancedGeneralContentCard
-                key={item.id}
-                item={item}
-                onDelete={onDelete}
-                isDeleting={isDeleting}
-              />
+              <div key={item.id} className="relative">
+                <div className="absolute top-2 left-2 z-10">
+                  <Checkbox
+                    checked={selectedItems.some(selected => selected.id === item.id)}
+                    onCheckedChange={(checked) => handleItemSelect(item, checked as boolean)}
+                    className="bg-white border-2 border-gray-300"
+                  />
+                </div>
+                <EnhancedGeneralContentCard
+                  item={item}
+                  onDelete={onDelete}
+                  isDeleting={isDeleting}
+                  onRetry={(item) => {
+                    setAIFixItem(item);
+                    setIsAIFixModalOpen(true);
+                  }}
+                />
+              </div>
             ))}
           </div>
+        )}
+
+        {/* Batch Actions */}
+        <GeneralContentBatchActions
+          selectedItems={selectedItems}
+          onSelectionChange={onSelectionChange}
+          onDeleteMultiple={onDeleteMultiple}
+          onBulkAIFix={handleBulkAIFix}
+          isDeleting={isDeleting}
+        />
+
+        {/* Generation Modal */}
+        <GeneralContentGenerationModal
+          isOpen={isGenerationModalOpen}
+          onClose={() => setIsGenerationModalOpen(false)}
+          category={category}
+        />
+
+        {/* AI Fix Modal */}
+        {aiFixItem && (
+          <GeneralContentAIFixModal
+            open={isAIFixModalOpen}
+            onOpenChange={setIsAIFixModalOpen}
+            item={aiFixItem}
+            onFixRequested={() => {
+              setAIFixItem(null);
+              setIsAIFixModalOpen(false);
+            }}
+          />
         )}
       </div>
     </TabsContent>

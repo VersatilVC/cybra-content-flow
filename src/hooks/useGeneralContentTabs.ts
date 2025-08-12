@@ -1,53 +1,65 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useGeneralContent } from './useGeneralContent';
-import { CategorizedGeneralContent, GeneralContentFilters } from '@/types/generalContent';
+import { GeneralContentItem } from '@/types/generalContent';
 
 export function useGeneralContentTabs() {
-  const [activeTab, setActiveTab] = useState('General');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'General' | 'Social' | 'Ads'>('General');
+  const [selectedItems, setSelectedItems] = useState<GeneralContentItem[]>([]);
 
-  // Fetch all general content with search filter
-  const filters: GeneralContentFilters = {
-    category: 'all',
-    derivativeType: 'all', 
+  // Fetch data for all categories
+  const generalData = useGeneralContent({
+    category: 'General',
+    derivativeType: 'all',
     status: 'all',
-    search: searchQuery,
+    search: '',
     page: 1,
-    pageSize: 1000 // Get all items for categorization
+    pageSize: 50
+  });
+
+  const socialData = useGeneralContent({
+    category: 'Social',
+    derivativeType: 'all',
+    status: 'all',
+    search: '',
+    page: 1,
+    pageSize: 50
+  });
+
+  const adsData = useGeneralContent({
+    category: 'Ads',
+    derivativeType: 'all',
+    status: 'all',
+    search: '',
+    page: 1,
+    pageSize: 50
+  });
+
+  const categorizedContent = {
+    General: generalData.generalContent || [],
+    Social: socialData.generalContent || [],
+    Ads: adsData.generalContent || []
   };
 
-  const { 
-    generalContent, 
-    isLoading, 
-    deleteGeneralContent, 
-    isDeleting,
-    total
-  } = useGeneralContent(filters);
-
-  // Categorize content by category
-  const categorizedContent: CategorizedGeneralContent = useMemo(() => {
-    const categorized = {
-      General: generalContent.filter(item => item.category === 'General'),
-      Social: generalContent.filter(item => item.category === 'Social'),
-      Ads: generalContent.filter(item => item.category === 'Ads')
-    };
-    
-    return categorized;
-  }, [generalContent]);
-
-  const totalItems = categorizedContent.General.length + 
-                    categorizedContent.Social.length + 
-                    categorizedContent.Ads.length;
+  const handleDeleteMultiple = async (ids: string[]) => {
+    try {
+      for (const id of ids) {
+        await generalData.deleteGeneralContent(id);
+      }
+      setSelectedItems([]);
+    } catch (error) {
+      console.error('Error deleting multiple items:', error);
+    }
+  };
 
   return {
     activeTab,
     setActiveTab,
-    searchQuery,
-    setSearchQuery,
+    selectedItems,
+    setSelectedItems,
     categorizedContent,
-    totalItems,
-    isLoading,
-    deleteGeneralContent,
-    isDeleting
+    isLoading: generalData.isLoading || socialData.isLoading || adsData.isLoading,
+    deleteItem: generalData.deleteGeneralContent,
+    deleteMultiple: handleDeleteMultiple,
+    isDeleting: generalData.isDeleting
   };
 }

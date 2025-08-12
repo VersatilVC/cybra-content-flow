@@ -14,14 +14,18 @@ const GeneralContentTabs: React.FC = () => {
   const {
     activeTab,
     setActiveTab,
-    searchQuery,
-    setSearchQuery,
+    selectedItems,
+    setSelectedItems,
     categorizedContent,
-    totalItems,
     isLoading,
-    deleteGeneralContent,
+    deleteItem,
+    deleteMultiple,
     isDeleting
   } = useGeneralContentTabs();
+
+  const totalItems = categorizedContent.General.length + 
+                    categorizedContent.Social.length + 
+                    categorizedContent.Ads.length;
 
   if (isLoading) {
     return (
@@ -50,18 +54,10 @@ const GeneralContentTabs: React.FC = () => {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="max-w-md">
-        <Input
-          placeholder="Search content..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full"
-        />
-      </div>
+      {/* Search - Removed for now, can be added back later */}
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'General' | 'Social' | 'Ads')} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="General" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />

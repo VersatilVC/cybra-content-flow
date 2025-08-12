@@ -3,6 +3,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { getCallbackUrl } from '@/config/environment';
 import { CreateGeneralContentRequest, GeneralContentItem } from '@/types/generalContent';
 
+export interface GeneralContentGenerationRequest {
+  sourceItemId?: string;
+  selectedTypes: string[];
+  category: 'General' | 'Social' | 'Ads';
+  userId: string;
+}
+
+export interface GeneralContentAIFixRequest {
+  itemId: string;
+  userId: string;
+  feedback: string;
+  currentContent: string;
+  title: string;
+  category: string;
+  derivativeType: string;
+  targetAudience: string;
+}
+
 export interface GeneralContentPage {
   items: GeneralContentItem[];
   total: number;
@@ -157,6 +175,60 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
 
   return createdContent;
 };
+
+export async function triggerGeneralContentGeneration(request: GeneralContentGenerationRequest): Promise<void> {
+  try {
+    const { data, error } = await supabase.functions.invoke('process-content', {
+      body: {
+        type: 'general_content_generation',
+        user_id: request.userId,
+        source_item_id: request.sourceItemId,
+        selected_types: request.selectedTypes,
+        category: request.category,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+    if (error) {
+      console.error('General content generation webhook error:', error);
+      throw new Error('Failed to trigger content generation');
+    }
+
+    console.log('General content generation triggered successfully:', data);
+  } catch (error) {
+    console.error('Error triggering general content generation:', error);
+    throw error;
+  }
+}
+
+export async function triggerGeneralContentAIFix(request: GeneralContentAIFixRequest): Promise<void> {
+  try {
+    const { data, error } = await supabase.functions.invoke('process-content', {
+      body: {
+        type: 'general_content_ai_fix',
+        user_id: request.userId,
+        item_id: request.itemId,
+        feedback: request.feedback,
+        current_content: request.currentContent,
+        title: request.title,
+        category: request.category,
+        derivative_type: request.derivativeType,
+        target_audience: request.targetAudience,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+    if (error) {
+      console.error('General content AI fix webhook error:', error);
+      throw new Error('Failed to trigger AI fix');
+    }
+
+    console.log('General content AI fix triggered successfully:', data);
+  } catch (error) {
+    console.error('Error triggering general content AI fix:', error);
+    throw error;
+  }
+}
 
 export const updateGeneralContent = async (id: string, data: Partial<CreateGeneralContentRequest>): Promise<GeneralContentItem> => {
   const { data: result, error } = await supabase
