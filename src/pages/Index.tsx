@@ -1,11 +1,11 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useOptimizedAuthContext } from "@/contexts/OptimizedAuthContext";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, session, loading, recoverSession } = useAuth();
+  const { user, session, loading, recoverSession } = useOptimizedAuthContext();
   const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {

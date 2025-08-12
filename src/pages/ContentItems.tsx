@@ -11,7 +11,7 @@ import ContentItemCard from '@/components/content-items/ContentItemCard';
 import EmptyContentItemsState from '@/components/content-items/EmptyContentItemsState';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useDerivativeCounts } from '@/hooks/useDerivativeCounts';
 
 const ContentItems = () => {
@@ -35,7 +35,7 @@ const ContentItems = () => {
 const itemIds = contentItems.map((i: ContentItem) => i.id);
 const { data: derivativeCounts = {}, isLoading: isLoadingCounts } = useDerivativeCounts(itemIds);
 
-const { user } = useAuth();
+const { user } = useOptimizedAuthContext();
 
 useEffect(() => {
   const urlPageSize = new URLSearchParams(window.location.search).get('pageSize');

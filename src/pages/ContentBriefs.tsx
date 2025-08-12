@@ -4,7 +4,7 @@ import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useContentBriefs } from '@/hooks/useContentBriefs';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ViewBriefModal from '@/components/ViewBriefModal';
 import EditBriefModal from '@/components/EditBriefModal';
@@ -19,7 +19,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useDebounce } from '@/hooks/useDebounce';
 
 const ContentBriefs = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useOptimizedAuthContext();
   
   const {
     filters,

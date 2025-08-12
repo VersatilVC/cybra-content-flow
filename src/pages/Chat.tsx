@@ -8,12 +8,12 @@ import { AlertCircle, Settings } from 'lucide-react';
 import { AddWebhookModal } from '@/components/AddWebhookModal';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 
 const Chat = () => {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [showWebhookModal, setShowWebhookModal] = useState(false);
-  const { user } = useAuth();
+  const { user } = useOptimizedAuthContext();
 
   // Check if AI chat webhook is configured
   const { data: aiWebhook, isLoading: webhookLoading } = useQuery({

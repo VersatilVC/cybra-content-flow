@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataCleanupPanel } from "@/components/admin/DataCleanupPanel";
-import { useAuth } from "@/contexts/AuthContext";
+import { useOptimizedAuthContext } from "@/contexts/OptimizedAuthContext";
 import { Navigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 const Settings = () => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useOptimizedAuthContext();
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({

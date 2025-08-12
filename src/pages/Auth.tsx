@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { useAccountLinking } from '@/hooks/useAccountLinking';
 import { useToast } from '@/hooks/use-toast';
 import { AuthLayout } from '@/components/auth/AuthLayout';
@@ -11,7 +11,7 @@ import { runSecurityValidation } from '@/utils/securityTests';
 
 const Auth = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const { signInWithGoogle, user, loading } = useAuth();
+  const { signInWithGoogle, user, loading } = useOptimizedAuthContext();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
