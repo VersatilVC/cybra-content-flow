@@ -7,6 +7,9 @@ import { WebhooksHeader } from "@/components/webhooks/WebhooksHeader";
 import { KeyWebhookSetups } from "@/components/webhooks/KeyWebhookSetups";
 import { WebhooksStats } from "@/components/webhooks/WebhooksStats";
 import { WebhooksTable } from "@/components/webhooks/WebhooksTable";
+import { WebhooksTypeTabs } from "@/components/webhooks/WebhooksTypeTabs";
+import { WebhooksFilters } from "@/components/webhooks/WebhooksFilters";
+import { webhookTypes } from "@/components/webhooks/webhookTypes";
 
 interface WebhookConfig {
   id: string;
@@ -41,6 +44,11 @@ const Webhooks = () => {
     setIsAddWebhookOpen(true);
   };
 
+  const handleAddGeneralContentWebhook = () => {
+    setPreselectedType('general_content');
+    setIsAddWebhookOpen(true);
+  };
+
   const handleAddWebhook = () => {
     setPreselectedType('');
     setIsAddWebhookOpen(true);
@@ -54,6 +62,7 @@ const Webhooks = () => {
         webhooks={webhooks}
         onAddKnowledgeBaseWebhook={handleAddKnowledgeBaseWebhook}
         onAddDerivativeWebhook={handleAddDerivativeWebhook}
+        onAddGeneralContentWebhook={handleAddGeneralContentWebhook}
         onToggleWebhookStatus={toggleWebhookStatus}
       />
 
