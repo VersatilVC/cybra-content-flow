@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContentBrief } from '@/types/contentBriefs';
 import { FileText, Edit, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -249,51 +250,62 @@ export default function ViewBriefModal({ brief, open, onClose, onEdit, onCreateC
           </div>
         </DialogHeader>
         
-        <div className="space-y-6">
-          {/* Header */}
-          <BriefHeader brief={brief} />
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="content">Content Structure</TabsTrigger>
+            <TabsTrigger value="raw">Raw Content</TabsTrigger>
+          </TabsList>
 
-          {/* Metadata */}
-          <BriefMetadata brief={brief} />
+          <TabsContent value="overview" className="space-y-6">
+            {/* Header */}
+            <BriefHeader brief={brief} />
 
-          {/* Description */}
-          {brief.description && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
-              <div className="p-4 bg-white border border-gray-200 rounded-lg">
-                <p className="text-gray-700 whitespace-pre-wrap">{brief.description}</p>
-              </div>
-            </div>
-          )}
+            {/* Metadata */}
+            <BriefMetadata brief={brief} />
 
-          {/* Structured Content */}
-          {briefContent ? (
-            <div className="space-y-6">
-              <BriefContent briefContent={briefContent} />
-              <CreateContentCTA brief={brief} onCreateContentItem={onCreateContentItem} />
-            </div>
-          ) : brief.content ? (
-            /* Enhanced fallback for non-JSON content */
-            <div className="space-y-4">
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <h3 className="text-lg font-semibold text-amber-900 mb-2">Raw Content</h3>
-                <p className="text-amber-800 text-sm mb-3">
-                  This content couldn't be parsed as structured data. It's displayed as raw text below.
-                </p>
-                <div className="p-3 bg-white border border-amber-200 rounded max-h-96 overflow-y-auto">
-                  <p className="text-gray-700 whitespace-pre-wrap">{brief.content}</p>
+            {/* Description */}
+            {brief.description && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+                <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                  <p className="text-gray-700 whitespace-pre-wrap">{brief.description}</p>
                 </div>
               </div>
-              <CreateContentCTA brief={brief} onCreateContentItem={onCreateContentItem} />
-            </div>
-          ) : (
-            /* No content available */
-            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Content</h3>
-              <p className="text-gray-600 italic">No content has been defined for this brief yet.</p>
-            </div>
-          )}
-        </div>
+            )}
+
+            <CreateContentCTA brief={brief} onCreateContentItem={onCreateContentItem} />
+          </TabsContent>
+
+          <TabsContent value="content" className="space-y-6">
+            {briefContent ? (
+              <BriefContent briefContent={briefContent} />
+            ) : (
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Content Structure</h3>
+                <p className="text-gray-600 italic">No structured content has been defined for this brief yet.</p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="raw" className="space-y-6">
+            {brief.content ? (
+              <div className="space-y-4">
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Raw Content</h3>
+                  <div className="p-3 bg-white border border-gray-200 rounded max-h-96 overflow-y-auto">
+                    <pre className="text-gray-700 whitespace-pre-wrap text-sm">{brief.content}</pre>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Raw Content</h3>
+                <p className="text-gray-600 italic">No content has been defined for this brief yet.</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
