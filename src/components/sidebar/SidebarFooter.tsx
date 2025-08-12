@@ -2,12 +2,12 @@
 import { LogOut } from "lucide-react";
 import { SidebarFooter as UISidebarFooter } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
+import { useOptimizedAuthContext } from "@/contexts/OptimizedAuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { logger } from '@/utils/logger';
 
 export function SidebarFooter() {
-  const { signOut, user } = useAuth();
+  const { signOut, user } = useOptimizedAuthContext();
   const { profile, loading } = useProfile();
 
   const handleSignOut = async () => {
