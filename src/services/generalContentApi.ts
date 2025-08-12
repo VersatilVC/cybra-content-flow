@@ -203,6 +203,8 @@ async function triggerGeneralContentWebhook(content: GeneralContentItem, userId:
       source_type: content.source_type,
       source_data: content.source_data,
       target_audience: content.target_audience,
+      description: content.content,
+      entry_type: content.source_type,
       timestamp: new Date().toISOString()
     },
   });

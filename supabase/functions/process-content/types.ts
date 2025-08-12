@@ -16,6 +16,9 @@ export interface TriggerRequestBody {
   content_type?: string;
   source_type?: string;
   source_data?: Record<string, any>;
+  description?: string;
+  entry_type?: 'manual' | 'url' | 'file';
+  entry_value?: string;
 }
 
 export interface CallbackRequestBody {
@@ -45,4 +48,7 @@ export interface WebhookPayload {
   source_type?: string;
   source_data?: Record<string, any>;
   target_audience?: string;
+  description?: string;
+  entry_type?: 'manual' | 'url' | 'file';
+  entry_value?: string;
 }

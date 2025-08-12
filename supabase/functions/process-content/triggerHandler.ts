@@ -87,26 +87,73 @@ export async function handleTriggerAction(
     }
   }
 
+  // Optionally enrich payload from general_content_items
+  let generalContent: any = null;
+  if (body.general_content_id) {
+    try {
+      const { data, error } = await supabase
+        .from('general_content_items')
+        .select('id, title, category, derivative_type, derivative_types, content_type, source_type, source_data, target_audience, content, file_url, file_path, file_size, mime_type')
+        .eq('id', body.general_content_id)
+        .single();
+      if (error) {
+        console.warn('Failed to load general_content_items for enrichment:', error.message);
+      } else {
+        generalContent = data;
+        console.log('Enriched general_content_items loaded for payload:', { id: data.id });
+      }
+    } catch (err) {
+      console.warn('Error querying general_content_items:', err?.message || err);
+    }
+  }
+
+  // Compute entry details based on generalContent
+  let entryType: string | undefined = body.source_type || generalContent?.source_type;
+  let entryValue: string | undefined = undefined;
+  if (generalContent) {
+    if (entryType === 'manual') {
+      entryValue = generalContent.content || undefined;
+    } else if (entryType === 'url') {
+      entryValue = generalContent.source_data?.url || undefined;
+    } else if (entryType === 'file') {
+      entryValue = generalContent.file_url || generalContent.file_path || undefined;
+    }
+  }
+
   // Construct webhook payload with all available data
   const payload: WebhookPayload = {
     submission_id: submission.id,
     user_id: submission.user_id,
     knowledge_base: submission.knowledge_base,
-    content_type: submission.content_type,
+    content_type: body.content_type || generalContent?.content_type || submission.content_type,
     file_url: fileUrl,
     original_filename: submission.original_filename,
     file_size: submission.file_size,
     mime_type: submission.mime_type,
     timestamp: new Date().toISOString(),
-    // Include general content specific fields from request body
     ...(body.general_content_id && { general_content_id: body.general_content_id }),
-    ...(body.title && { title: body.title }),
-    ...(body.category && { category: body.category }),
-    ...(body.derivative_types && { derivative_types: body.derivative_types }),
-    ...(body.source_type && { source_type: body.source_type }),
-    ...(body.source_data && { source_data: body.source_data }),
-    ...(body.target_audience && { target_audience: body.target_audience })
+    title: body.title || generalContent?.title,
+    category: body.category || generalContent?.category,
+    derivative_types: body.derivative_types || generalContent?.derivative_types || (generalContent?.derivative_type ? [generalContent.derivative_type] : undefined),
+    source_type: entryType as any,
+    source_data: body.source_data || generalContent?.source_data,
+    target_audience: body.target_audience || generalContent?.target_audience,
+    description: generalContent?.content || undefined,
+    entry_type: entryType as any,
+    entry_value: entryValue,
   };
+
+  console.log('Final webhook payload (sanitized preview):', {
+    submission_id: payload.submission_id,
+    user_id: payload.user_id,
+    knowledge_base: payload.knowledge_base,
+    general_content_id: payload.general_content_id,
+    title: payload.title,
+    category: payload.category,
+    derivative_types: payload.derivative_types,
+    content_type: payload.content_type,
+    source_type: payload.source_type,
+  });
 
   try {
     await triggerWebhook(webhook.webhook_url, payload);
