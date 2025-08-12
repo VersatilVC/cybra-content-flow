@@ -16,6 +16,7 @@ export interface CallbackRequestBody {
   error_message?: string;
   brief_id?: string;
   content_item_id?: string;
+  general_content_id?: string;
 }
 
 export interface WebhookPayload {

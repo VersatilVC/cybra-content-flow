@@ -100,7 +100,7 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
   const { data: result, error } = await supabase
     .from('general_content_items')
     .insert([insertData])
-.select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,created_at,updated_at')
+    .select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,created_at,updated_at')
     .single();
 
   if (error) {
@@ -111,14 +111,48 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
   const createdContent = result as GeneralContentItem;
   console.log('General content created successfully:', createdContent.id);
 
-  // Trigger webhook for processing
+  // Create a content submission record for tracking and N8N processing
+  const submissionData = {
+    user_id: user.user.id,
+    knowledge_base: 'general_content',
+    content_type: createdContent.content_type,
+    file_path: createdContent.file_path,
+    file_url: createdContent.file_url,
+    original_filename: createdContent.source_data?.originalFilename || null,
+    file_size: createdContent.file_size ? parseInt(createdContent.file_size) : null,
+    mime_type: createdContent.mime_type,
+    processing_status: 'queued'
+  };
+
+  const { data: submissionResult, error: submissionError } = await supabase
+    .from('content_submissions')
+    .insert([submissionData])
+    .select('id')
+    .single();
+
+  if (submissionError) {
+    console.error('Failed to create content submission:', submissionError);
+    throw new Error(`Failed to create content submission: ${submissionError.message}`);
+  }
+
+  const submissionId = submissionResult.id;
+  console.log('Content submission created:', submissionId);
+
+  // Trigger the submission-based webhook processing
   try {
-    await triggerGeneralContentWebhook(createdContent, user.user.id, insertData.derivative_types);
+    await triggerGeneralContentWebhook(createdContent, user.user.id, insertData.derivative_types, submissionId);
     console.log('General content webhook triggered successfully');
   } catch (webhookError) {
     console.error('General content webhook failed:', webhookError);
-    // Don't fail the whole operation if webhook fails
-    // The content was still created successfully
+    // Update submission status to failed
+    await supabase
+      .from('content_submissions')
+      .update({ 
+        processing_status: 'failed',
+        error_message: `Webhook trigger failed: ${webhookError.message}`
+      })
+      .eq('id', submissionId);
+    // Don't fail the whole operation since the content was created
   }
 
   return createdContent;
@@ -152,45 +186,25 @@ export const deleteGeneralContent = async (id: string): Promise<void> => {
   }
 };
 
-async function triggerGeneralContentWebhook(content: GeneralContentItem, userId: string, derivativeTypes?: string[]): Promise<void> {
-  console.log('Triggering webhook via edge function for:', content.id);
+async function triggerGeneralContentWebhook(content: GeneralContentItem, userId: string, derivativeTypes?: string[], submissionId?: string): Promise<void> {
+  console.log('Triggering process-content webhook for submission:', submissionId);
 
-  const payload = {
-    type: 'general_content_submission',
-    general_content_id: content.id,
-    user_id: userId,
-    title: content.title,
-    content: content.content,
-    derivative_type: content.derivative_type,
-    derivative_types: derivativeTypes || [content.derivative_type],
-    category: content.category,
-    source_type: content.source_type,
-    source_data: content.source_data,
-    target_audience: content.target_audience,
-    content_type: content.content_type,
-    file_url: content.file_url,
-    file_path: content.file_path,
-    timestamp: new Date().toISOString(),
-    callback_url: getCallbackUrl('process-idea-callback'),
-    callback_data: {
-      type: 'general_content_processing_complete',
+  // Use the process-content edge function with submission-based flow
+  const { error: fnError } = await supabase.functions.invoke('process-content', {
+    body: {
+      submissionId: submissionId,
+      type: 'general_content_submission',
       general_content_id: content.id,
       user_id: userId,
-      title: content.title
-    }
-  };
-
-  const { error: fnError } = await supabase.functions.invoke('dispatch-webhook', {
-    body: {
-      webhook_type: 'knowledge_base',
-      payload,
+      title: content.title,
+      timestamp: new Date().toISOString()
     },
   });
 
   if (fnError) {
-    console.error('Edge function dispatch-webhook failed:', fnError);
+    console.error('Edge function process-content failed:', fnError);
     throw new Error(`Failed to trigger general content webhook: ${fnError.message}`);
   }
 
-  console.log('General content webhook enqueued via edge function');
+  console.log('General content webhook processing started via process-content function');
 }

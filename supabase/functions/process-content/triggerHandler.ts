@@ -19,10 +19,10 @@ export async function handleTriggerAction(
 
   const submission = await getSubmission(supabase, submissionId);
 
-  // For content creation submissions, just update status to processing
+  // For content creation and general content submissions, just update status to processing
   // N8N will handle the actual content generation and storage
-  if (submission.knowledge_base === 'content_creation') {
-    console.log('Processing content creation submission - N8N will handle content storage');
+  if (submission.knowledge_base === 'content_creation' || submission.knowledge_base === 'general_content') {
+    console.log(`Processing ${submission.knowledge_base} submission - N8N will handle content storage`);
     
     await updateSubmissionStatus(supabase, submissionId, 'processing', {
       webhook_triggered_at: new Date().toISOString()
@@ -31,7 +31,7 @@ export async function handleTriggerAction(
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Content creation processing started - N8N will handle content generation and storage',
+        message: `${submission.knowledge_base} processing started - N8N will handle content generation and storage`,
         submission_id: submissionId 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
