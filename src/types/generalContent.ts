@@ -1,4 +1,3 @@
-
 export interface GeneralContentItem {
   id: string;
   user_id: string;
@@ -45,4 +44,17 @@ export interface CreateGeneralContentRequest {
   file_url?: string;
   file_size?: string;
   mime_type?: string;
+}
+
+export interface GeneralContentStats {
+  total: number;
+  approved: number;
+  published: number;
+  failed: number;
+}
+
+export interface CategorizedGeneralContent {
+  General: GeneralContentItem[];
+  Social: GeneralContentItem[];
+  Ads: GeneralContentItem[];
 }
