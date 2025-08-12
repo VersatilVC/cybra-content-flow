@@ -19,6 +19,8 @@ interface GeneralContentTabContentProps {
   onCreateContent: () => void;
   selectedItems: GeneralContentItem[];
   onSelectionChange: (items: GeneralContentItem[]) => void;
+  viewMode: 'grid' | 'list';
+  viewDensity: 'compact' | 'comfortable' | 'spacious';
 }
 
 const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
@@ -29,7 +31,9 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
   isDeleting,
   onCreateContent,
   selectedItems,
-  onSelectionChange
+  onSelectionChange,
+  viewMode,
+  viewDensity
 }) => {
   const [isGenerationModalOpen, setIsGenerationModalOpen] = useState(false);
   const [isAIFixModalOpen, setIsAIFixModalOpen] = useState(false);
@@ -171,9 +175,18 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
             onCreateContent={onCreateContent}
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={`
+            ${viewMode === 'grid' 
+              ? viewDensity === 'compact' 
+                ? 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4'
+                : viewDensity === 'comfortable'
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                : 'grid grid-cols-1 md:grid-cols-2 gap-8'
+              : 'space-y-4'
+            }
+          `}>
             {items.map((item) => (
-              <div key={item.id} className="relative">
+              <div key={item.id} className={`relative ${viewMode === 'list' ? 'flex' : ''}`}>
                 <div className="absolute top-2 left-2 z-10">
                   <Checkbox
                     checked={selectedItems.some(selected => selected.id === item.id)}
@@ -189,6 +202,8 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
                     setAIFixItem(item);
                     setIsAIFixModalOpen(true);
                   }}
+                  viewMode={viewMode}
+                  viewDensity={viewDensity}
                 />
               </div>
             ))}

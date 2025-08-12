@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Image, Video, Plus } from 'lucide-react';
+import { FileText, Image, Video, Plus, BarChart3, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useGeneralContentTabs } from '@/hooks/useGeneralContentTabs';
+import { useGeneralContentFiltering } from '@/hooks/useGeneralContentFiltering';
 import GeneralContentModal from '@/components/GeneralContentModal';
 import GeneralContentTabContent from './GeneralContentTabContent';
+import GeneralContentAdvancedFilters from './GeneralContentAdvancedFilters';
+import GeneralContentInsights from './GeneralContentInsights';
+import GeneralContentExportOptions from './GeneralContentExportOptions';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 const GeneralContentTabs: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   
   const {
     activeTab,
@@ -23,9 +28,20 @@ const GeneralContentTabs: React.FC = () => {
     isDeleting
   } = useGeneralContentTabs();
 
-  const totalItems = categorizedContent.General.length + 
-                    categorizedContent.Social.length + 
-                    categorizedContent.Ads.length;
+  // Get filtering for current tab
+  const {
+    filters,
+    filteredAndSortedItems,
+    updateFilter,
+    clearFilters,
+    hasActiveFilters,
+    totalItems: currentTabTotal,
+    filteredCount,
+  } = useGeneralContentFiltering(categorizedContent[activeTab]);
+
+  const allItemsTotal = categorizedContent.General.length + 
+                        categorizedContent.Social.length + 
+                        categorizedContent.Ads.length;
 
   if (isLoading) {
     return (
@@ -42,19 +58,60 @@ const GeneralContentTabs: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">General Content</h1>
           <p className="text-gray-600 mt-1">
-            {totalItems} item{totalItems === 1 ? '' : 's'} created
+            {allItemsTotal} item{allItemsTotal === 1 ? '' : 's'} total
+            {hasActiveFilters && ` • ${filteredCount} filtered`}
           </p>
         </div>
-        <Button 
-          onClick={() => setShowCreateModal(true)}
-          className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create Content
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setShowInsights(!showInsights)}
+          >
+            <BarChart3 className="w-4 h-4 mr-2" />
+            {showInsights ? 'Hide' : 'Show'} Insights
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => setShowExportModal(true)}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+          <Button 
+            onClick={() => setShowCreateModal(true)}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Content
+          </Button>
+        </div>
       </div>
 
-      {/* Search - Removed for now, can be added back later */}
+      {/* Insights */}
+      {showInsights && (
+        <GeneralContentInsights items={Object.values(categorizedContent).flat()} />
+      )}
+
+      {/* Advanced Filters */}
+      <GeneralContentAdvancedFilters
+        searchTerm={filters.searchTerm}
+        onSearchChange={(term) => updateFilter('searchTerm', term)}
+        selectedStatuses={filters.selectedStatuses}
+        onStatusChange={(statuses) => updateFilter('selectedStatuses', statuses)}
+        selectedTypes={filters.selectedTypes}
+        onTypeChange={(types) => updateFilter('selectedTypes', types)}
+        dateRange={filters.dateRange}
+        onDateRangeChange={(range) => updateFilter('dateRange', range)}
+        sortBy={filters.sortBy}
+        onSortChange={(sort) => updateFilter('sortBy', sort)}
+        sortOrder={filters.sortOrder}
+        onSortOrderChange={(order) => updateFilter('sortOrder', order)}
+        viewMode={filters.viewMode}
+        onViewModeChange={(mode) => updateFilter('viewMode', mode)}
+        viewDensity={filters.viewDensity}
+        onViewDensityChange={(density) => updateFilter('viewDensity', density)}
+        onClearFilters={clearFilters}
+      />
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'General' | 'Social' | 'Ads')} className="w-full">
@@ -77,13 +134,15 @@ const GeneralContentTabs: React.FC = () => {
           <GeneralContentTabContent
             key={category}
             category={category}
-            items={categorizedContent[category]}
+            items={category === activeTab ? filteredAndSortedItems : categorizedContent[category]}
             onDelete={deleteItem}
             onDeleteMultiple={deleteMultiple}
             isDeleting={isDeleting}
             onCreateContent={() => setShowCreateModal(true)}
             selectedItems={selectedItems}
             onSelectionChange={setSelectedItems}
+            viewMode={filters.viewMode}
+            viewDensity={filters.viewDensity}
           />
         ))}
       </Tabs>
@@ -91,6 +150,13 @@ const GeneralContentTabs: React.FC = () => {
       <GeneralContentModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+      />
+
+      <GeneralContentExportOptions
+        open={showExportModal}
+        onOpenChange={setShowExportModal}
+        items={Object.values(categorizedContent).flat()}
+        selectedItems={selectedItems.length > 0 ? selectedItems : undefined}
       />
     </div>
   );
