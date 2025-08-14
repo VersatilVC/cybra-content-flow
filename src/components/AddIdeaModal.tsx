@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Link as LinkIcon, PenTool, Upload } from 'lucide-react';
 import { useContentIdeas } from '@/hooks/useContentIdeas';
+import { secureStringSchema, secureUrlSchema, validateFileType, validateFileSize } from '@/lib/security';
 
 interface AddIdeaModalProps {
   isOpen: boolean;
@@ -34,14 +35,54 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
 
   const { createIdea, isCreating } = useContentIdeas();
 
-  const validateForm = () => {
+  const validateForm = async () => {
     const newErrors = {
-      idea: !formData.idea,
-      content_type: !formData.content_type,
-      target_audience: !formData.target_audience,
-      url: activeTab === 'url' && !formData.url,
-      file: activeTab === 'file' && !formData.file,
+      idea: false,
+      content_type: false,
+      target_audience: false,
+      url: false,
+      file: false,
     };
+
+    // Validate idea/description using security schema
+    try {
+      secureStringSchema.parse(formData.idea);
+    } catch {
+      newErrors.idea = true;
+    }
+
+    // Basic required field checks
+    if (!formData.idea) newErrors.idea = true;
+    if (!formData.content_type) newErrors.content_type = true;
+    if (!formData.target_audience) newErrors.target_audience = true;
+
+    // URL validation with security checks
+    if (activeTab === 'url') {
+      if (!formData.url) {
+        newErrors.url = true;
+      } else {
+        try {
+          secureUrlSchema.parse(formData.url);
+        } catch {
+          newErrors.url = true;
+        }
+      }
+    }
+
+    // File validation with security checks
+    if (activeTab === 'file') {
+      if (!formData.file) {
+        newErrors.file = true;
+      } else {
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+        const isValidType = await validateFileType(formData.file, allowedTypes);
+        const isValidSize = validateFileSize(formData.file, 10); // 10MB limit
+        
+        if (!isValidType || !isValidSize) {
+          newErrors.file = true;
+        }
+      }
+    }
     
     setErrors(newErrors);
     return !Object.values(newErrors).some(error => error);
@@ -50,7 +91,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    if (!(await validateForm())) {
       return;
     }
 

@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/utils/logger';
+import { sanitizeText, secureStringSchema } from '@/lib/security';
 
 export interface ContentItem {
   id: string;
@@ -69,9 +70,19 @@ export async function fetchContentItems(
     query = query.eq('content_type', filters.type);
   }
   if (filters?.search) {
-    const term = filters.search.trim();
-    if (term.length > 0) {
-      query = query.or(`title.ilike.%${term}%,summary.ilike.%${term}%`);
+    try {
+      // Validate and sanitize search input to prevent injection attacks
+      const validatedTerm = secureStringSchema.parse(filters.search);
+      const sanitizedTerm = sanitizeText(validatedTerm).trim();
+      
+      if (sanitizedTerm.length > 0) {
+        // Escape special characters for PostgreSQL ILIKE
+        const escapedTerm = sanitizedTerm.replace(/[%_\\]/g, '\\$&');
+        query = query.or(`title.ilike.%${escapedTerm}%,summary.ilike.%${escapedTerm}%`);
+      }
+    } catch (error) {
+      logger.warn('Invalid search term provided:', filters.search);
+      // Continue without search filter if validation fails
     }
   }
   

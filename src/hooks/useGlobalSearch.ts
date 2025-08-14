@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';
+import { sanitizeText, secureStringSchema } from '@/lib/security';
 
 interface SearchResult {
   id: string;
@@ -33,7 +34,15 @@ export function useGlobalSearch(query: string) {
   const debouncedQuery = useDebounce(query, 300);
 
   const searchQuery = useMemo(() => {
-    return debouncedQuery.trim().toLowerCase();
+    try {
+      // Validate and sanitize search input
+      const validatedQuery = secureStringSchema.parse(debouncedQuery);
+      const sanitized = sanitizeText(validatedQuery).trim().toLowerCase();
+      // Escape special characters for PostgreSQL ILIKE
+      return sanitized.replace(/[%_\\]/g, '\\$&');
+    } catch {
+      return ''; // Return empty string if validation fails
+    }
   }, [debouncedQuery]);
 
   useEffect(() => {
