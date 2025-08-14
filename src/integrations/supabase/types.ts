@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -888,27 +888,27 @@ export type Database = {
       audit_content_idea_file_access: {
         Args: Record<PropertyKey, never>
         Returns: {
-          total_file_ideas: number
-          ideas_with_invalid_urls: number
           ideas_missing_paths: number
+          ideas_with_invalid_urls: number
           ideas_with_mismatched_user_ids: number
           path_user_ids_extracted: number
+          total_file_ideas: number
         }[]
       }
       cleanup_historical_data: {
         Args: {
-          cleanup_older_than_days?: number
           batch_size?: number
+          cleanup_older_than_days?: number
           dry_run?: boolean
         }
         Returns: {
-          cleaned_ideas: number
           cleaned_briefs: number
-          cleaned_items: number
           cleaned_derivatives: number
+          cleaned_ideas: number
+          cleaned_items: number
           cleaned_suggestions: number
-          total_cleaned: number
           cleanup_summary: Json
+          total_cleaned: number
         }[]
       }
       extract_user_id_from_path: {
@@ -918,35 +918,35 @@ export type Database = {
       force_check_timed_out_ideas: {
         Args: Record<PropertyKey, never>
         Returns: {
-          updated_count: number
           failed_ideas: Json
+          updated_count: number
         }[]
       }
       force_check_timed_out_submissions: {
         Args: Record<PropertyKey, never>
         Returns: {
-          updated_count: number
           failed_submissions: Json
+          updated_count: number
         }[]
       }
       generate_signed_file_url: {
         Args: {
           bucket_name: string
-          file_path: string
           expiry_seconds?: number
+          file_path: string
         }
         Returns: string
       }
       get_cleanup_candidates: {
         Args: { older_than_days?: number }
         Returns: {
-          entity_type: string
           entity_id: string
-          title: string
-          status: string
-          updated_at: string
-          retry_count: number
+          entity_type: string
           last_error_message: string
+          retry_count: number
+          status: string
+          title: string
+          updated_at: string
         }[]
       }
       get_current_user_role: {
@@ -956,11 +956,11 @@ export type Database = {
       get_derivative_counts: {
         Args: { item_ids: string[] }
         Returns: {
-          content_item_id: string
-          category: string
-          total: number
           approved: number
+          category: string
+          content_item_id: string
           published: number
+          total: number
         }[]
       }
       is_admin_user: {
@@ -976,37 +976,37 @@ export type Database = {
         Returns: boolean
       }
       match_documents: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
+        Args: { filter?: Json; match_count?: number; query_embedding: string }
         Returns: {
-          id: number
           content: string
+          id: number
           metadata: Json
           similarity: number
         }[]
       }
       match_documents_competitor: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
+        Args: { filter?: Json; match_count?: number; query_embedding: string }
         Returns: {
-          id: number
           content: string
+          id: number
           metadata: Json
           similarity: number
         }[]
       }
       match_documents_industry: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
+        Args: { filter?: Json; match_count?: number; query_embedding: string }
         Returns: {
-          id: number
           content: string
+          id: number
           metadata: Json
           similarity: number
         }[]
       }
       match_documents_news: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
+        Args: { filter?: Json; match_count?: number; query_embedding: string }
         Returns: {
-          id: number
           content: string
+          id: number
           metadata: Json
           similarity: number
         }[]
@@ -1014,23 +1014,23 @@ export type Database = {
       monitor_all_timeouts: {
         Args: Record<PropertyKey, never>
         Returns: {
+          failed_ideas: Json
+          failed_submissions: Json
+          failed_suggestions: Json
           idea_timeouts: number
           submission_timeouts: number
           suggestion_timeouts: number
           total_processed: number
-          failed_ideas: Json
-          failed_submissions: Json
-          failed_suggestions: Json
         }[]
       }
       validate_content_idea_retry_state: {
         Args: Record<PropertyKey, never>
         Returns: {
-          total_ideas: number
           failed_ideas: number
           processing_ideas: number
-          stuck_ideas: number
           retryable_ideas: number
+          stuck_ideas: number
+          total_ideas: number
         }[]
       }
     }
