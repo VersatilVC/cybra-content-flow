@@ -10,13 +10,13 @@ export function useContentItemByBrief(briefId: string) {
     queryFn: async (): Promise<ContentItem | null> => {
       if (!briefId) return null;
       
-const { data, error } = await supabase
+      const { data, error } = await supabase
         .from('content_items')
         .select('id, content_brief_id, created_at')
         .eq('content_brief_id', briefId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) {
         logger.error('Error fetching content item by brief:', error);
