@@ -130,6 +130,7 @@ export function useKnowledgeBaseData() {
         )
         .in("knowledge_base", Object.keys(knowledgeBaseConfig))
         .neq("processing_status", "failed")
+        .not("error_message", "ilike", "%invalid knowledge base%")
         .order("created_at", { ascending: false })
         .limit(10);
 
