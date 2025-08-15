@@ -22,8 +22,8 @@ interface GeneralContentAdvancedFiltersProps {
   onSortChange: (sort: string) => void;
   sortOrder: 'asc' | 'desc';
   onSortOrderChange: (order: 'asc' | 'desc') => void;
-  viewMode: 'grid' | 'list';
-  onViewModeChange: (mode: 'grid' | 'list') => void;
+  viewMode: 'grid' | 'list' | 'table';
+  onViewModeChange: (mode: 'grid' | 'list' | 'table') => void;
   viewDensity: 'compact' | 'comfortable' | 'spacious';
   onViewDensityChange: (density: 'compact' | 'comfortable' | 'spacious') => void;
   onClearFilters: () => void;

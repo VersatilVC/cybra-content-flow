@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Sparkles, FileText, Image, Video } from 'lucide-react';
+import { Sparkles, FileText, Image, Video, Grid3X3, List } from 'lucide-react';
 import { GeneralContentItem } from '@/types/generalContent';
 import EnhancedGeneralContentCard from './EnhancedGeneralContentCard';
+import GeneralContentTable from './GeneralContentTable';
 import RichEmptyState from './RichEmptyState';
-
 import { GeneralContentAIFixModal } from './GeneralContentAIFixModal';
 import GeneralContentBatchActions from './GeneralContentBatchActions';
 
@@ -19,8 +19,9 @@ interface GeneralContentTabContentProps {
   onCreateContent: () => void;
   selectedItems: GeneralContentItem[];
   onSelectionChange: (items: GeneralContentItem[]) => void;
-  viewMode: 'grid' | 'list';
+  viewMode: 'grid' | 'list' | 'table';
   viewDensity: 'compact' | 'comfortable' | 'spacious';
+  onViewModeChange: (mode: 'grid' | 'list' | 'table') => void;
 }
 
 const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
@@ -33,7 +34,8 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
   selectedItems,
   onSelectionChange,
   viewMode,
-  viewDensity
+  viewDensity,
+  onViewModeChange
 }) => {
   
   const [isAIFixModalOpen, setIsAIFixModalOpen] = useState(false);
@@ -110,7 +112,26 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
               <p className="text-sm text-gray-600">{getCategoryDescription(category)}</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {/* View mode toggle */}
+            <div className="flex items-center border border-border rounded-lg p-1">
+              <Button
+                variant={viewMode === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onViewModeChange('table')}
+                className="h-8 px-2"
+              >
+                <List className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onViewModeChange('grid')}
+                className="h-8 px-2"
+              >
+                <Grid3X3 className="w-4 h-4" />
+              </Button>
+            </div>
             <Button 
               onClick={onCreateContent}
               variant="outline"
@@ -144,8 +165,8 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
           </div>
         )}
 
-        {/* Bulk selection header */}
-        {items.length > 0 && (
+        {/* Bulk selection header - only show for grid/list views */}
+        {items.length > 0 && viewMode !== 'table' && (
           <div className="flex items-center gap-2 py-2 border-b border-gray-200">
             <Checkbox
               checked={allSelected}
@@ -160,11 +181,23 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
           </div>
         )}
 
-        {/* Content grid or empty state */}
+        {/* Content display */}
         {items.length === 0 ? (
           <RichEmptyState 
             category={category} 
             onCreateContent={onCreateContent}
+          />
+        ) : viewMode === 'table' ? (
+          <GeneralContentTable
+            items={items}
+            selectedItems={selectedItems}
+            onSelectionChange={onSelectionChange}
+            onDelete={onDelete}
+            onRetry={(item) => {
+              setAIFixItem(item);
+              setIsAIFixModalOpen(true);
+            }}
+            isDeleting={isDeleting}
           />
         ) : (
           <div className={`

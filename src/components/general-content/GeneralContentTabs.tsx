@@ -143,6 +143,7 @@ const GeneralContentTabs: React.FC = () => {
             onSelectionChange={setSelectedItems}
             viewMode={filters.viewMode}
             viewDensity={filters.viewDensity}
+            onViewModeChange={(mode) => updateFilter('viewMode', mode)}
           />
         ))}
       </Tabs>

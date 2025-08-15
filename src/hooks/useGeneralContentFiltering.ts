@@ -8,7 +8,7 @@ interface FilterState {
   dateRange: { start: Date | null; end: Date | null };
   sortBy: string;
   sortOrder: 'asc' | 'desc';
-  viewMode: 'grid' | 'list';
+  viewMode: 'grid' | 'list' | 'table';
   viewDensity: 'compact' | 'comfortable' | 'spacious';
 }
 
@@ -20,7 +20,7 @@ export function useGeneralContentFiltering(items: GeneralContentItem[]) {
     dateRange: { start: null, end: null },
     sortBy: 'created_at',
     sortOrder: 'desc',
-    viewMode: 'grid',
+    viewMode: 'table',
     viewDensity: 'comfortable',
   });
 
