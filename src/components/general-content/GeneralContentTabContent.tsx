@@ -6,6 +6,7 @@ import { Sparkles, FileText, Image, Video, Grid3X3, List } from 'lucide-react';
 import { GeneralContentItem } from '@/types/generalContent';
 import EnhancedGeneralContentCard from './EnhancedGeneralContentCard';
 import GeneralContentTable from './GeneralContentTable';
+import EnhancedGeneralContentTable from './EnhancedGeneralContentTable';
 import RichEmptyState from './RichEmptyState';
 import { GeneralContentAIFixModal } from './GeneralContentAIFixModal';
 import GeneralContentBatchActions from './GeneralContentBatchActions';
@@ -13,6 +14,7 @@ import { useGroupedCarouselContent } from '@/hooks/useGroupedCarouselContent';
 import { GroupedCarouselCard } from './GroupedCarouselCard';
 import { GroupedCarouselPreviewModal } from './GroupedCarouselPreviewModal';
 import { GroupedCarouselItem } from '@/hooks/useGroupedCarouselContent';
+import { TableDisplayItem } from '@/types/tableDisplayTypes';
 
 interface GeneralContentTabContentProps {
   category: 'General' | 'Social' | 'Ads';
@@ -46,6 +48,34 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
   const [previewCarousel, setPreviewCarousel] = useState<GroupedCarouselItem | null>(null);
   
   const { carouselGroups, nonCarouselItems } = useGroupedCarouselContent(items);
+
+  // Create display items for enhanced table
+  const createDisplayItems = (): TableDisplayItem[] => {
+    const displayItems: TableDisplayItem[] = [];
+    
+    // Add carousel groups first
+    carouselGroups.forEach(group => {
+      displayItems.push({
+        type: 'carousel_group',
+        id: group.submission_id,
+        data: group
+      });
+    });
+    
+    // Add individual items
+    nonCarouselItems.forEach(item => {
+      displayItems.push({
+        type: 'individual',
+        id: item.id,
+        data: item
+      });
+    });
+    
+    return displayItems;
+  };
+
+  const displayItems = createDisplayItems();
+  
   const getCategoryIcon = (cat: string) => {
     switch (cat) {
       case 'General': return FileText;
@@ -175,8 +205,8 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
           </div>
         )}
 
-        {/* Carousel Groups */}
-        {carouselGroups.length > 0 && (
+        {/* Carousel Groups - only show in grid/list modes */}
+        {carouselGroups.length > 0 && viewMode !== 'table' && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <Image className="w-5 h-5" />
@@ -217,19 +247,23 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
             category={category} 
             onCreateContent={onCreateContent}
           />
-        ) : nonCarouselItems.length === 0 && carouselGroups.length > 0 ? null : viewMode === 'table' ? (
-          <GeneralContentTable
-            items={nonCarouselItems}
+        ) : viewMode === 'table' ? (
+          <EnhancedGeneralContentTable
+            displayItems={displayItems}
             selectedItems={selectedItems}
             onSelectionChange={onSelectionChange}
             onDelete={onDelete}
+            onCarouselDelete={handleCarouselDelete}
             onRetry={(item) => {
               setAIFixItem(item);
               setIsAIFixModalOpen(true);
             }}
+            onCarouselPreview={(group) => {
+              setPreviewCarousel(group);
+            }}
             isDeleting={isDeleting}
           />
-        ) : nonCarouselItems.length > 0 ? (
+        ) : nonCarouselItems.length > 0 || carouselGroups.length > 0 ? (
           <div className="space-y-4">
             {(carouselGroups.length > 0 || category !== 'Social') && (
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
