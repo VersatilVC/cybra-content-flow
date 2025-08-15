@@ -25,6 +25,8 @@ import {
 import { format } from 'date-fns';
 import { GeneralContentItem } from '@/types/generalContent';
 import GeneralContentPreviewModal from './GeneralContentPreviewModal';
+import { getContentSummary } from './utils/contentSummaryUtils';
+import PlatformIndicators from './components/PlatformIndicators';
 
 interface GeneralContentTableProps {
   items: GeneralContentItem[];
@@ -149,11 +151,19 @@ const GeneralContentTable: React.FC<GeneralContentTableProps> = ({
                     <div className="font-medium text-foreground line-clamp-1">
                       {item.title}
                     </div>
-                    {item.content && (
-                      <div className="text-sm text-muted-foreground line-clamp-2 max-w-md">
-                        {item.content.substring(0, 120)}...
-                      </div>
-                    )}
+                    {(() => {
+                      const summary = getContentSummary(item);
+                      return (
+                        <div className="space-y-1">
+                          <div className="text-sm text-muted-foreground line-clamp-2 max-w-md">
+                            {summary.text}
+                          </div>
+                          {summary.platforms && (
+                            <PlatformIndicators platforms={summary.platforms} />
+                          )}
+                        </div>
+                      );
+                    })()}
                     {item.word_count && (
                       <div className="text-xs text-muted-foreground">
                         {item.word_count} words
