@@ -46,7 +46,7 @@ export const fetchGeneralContent = async (filters: {
   let query = supabase
     .from('general_content_items')
     .select(
-      'id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,created_at,updated_at',
+      'id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,submission_id,created_at,updated_at',
       { count: 'exact' }
     )
     .order('created_at', { ascending: false })
@@ -118,7 +118,7 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
   const { data: result, error } = await supabase
     .from('general_content_items')
     .insert([insertData])
-    .select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,created_at,updated_at')
+    .select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,submission_id,created_at,updated_at')
     .single();
 
   if (error) {
@@ -155,6 +155,12 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
 
   const submissionId = submissionResult.id;
   console.log('Content submission created:', submissionId);
+
+  // Link the content item back to the submission
+  await supabase
+    .from('general_content_items')
+    .update({ submission_id: submissionId })
+    .eq('id', createdContent.id);
 
   // Trigger the submission-based webhook processing
   try {
@@ -235,7 +241,7 @@ export const updateGeneralContent = async (id: string, data: Partial<CreateGener
     .from('general_content_items')
     .update(data)
     .eq('id', id)
-    .select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,created_at,updated_at')
+    .select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,submission_id,created_at,updated_at')
     .single();
 
   if (error) {

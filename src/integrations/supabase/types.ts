@@ -714,6 +714,7 @@ export type Database = {
           source_data: Json | null
           source_type: string
           status: string
+          submission_id: string | null
           target_audience: string
           title: string
           updated_at: string
@@ -736,6 +737,7 @@ export type Database = {
           source_data?: Json | null
           source_type?: string
           status?: string
+          submission_id?: string | null
           target_audience: string
           title: string
           updated_at?: string
@@ -758,13 +760,22 @@ export type Database = {
           source_data?: Json | null
           source_type?: string
           status?: string
+          submission_id?: string | null
           target_audience?: string
           title?: string
           updated_at?: string
           user_id?: string
           word_count?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "general_content_items_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "content_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {

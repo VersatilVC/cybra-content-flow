@@ -17,6 +17,7 @@ export interface GeneralContentItem {
   file_url?: string;
   file_size?: string;
   mime_type?: string;
+  submission_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -44,6 +45,7 @@ export interface CreateGeneralContentRequest {
   file_url?: string;
   file_size?: string;
   mime_type?: string;
+  submission_id?: string;
 }
 
 export interface GeneralContentStats {
