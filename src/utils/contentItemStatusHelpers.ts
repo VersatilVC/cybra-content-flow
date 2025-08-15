@@ -3,6 +3,24 @@ import { FileText, CheckCircle, AlertCircle, Clock, XCircle, Wrench } from 'luci
 
 export const getStatusInfo = (status: string) => {
   switch (status) {
+    case 'processing':
+      return { 
+        color: 'bg-blue-100 text-blue-800',
+        icon: Clock,
+        label: 'Processing'
+      };
+    case 'ready':
+      return {
+        color: 'bg-green-100 text-green-800',
+        icon: CheckCircle,
+        label: 'Ready'
+      };
+    case 'failed':
+      return {
+        color: 'bg-red-100 text-red-800',
+        icon: XCircle,
+        label: 'Failed'
+      };
     case 'ready_for_review':
       return { 
         color: 'bg-yellow-100 text-yellow-800',

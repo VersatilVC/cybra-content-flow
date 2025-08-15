@@ -27,7 +27,7 @@ const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
   const StatusIcon = statusInfo.icon;
   
   // Show processing status
-  const isProcessing = item.status === 'draft' && !item.content;
+  const isProcessing = item.status === 'processing';
 
   // Find the derivative type info
   const allDerivativeTypes = [
@@ -110,21 +110,12 @@ const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
           )}
           
           <div className="flex items-center gap-2">
-            {isProcessing ? (
-              <>
-                <Clock className="w-4 h-4 animate-pulse text-blue-500" />
-                <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                  Processing...
-                </span>
-              </>
-            ) : (
-              <>
-                <StatusIcon className="w-4 h-4" />
-                <span className={`text-xs px-2 py-1 rounded-full ${statusInfo.color}`}>
-                  {statusInfo.label}
-                </span>
-              </>
-            )}
+            <StatusIcon className="w-4 h-4" style={{ 
+              animation: isProcessing ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none' 
+            }} />
+            <span className={`text-xs px-2 py-1 rounded-full ${statusInfo.color}`}>
+              {statusInfo.label}
+            </span>
           </div>
           
           <div className="flex items-center justify-between text-xs text-gray-500">
