@@ -21,6 +21,18 @@ export const useCarouselData = (derivative: ContentDerivative): CarouselSlide[] 
       if (typeof contentToParse === 'object') {
         contentToParse = JSON.stringify(contentToParse);
       }
+
+      // Check if content is a plain image URL (fallback for single image items)
+      const contentStr = String(contentToParse).trim();
+      if (contentStr.match(/^https?:\/\/.*\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
+        console.log('✅ [Carousel Parser] Detected plain image URL, wrapping in slide structure');
+        return [{
+          slide_number: '1',
+          image_url: contentStr,
+          title: derivative.title || 'Slide 1',
+          description: ''
+        }];
+      }
       
       // Parse the JSON content
       const parsed = JSON.parse(contentToParse);
@@ -60,10 +72,21 @@ export const useCarouselData = (derivative: ContentDerivative): CarouselSlide[] 
       console.error('❌ [Carousel Parser] Error parsing carousel data:', error);
       console.error('❌ [Carousel Parser] Raw content that failed:', derivative.content);
       
-      // Try fallback parsing for malformed JSON
+      // Enhanced fallback parsing for various formats
       try {
-        console.log('🔄 [Carousel Parser] Attempting fallback parsing');
+        console.log('🔄 [Carousel Parser] Attempting enhanced fallback parsing');
         const contentStr = String(derivative.content);
+        
+        // Check if it's a plain image URL
+        if (contentStr.match(/^https?:\/\/.*\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)) {
+          console.log('✅ [Carousel Parser] Fallback: Plain image URL detected');
+          return [{
+            slide_number: '1',
+            image_url: contentStr,
+            title: derivative.title || 'Slide 1',
+            description: ''
+          }];
+        }
         
         // Look for image URLs in the content using regex
         const imageUrlMatches = contentStr.match(/"image_url"\s*:\s*"([^"]+)"/g);
@@ -91,4 +114,19 @@ export const useCarouselData = (derivative: ContentDerivative): CarouselSlide[] 
   };
 
   return parseCarouselData();
+};
+
+// New function to handle carousel data from grouped general content items
+export const useCarouselDataFromItems = (items: any[]): CarouselSlide[] => {
+  return items.map((item, index) => {
+    // Each item is a GeneralContentItem with image URL in content field
+    const contentStr = String(item.content || '').trim();
+    
+    return {
+      slide_number: String(index + 1),
+      image_url: contentStr,
+      title: item.title || `Slide ${index + 1}`,
+      description: item.description || ''
+    };
+  }).filter(slide => slide.image_url && slide.image_url.match(/^https?:\/\/.*\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i));
 };

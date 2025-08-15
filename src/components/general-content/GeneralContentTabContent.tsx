@@ -9,6 +9,10 @@ import GeneralContentTable from './GeneralContentTable';
 import RichEmptyState from './RichEmptyState';
 import { GeneralContentAIFixModal } from './GeneralContentAIFixModal';
 import GeneralContentBatchActions from './GeneralContentBatchActions';
+import { useGroupedCarouselContent } from '@/hooks/useGroupedCarouselContent';
+import { GroupedCarouselCard } from './GroupedCarouselCard';
+import { GroupedCarouselPreviewModal } from './GroupedCarouselPreviewModal';
+import { GroupedCarouselItem } from '@/hooks/useGroupedCarouselContent';
 
 interface GeneralContentTabContentProps {
   category: 'General' | 'Social' | 'Ads';
@@ -37,9 +41,11 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
   viewDensity,
   onViewModeChange
 }) => {
-  
   const [isAIFixModalOpen, setIsAIFixModalOpen] = useState(false);
   const [aiFixItem, setAIFixItem] = useState<GeneralContentItem | null>(null);
+  const [previewCarousel, setPreviewCarousel] = useState<GroupedCarouselItem | null>(null);
+  
+  const { carouselGroups, nonCarouselItems } = useGroupedCarouselContent(items);
   const getCategoryIcon = (cat: string) => {
     switch (cat) {
       case 'General': return FileText;
@@ -72,10 +78,14 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      onSelectionChange(items);
+      onSelectionChange(nonCarouselItems); // Only select non-carousel items for bulk operations
     } else {
       onSelectionChange([]);
     }
+  };
+
+  const handleCarouselDelete = (ids: string[]) => {
+    ids.forEach(id => onDelete(id));
   };
 
   const handleBulkAIFix = (items: GeneralContentItem[]) => {
@@ -87,8 +97,8 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
     }
   };
 
-  const allSelected = items.length > 0 && selectedItems.length === items.length;
-  const someSelected = selectedItems.length > 0 && selectedItems.length < items.length;
+  const allSelected = nonCarouselItems.length > 0 && selectedItems.length === nonCarouselItems.length;
+  const someSelected = selectedItems.length > 0 && selectedItems.length < nonCarouselItems.length;
 
   const Icon = getCategoryIcon(category);
   
@@ -165,8 +175,28 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
           </div>
         )}
 
-        {/* Bulk selection header - only show for grid/list views */}
-        {items.length > 0 && viewMode !== 'table' && (
+        {/* Carousel Groups */}
+        {carouselGroups.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Image className="w-5 h-5" />
+              Image Carousels ({carouselGroups.length})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {carouselGroups.map((group) => (
+                <GroupedCarouselCard
+                  key={group.submission_id}
+                  carouselGroup={group}
+                  onDelete={handleCarouselDelete}
+                  onPreview={setPreviewCarousel}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Bulk selection header - only show for grid/list views and non-carousel items */}
+        {nonCarouselItems.length > 0 && viewMode !== 'table' && (
           <div className="flex items-center gap-2 py-2 border-b border-gray-200">
             <Checkbox
               checked={allSelected}
@@ -174,8 +204,8 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
             />
             <span className="text-sm text-gray-600">
               {selectedItems.length > 0 
-                ? `${selectedItems.length} of ${items.length} selected`
-                : `Select all ${items.length} items`
+                ? `${selectedItems.length} of ${nonCarouselItems.length} selected`
+                : `Select all ${nonCarouselItems.length} items`
               }
             </span>
           </div>
@@ -187,9 +217,9 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
             category={category} 
             onCreateContent={onCreateContent}
           />
-        ) : viewMode === 'table' ? (
+        ) : nonCarouselItems.length === 0 && carouselGroups.length > 0 ? null : viewMode === 'table' ? (
           <GeneralContentTable
-            items={items}
+            items={nonCarouselItems}
             selectedItems={selectedItems}
             onSelectionChange={onSelectionChange}
             onDelete={onDelete}
@@ -199,41 +229,49 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
             }}
             isDeleting={isDeleting}
           />
-        ) : (
-          <div className={`
-            ${viewMode === 'grid' 
-              ? viewDensity === 'compact' 
-                ? 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4'
-                : viewDensity === 'comfortable'
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-                : 'grid grid-cols-1 md:grid-cols-2 gap-8'
-              : 'space-y-4'
-            }
-          `}>
-            {items.map((item) => (
-              <div key={item.id} className={`relative ${viewMode === 'list' ? 'flex' : ''}`}>
-                <div className="absolute top-2 left-2 z-10">
-                  <Checkbox
-                    checked={selectedItems.some(selected => selected.id === item.id)}
-                    onCheckedChange={(checked) => handleItemSelect(item, checked as boolean)}
-                    className="bg-white border-2 border-gray-300"
+        ) : nonCarouselItems.length > 0 ? (
+          <div className="space-y-4">
+            {(carouselGroups.length > 0 || category !== 'Social') && (
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                {category === 'Social' ? 'Other Social Content' : `${category} Content`} ({nonCarouselItems.length})
+              </h3>
+            )}
+            <div className={`
+              ${viewMode === 'grid' 
+                ? viewDensity === 'compact' 
+                  ? 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4'
+                  : viewDensity === 'comfortable'
+                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                  : 'grid grid-cols-1 md:grid-cols-2 gap-8'
+                : 'space-y-4'
+              }
+            `}>
+              {nonCarouselItems.map((item) => (
+                <div key={item.id} className={`relative ${viewMode === 'list' ? 'flex' : ''}`}>
+                  <div className="absolute top-2 left-2 z-10">
+                    <Checkbox
+                      checked={selectedItems.some(selected => selected.id === item.id)}
+                      onCheckedChange={(checked) => handleItemSelect(item, checked as boolean)}
+                      className="bg-white border-2 border-gray-300"
+                    />
+                  </div>
+                  <EnhancedGeneralContentCard
+                    item={item}
+                    onDelete={onDelete}
+                    isDeleting={isDeleting}
+                    onRetry={(item) => {
+                      setAIFixItem(item);
+                      setIsAIFixModalOpen(true);
+                    }}
+                    viewMode={viewMode}
+                    viewDensity={viewDensity}
                   />
                 </div>
-                <EnhancedGeneralContentCard
-                  item={item}
-                  onDelete={onDelete}
-                  isDeleting={isDeleting}
-                  onRetry={(item) => {
-                    setAIFixItem(item);
-                    setIsAIFixModalOpen(true);
-                  }}
-                  viewMode={viewMode}
-                  viewDensity={viewDensity}
-                />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        )}
+        ) : null}
 
         {/* Batch Actions */}
         <GeneralContentBatchActions
@@ -257,6 +295,13 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
             }}
           />
         )}
+
+        {/* Carousel Preview Modal */}
+        <GroupedCarouselPreviewModal
+          carouselGroup={previewCarousel}
+          isOpen={!!previewCarousel}
+          onClose={() => setPreviewCarousel(null)}
+        />
       </div>
     </TabsContent>
   );
