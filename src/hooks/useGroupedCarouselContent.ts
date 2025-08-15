@@ -1,6 +1,33 @@
 import { useMemo } from 'react';
 import { GeneralContentItem } from '@/types/generalContent';
 
+// Helper function to detect carousel structure in content
+const hasCarouselStructure = (content: any): boolean => {
+  try {
+    if (!content) return false;
+    
+    let contentToParse = content;
+    if (typeof contentToParse === 'object') {
+      contentToParse = JSON.stringify(contentToParse);
+    }
+    
+    const parsed = JSON.parse(contentToParse);
+    
+    // Check if it's an array with carousel-like structure
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const firstItem = parsed[0];
+      const slideData = (firstItem && typeof firstItem === 'object' && firstItem.json) ? firstItem.json : firstItem;
+      
+      // Look for carousel indicators: slide_number and image_url
+      return slideData && (slideData.slide_number || slideData.image_url);
+    }
+    
+    return false;
+  } catch {
+    return false;
+  }
+};
+
 export interface GroupedCarouselItem {
   submission_id: string;
   title: string;
@@ -20,7 +47,12 @@ export const useGroupedCarouselContent = (items: GeneralContentItem[]): {
 
     // Separate carousel items from non-carousel items
     items.forEach(item => {
-      if (item.derivative_type === 'image_carousel') {
+      // Check for carousel content by content_type = 'composite' and presence of carousel data
+      const isCarouselItem = item.content_type === 'composite' || 
+                            item.derivative_type === 'image_carousel' ||
+                            (item.content && hasCarouselStructure(item.content));
+      
+      if (isCarouselItem) {
         carouselItems.push(item);
       } else {
         nonCarouselItems.push(item);

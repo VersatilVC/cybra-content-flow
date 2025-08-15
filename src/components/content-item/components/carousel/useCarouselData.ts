@@ -118,34 +118,81 @@ export const useCarouselData = (derivative: ContentDerivative): CarouselSlide[] 
 
 // New function to handle carousel data from grouped general content items
 export const useCarouselDataFromItems = (items: any[]): CarouselSlide[] => {
-  console.log('useCarouselDataFromItems input:', items);
+  console.log('🎠 [Carousel Items] Processing items:', items);
   
   const slides = items.map((item, index) => {
-    // Each item is a GeneralContentItem with image URL in content field
-    const contentStr = String(item.content || '').trim();
+    console.log(`🎠 [Carousel Items] Processing item ${index}:`, {
+      id: item.id,
+      title: item.title,
+      content_type: item.content_type,
+      derivative_type: item.derivative_type,
+      content: item.content
+    });
+    
+    let slideData: any = {};
+    let imageUrl = '';
+    
+    try {
+      // Try to parse content as JSON first
+      if (item.content) {
+        let contentToParse = item.content;
+        if (typeof contentToParse === 'object') {
+          contentToParse = JSON.stringify(contentToParse);
+        }
+        
+        const parsed = JSON.parse(contentToParse);
+        console.log(`🎠 [Carousel Items] Parsed content for item ${index}:`, parsed);
+        
+        // Handle array format (n8n workflow format)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const firstItem = parsed[0];
+          slideData = (firstItem && typeof firstItem === 'object' && firstItem.json) ? firstItem.json : firstItem;
+        } else if (parsed && typeof parsed === 'object') {
+          // Handle single object format
+          slideData = parsed.json || parsed;
+        }
+        
+        // Extract image URL from various possible fields
+        imageUrl = slideData.image_url || slideData.imageUrl || slideData.url || '';
+        console.log(`🎠 [Carousel Items] Extracted image URL for item ${index}:`, imageUrl);
+      }
+    } catch (error) {
+      console.log(`🎠 [Carousel Items] JSON parsing failed for item ${index}, treating as plain string:`, error);
+      // Fallback: treat content as plain image URL
+      imageUrl = String(item.content || '').trim();
+    }
     
     const slide = {
-      slide_number: String(index + 1),
-      image_url: contentStr,
-      title: item.title || `Slide ${index + 1}`,
-      description: item.description || ''
+      slide_number: slideData.slide_number || String(index + 1),
+      image_url: imageUrl,
+      title: slideData.title || item.title || `Slide ${index + 1}`,
+      description: slideData.description || item.description || ''
     };
     
-    console.log('Processing slide:', slide);
+    console.log(`🎠 [Carousel Items] Final slide ${index}:`, slide);
     return slide;
   }).filter(slide => {
-    // More permissive URL validation - accept any URL that looks like an image
+    // More permissive URL validation
     const isValidUrl = slide.image_url && (
       slide.image_url.startsWith('http') || 
       slide.image_url.startsWith('data:image/') ||
       slide.image_url.includes('blob:') ||
+      slide.image_url.includes('amazonaws.com') ||
+      slide.image_url.includes('supabase') ||
       /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(slide.image_url)
     );
     
-    console.log('URL validation for', slide.image_url, ':', isValidUrl);
+    console.log(`🎠 [Carousel Items] URL validation for "${slide.image_url}":`, isValidUrl);
     return isValidUrl;
   });
   
-  console.log('Final filtered slides:', slides);
+  // Sort slides by slide_number if available
+  slides.sort((a, b) => {
+    const aNum = parseInt(a.slide_number) || 0;
+    const bNum = parseInt(b.slide_number) || 0;
+    return aNum - bNum;
+  });
+  
+  console.log('🎠 [Carousel Items] Final filtered and sorted slides:', slides);
   return slides;
 };
