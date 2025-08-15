@@ -12,11 +12,11 @@ const GeneralContentTextPreview: React.FC<GeneralContentTextPreviewProps> = ({ i
   }
 
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
+    <div className="bg-muted rounded-lg p-3">
       <ExpandableText 
         text={item.content}
         maxLength={350}
-        className="text-sm text-gray-700 leading-relaxed"
+        className="text-sm text-muted-foreground leading-relaxed"
       />
     </div>
   );

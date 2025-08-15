@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { GeneralContentItem } from '@/types/generalContent';
 import { getStatusInfo, formatDate } from '@/utils/contentItemStatusHelpers';
 import { derivativeTypes, getContentTypeIcon } from '@/components/content-item/derivativeTypes';
-import { useGeneralContent } from '@/hooks/useGeneralContent';
+import GeneralContentCardContent from './GeneralContentCardContent';
 
 interface GeneralContentCardProps {
   item: GeneralContentItem;
@@ -103,11 +103,8 @@ const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {item.content && (
-            <p className="text-sm text-gray-600 line-clamp-3">
-              {item.content}
-            </p>
-          )}
+          {/* Enhanced content preview with sophisticated parsing */}
+          <GeneralContentCardContent item={item} />
           
           <div className="flex items-center gap-2">
             <StatusIcon className="w-4 h-4" style={{ 
@@ -118,7 +115,7 @@ const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
             </span>
           </div>
           
-          <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{item.target_audience}</span>
             <span>{formatDate(item.created_at)}</span>
           </div>
