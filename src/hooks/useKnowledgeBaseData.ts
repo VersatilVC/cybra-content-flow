@@ -23,36 +23,36 @@ interface ContentSubmission {
   error_message?: string;
 }
 
-const knowledgeBaseConfig: Array<Omit<KnowledgeBaseStats, "itemCount" | "lastUpdated">> = [
-  {
+const knowledgeBaseConfig: Record<string, Omit<KnowledgeBaseStats, "itemCount" | "lastUpdated">> = {
+  cyabra: {
     name: "Cyabra Knowledge Base",
     description: "Company-specific resources",
-    color: "bg-purple-500",
+    color: "bg-primary",
     tableName: "documents",
     dbValue: "cyabra",
   },
-  {
-    name: "Industry Knowledge Base",
+  industry: {
+    name: "Industry Knowledge Base", 
     description: "Industry trends and insights",
     color: "bg-blue-500",
     tableName: "documents_industry",
     dbValue: "industry",
   },
-  {
-    name: "News Knowledge Base",
-    description: "Current news and updates",
-    color: "bg-green-500",
-    tableName: "documents_news",
-    dbValue: "news",
-  },
-  {
+  competitor: {
     name: "Competitor Knowledge Base",
-    description: "Competitive intelligence",
+    description: "Competitive intelligence", 
     color: "bg-orange-500",
     tableName: "documents_competitor",
     dbValue: "competitor",
   },
-];
+  news: {
+    name: "News Knowledge Base",
+    description: "Current news and updates",
+    color: "bg-green-500", 
+    tableName: "documents_news",
+    dbValue: "news",
+  },
+};
 
 export function useKnowledgeBaseData() {
   const kbQuery = useQuery<{ knowledgeBases: KnowledgeBaseStats[] }>({
@@ -60,17 +60,32 @@ export function useKnowledgeBaseData() {
     staleTime: 30_000,
     refetchOnWindowFocus: false,
     queryFn: async () => {
+      // First, get actual knowledge bases with data from content_submissions
+      const { data: actualKbs } = await supabase
+        .from("content_submissions")
+        .select("knowledge_base")
+        .eq("processing_status", "completed")
+        .neq("knowledge_base", "content_creation")
+        .neq("knowledge_base", "derivative_generation") 
+        .neq("knowledge_base", "general_content");
+
+      // Get unique knowledge bases that actually have data
+      const uniqueKbs = [...new Set(actualKbs?.map(kb => kb.knowledge_base) || [])];
+      
       const kbStats = await Promise.all(
-        knowledgeBaseConfig.map(async (kb) => {
+        uniqueKbs.map(async (kbValue) => {
+          const kbConfig = knowledgeBaseConfig[kbValue];
+          if (!kbConfig) return null;
+
           // Run count and latest submission queries in parallel per KB
           const [countRes, latestRes] = await Promise.all([
             supabase
-              .from(kb.tableName as any)
+              .from(kbConfig.tableName as any)
               .select("*", { count: "planned", head: true }),
             supabase
               .from("content_submissions")
               .select("created_at")
-              .eq("knowledge_base", kb.dbValue)
+              .eq("knowledge_base", kbConfig.dbValue)
               .eq("processing_status", "completed")
               .order("created_at", { ascending: false })
               .limit(1)
@@ -78,7 +93,10 @@ export function useKnowledgeBaseData() {
           ]);
 
           const count = countRes.count || 0;
-          const latest = (latestRes as any)?.data as { created_at?: string } | null;
+          const latest = latestRes?.data as { created_at?: string } | null;
+
+          // Only return knowledge bases that have data
+          if (count === 0) return null;
 
           let lastUpdated = "No data";
           if (latest?.created_at) {
@@ -86,14 +104,17 @@ export function useKnowledgeBaseData() {
           }
 
           return {
-            ...kb,
+            ...kbConfig,
             itemCount: count,
             lastUpdated,
           } as KnowledgeBaseStats;
         })
       );
 
-      return { knowledgeBases: kbStats };
+      // Filter out null values (empty knowledge bases)
+      const filteredKbStats = kbStats.filter(Boolean) as KnowledgeBaseStats[];
+
+      return { knowledgeBases: filteredKbStats };
     },
   });
 
@@ -107,6 +128,8 @@ export function useKnowledgeBaseData() {
         .select(
           "id,original_filename,file_url,knowledge_base,content_type,processing_status,file_size,created_at,error_message"
         )
+        .in("knowledge_base", Object.keys(knowledgeBaseConfig))
+        .neq("processing_status", "failed")
         .order("created_at", { ascending: false })
         .limit(10);
 

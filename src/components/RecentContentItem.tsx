@@ -47,12 +47,22 @@ const formatFileSize = (bytes?: number) => {
 
 const getKnowledgeBaseColor = (kb: string) => {
   const colors = {
-    'Cyabra Knowledge Base': 'bg-purple-500',
-    'Industry Knowledge Base': 'bg-blue-500',
-    'News Knowledge Base': 'bg-green-500',
-    'Competitor Knowledge Base': 'bg-orange-500'
+    cyabra: 'bg-primary',
+    industry: 'bg-blue-500',
+    news: 'bg-green-500',
+    competitor: 'bg-orange-500'
   };
-  return colors[kb as keyof typeof colors] || 'bg-gray-500';
+  return colors[kb as keyof typeof colors] || 'bg-muted';
+};
+
+const getKnowledgeBaseName = (kb: string) => {
+  const names = {
+    cyabra: 'Cyabra KB',
+    industry: 'Industry KB',
+    news: 'News KB',
+    competitor: 'Competitor KB'
+  };
+  return names[kb as keyof typeof names] || kb;
 };
 
 export function RecentContentItem({ 
@@ -96,7 +106,7 @@ export function RecentContentItem({
               {processingStatus.charAt(0).toUpperCase() + processingStatus.slice(1)}
             </span>
             <div className={`w-2 h-2 rounded-full ${getKnowledgeBaseColor(knowledgeBase)}`}></div>
-            <span className="text-xs text-gray-500">{knowledgeBase}</span>
+            <span className="text-xs text-gray-500">{getKnowledgeBaseName(knowledgeBase)}</span>
           </div>
           
           <div className="flex items-center gap-4 text-xs text-gray-500">
