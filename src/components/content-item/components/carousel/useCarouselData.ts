@@ -118,15 +118,34 @@ export const useCarouselData = (derivative: ContentDerivative): CarouselSlide[] 
 
 // New function to handle carousel data from grouped general content items
 export const useCarouselDataFromItems = (items: any[]): CarouselSlide[] => {
-  return items.map((item, index) => {
+  console.log('useCarouselDataFromItems input:', items);
+  
+  const slides = items.map((item, index) => {
     // Each item is a GeneralContentItem with image URL in content field
     const contentStr = String(item.content || '').trim();
     
-    return {
+    const slide = {
       slide_number: String(index + 1),
       image_url: contentStr,
       title: item.title || `Slide ${index + 1}`,
       description: item.description || ''
     };
-  }).filter(slide => slide.image_url && slide.image_url.match(/^https?:\/\/.*\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i));
+    
+    console.log('Processing slide:', slide);
+    return slide;
+  }).filter(slide => {
+    // More permissive URL validation - accept any URL that looks like an image
+    const isValidUrl = slide.image_url && (
+      slide.image_url.startsWith('http') || 
+      slide.image_url.startsWith('data:image/') ||
+      slide.image_url.includes('blob:') ||
+      /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(slide.image_url)
+    );
+    
+    console.log('URL validation for', slide.image_url, ':', isValidUrl);
+    return isValidUrl;
+  });
+  
+  console.log('Final filtered slides:', slides);
+  return slides;
 };

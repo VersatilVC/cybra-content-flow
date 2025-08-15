@@ -21,8 +21,12 @@ export const GroupedCarouselPreviewModal: React.FC<GroupedCarouselPreviewModalPr
   isOpen,
   onClose
 }) => {
+  console.log('GroupedCarouselPreviewModal props:', { carouselGroup, isOpen });
+  
   const slides = carouselGroup ? useCarouselDataFromItems(carouselGroup.items) : [];
   const { currentIndex, next, previous, goToSlide } = useSimpleCarouselNavigation(slides.length);
+  
+  console.log('Modal slides:', slides);
   
   const currentSlide = slides[currentIndex];
 
@@ -38,8 +42,23 @@ export const GroupedCarouselPreviewModal: React.FC<GroupedCarouselPreviewModalPr
     }
   };
 
-  if (!carouselGroup || slides.length === 0) {
+  if (!carouselGroup) {
     return null;
+  }
+
+  if (slides.length === 0) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>No Valid Images Found</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 text-center text-muted-foreground">
+            <p>This carousel group doesn't contain any valid image URLs.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (
