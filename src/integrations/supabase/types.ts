@@ -915,6 +915,13 @@ export type Database = {
         Args: { file_path: string }
         Returns: string
       }
+      force_check_timed_out_general_content: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          failed_items: Json
+          updated_count: number
+        }[]
+      }
       force_check_timed_out_ideas: {
         Args: Record<PropertyKey, never>
         Returns: {

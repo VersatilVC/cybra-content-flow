@@ -10,7 +10,7 @@ export interface GeneralContentItem {
   source_type: 'manual' | 'url' | 'file';
   source_data: Record<string, any>;
   target_audience: string;
-  status: 'draft' | 'ready_for_review' | 'approved' | 'published' | 'ready' | 'failed';
+  status: 'draft' | 'ready_for_review' | 'approved' | 'published' | 'ready' | 'failed' | 'processing';
   word_count?: number;
   metadata: Record<string, any>;
   file_path?: string;
