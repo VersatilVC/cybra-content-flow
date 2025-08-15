@@ -29,8 +29,8 @@ export const useGeneralContent = (filters: GeneralContentFilters) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['general-content'] });
       toast({
-        title: "Success",
-        description: "General content created successfully",
+        title: "Content Submitted",
+        description: "Content submitted for processing. You'll be notified when it's ready.",
       });
     },
     onError: (error: Error) => {

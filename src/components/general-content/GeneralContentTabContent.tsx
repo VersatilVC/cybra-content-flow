@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Sparkles, FileText, Image, Video, Wand2 } from 'lucide-react';
+import { Sparkles, FileText, Image, Video } from 'lucide-react';
 import { GeneralContentItem } from '@/types/generalContent';
 import EnhancedGeneralContentCard from './EnhancedGeneralContentCard';
 import RichEmptyState from './RichEmptyState';
-import GeneralContentGenerationModal from './GeneralContentGenerationModal';
+
 import { GeneralContentAIFixModal } from './GeneralContentAIFixModal';
 import GeneralContentBatchActions from './GeneralContentBatchActions';
 
@@ -35,7 +35,7 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
   viewMode,
   viewDensity
 }) => {
-  const [isGenerationModalOpen, setIsGenerationModalOpen] = useState(false);
+  
   const [isAIFixModalOpen, setIsAIFixModalOpen] = useState(false);
   const [aiFixItem, setAIFixItem] = useState<GeneralContentItem | null>(null);
   const getCategoryIcon = (cat: string) => {
@@ -111,14 +111,6 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
             </div>
           </div>
           <div className="flex gap-2">
-            <Button 
-              onClick={() => setIsGenerationModalOpen(true)}
-              variant="outline"
-              className="border-purple-200 text-purple-700 hover:bg-purple-50"
-            >
-              <Wand2 className="w-4 h-4 mr-2" />
-              AI Generate
-            </Button>
             <Button 
               onClick={onCreateContent}
               variant="outline"
@@ -219,12 +211,6 @@ const GeneralContentTabContent: React.FC<GeneralContentTabContentProps> = ({
           isDeleting={isDeleting}
         />
 
-        {/* Generation Modal */}
-        <GeneralContentGenerationModal
-          isOpen={isGenerationModalOpen}
-          onClose={() => setIsGenerationModalOpen(false)}
-          category={category}
-        />
 
         {/* AI Fix Modal */}
         {aiFixItem && (

@@ -9,11 +9,13 @@ import { derivativeTypes, getContentTypeIcon } from '@/components/content-item/d
 interface ContentTypeSelectionProps {
   selectedTypes: string[];
   onTypesSelect: (types: string[], category: string) => void;
+  category?: 'General' | 'Social' | 'Ads';
 }
 
 export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
   selectedTypes,
-  onTypesSelect
+  onTypesSelect,
+  category
 }) => {
   const handleTypeToggle = (type: string, category: string) => {
     // Find the type info to check if it's active
@@ -84,16 +86,18 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
       </div>
       
       <div className="mt-2 space-y-4">
-        {Object.entries(derivativeTypes).map(([category, types]) => {
-          const selectedCount = getCategorySelectedCount(category);
+        {Object.entries(derivativeTypes)
+          .filter(([cat]) => !category || cat === category)
+          .map(([categoryName, types]) => {
+          const selectedCount = getCategorySelectedCount(categoryName);
           const totalCount = types.length;
-          const activeCount = getCategoryActiveCount(category);
+          const activeCount = getCategoryActiveCount(categoryName);
           
           return (
-            <div key={category}>
+            <div key={categoryName}>
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium text-sm text-gray-700 flex items-center gap-2">
-                  {category}
+                  {categoryName}
                   {selectedCount > 0 && (
                     <Badge variant="secondary" className="text-xs">
                       {selectedCount}/{totalCount}
@@ -105,7 +109,7 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleSelectAllInCategory(category)}
+                    onClick={() => handleSelectAllInCategory(categoryName)}
                     disabled={selectedCount === activeCount || activeCount === 0}
                   >
                     Select All{activeCount < totalCount ? ' Active' : ''}
@@ -115,7 +119,7 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleClearCategory(category)}
+                      onClick={() => handleClearCategory(categoryName)}
                     >
                       Clear
                     </Button>
@@ -139,14 +143,14 @@ export const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({
                                 : 'hover:bg-gray-50'
                             }`
                       }`}
-                      onClick={() => handleCardClick(typeInfo.type, category)}
+                      onClick={() => handleCardClick(typeInfo.type, categoryName)}
                     >
                       <CardContent className="p-3">
                         <div className="flex items-start gap-3">
                           <div onClick={(e) => e.stopPropagation()}>
                             <Checkbox
                               checked={isSelected}
-                              onCheckedChange={(checked) => handleCheckboxChange(checked as boolean, typeInfo.type, category)}
+                              onCheckedChange={(checked) => handleCheckboxChange(checked as boolean, typeInfo.type, categoryName)}
                               className="mt-1"
                               disabled={typeInfo.isActive === false}
                             />

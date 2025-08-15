@@ -150,6 +150,7 @@ const GeneralContentTabs: React.FC = () => {
       <GeneralContentModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+        category={activeTab}
       />
 
       <GeneralContentExportOptions

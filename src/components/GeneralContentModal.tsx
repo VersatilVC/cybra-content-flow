@@ -13,11 +13,13 @@ import { useOptimizedAuthContext } from '@/contexts/OptimizedAuthContext';
 interface GeneralContentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  category?: 'General' | 'Social' | 'Ads';
 }
 
 const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
   isOpen,
-  onClose
+  onClose,
+  category
 }) => {
   const { toast } = useToast();
   const { user } = useOptimizedAuthContext();
@@ -151,11 +153,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
 
       await createGeneralContent(contentData);
 
-      // Show success message with webhook information
-      toast({
-        title: 'Content Created Successfully',
-        description: 'Your general content has been created and sent for processing. You will be notified when it\'s ready.',
-      });
+      // Success handled by the hook's onSuccess callback
 
       onClose();
       setFormData({
@@ -197,7 +195,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create General Content</DialogTitle>
+          <DialogTitle>Create {category || 'General'} Content</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -223,6 +221,7 @@ const GeneralContentModal: React.FC<GeneralContentModalProps> = ({
             <ContentTypeSelection
               selectedTypes={formData.derivative_types}
               onTypesSelect={handleDerivativeTypesSelect}
+              category={category}
             />
           </div>
 
