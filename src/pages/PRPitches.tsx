@@ -8,14 +8,19 @@ import { usePRManagement } from "@/hooks/usePRManagement";
 import PRPitchGenerationSection from "@/components/pr-pitches/PRPitchGenerationSection";
 import PRPitchesTable from "@/components/pr-pitches/PRPitchesTable";
 import PRPitchPreviewModal from "@/components/pr-pitches/PRPitchPreviewModal";
+import { JournalistPreviewModal } from "@/components/pr-pitches/JournalistPreviewModal";
 
 const PRPitches = () => {
-  const { pitches, pitchesLoading, campaigns, updatePitchStatus } = usePRManagement();
+  const { pitches, pitchesLoading, campaigns, updatePitchStatus, fetchJournalistArticles } = usePRManagement();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [campaignFilter, setCampaignFilter] = useState('all');
   const [selectedPitch, setSelectedPitch] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [selectedJournalist, setSelectedJournalist] = useState<any>(null);
+  const [isJournalistModalOpen, setIsJournalistModalOpen] = useState(false);
+  const [journalistArticles, setJournalistArticles] = useState<any[]>([]);
+  const [isLoadingArticles, setIsLoadingArticles] = useState(false);
 
   const filteredPitches = pitches.filter(pitch => {
     const matchesSearch = pitch.journalist?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -43,6 +48,22 @@ const PRPitches = () => {
 
   const handleStatusChange = (pitchId: string, status: string) => {
     updatePitchStatus({ pitchId, status });
+  };
+
+  const handleJournalistClick = async (journalist: any) => {
+    setSelectedJournalist(journalist);
+    setIsJournalistModalOpen(true);
+    setIsLoadingArticles(true);
+    
+    try {
+      const articles = await fetchJournalistArticles(journalist.id);
+      setJournalistArticles(articles);
+    } catch (error) {
+      console.error('Failed to fetch journalist articles:', error);
+      setJournalistArticles([]);
+    } finally {
+      setIsLoadingArticles(false);
+    }
   };
 
   return (
@@ -142,6 +163,7 @@ const PRPitches = () => {
                 onPreview={handlePreview}
                 onEmail={handleEmail}
                 onStatusChange={handleStatusChange}
+                onJournalistClick={handleJournalistClick}
               />
             )}
           </CardContent>
@@ -152,6 +174,15 @@ const PRPitches = () => {
           pitch={selectedPitch}
           isOpen={isPreviewOpen}
           onClose={() => setIsPreviewOpen(false)}
+        />
+
+        {/* Journalist Preview Modal */}
+        <JournalistPreviewModal
+          journalist={selectedJournalist}
+          isOpen={isJournalistModalOpen}
+          onClose={() => setIsJournalistModalOpen(false)}
+          articles={journalistArticles}
+          isLoadingArticles={isLoadingArticles}
         />
       </div>
     </div>

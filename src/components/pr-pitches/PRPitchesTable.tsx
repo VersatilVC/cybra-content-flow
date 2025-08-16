@@ -27,13 +27,15 @@ interface PRPitchesTableProps {
   onPreview: (pitch: PRPitch) => void;
   onEmail: (pitch: PRPitch) => void;
   onStatusChange: (pitchId: string, status: string) => void;
+  onJournalistClick?: (journalist: any) => void;
 }
 
 const PRPitchesTable: React.FC<PRPitchesTableProps> = ({
   pitches,
   onPreview,
   onEmail,
-  onStatusChange
+  onStatusChange,
+  onJournalistClick
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -87,7 +89,16 @@ const PRPitchesTable: React.FC<PRPitchesTableProps> = ({
                       <User className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">{pitch.journalist?.name || 'Unknown'}</p>
+                      {onJournalistClick && pitch.journalist ? (
+                        <button
+                          onClick={() => onJournalistClick(pitch.journalist)}
+                          className="font-medium text-primary hover:underline text-left"
+                        >
+                          {pitch.journalist.name}
+                        </button>
+                      ) : (
+                        <p className="font-medium">{pitch.journalist?.name || 'Unknown'}</p>
+                      )}
                       <p className="text-sm text-muted-foreground">{pitch.journalist?.title}</p>
                     </div>
                   </div>
