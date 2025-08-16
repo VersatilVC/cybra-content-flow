@@ -144,7 +144,7 @@ export const usePRManagement = () => {
     }
   });
 
-  // Fetch journalist articles
+  // Fetch journalist articles by journalist ID
   const fetchJournalistArticles = async (journalistId: string) => {
     const { data, error } = await supabase
       .from('journalist_articles')
@@ -152,6 +152,31 @@ export const usePRManagement = () => {
       .eq('journalist_id', journalistId)
       .order('date', { ascending: false })
       .limit(10);
+    
+    if (error) throw error;
+    return data as JournalistArticle[];
+  };
+
+  // Fetch journalist article by URL
+  const fetchJournalistArticleByUrl = async (url: string) => {
+    const { data, error } = await supabase
+      .from('journalist_articles')
+      .select('*')
+      .eq('url', url)
+      .maybeSingle();
+    
+    if (error) throw error;
+    return data as JournalistArticle | null;
+  };
+
+  // Find journalist articles by partial URL match
+  const searchJournalistArticlesByUrl = async (urlPattern: string) => {
+    const { data, error } = await supabase
+      .from('journalist_articles')
+      .select('*')
+      .ilike('url', `%${urlPattern}%`)
+      .order('date', { ascending: false })
+      .limit(20);
     
     if (error) throw error;
     return data as JournalistArticle[];
@@ -266,6 +291,8 @@ export const usePRManagement = () => {
     generatePRPitches: generatePRPitchesMutation.mutate,
     updatePitchStatus: updatePitchStatusMutation.mutate,
     isGeneratingPitches: generatePRPitchesMutation.isPending,
-    fetchJournalistArticles
+    fetchJournalistArticles,
+    fetchJournalistArticleByUrl,
+    searchJournalistArticlesByUrl
   };
 };
