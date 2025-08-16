@@ -1,7 +1,10 @@
 import { GeneralContentItem } from '@/types/generalContent';
 
 export const isGeneralSocialContent = (item: GeneralContentItem): boolean => {
-  return item.derivative_type?.startsWith('social_') || false;
+  return item.derivative_type?.startsWith('social_') || 
+         item.content_type === 'composite' && 
+         item.category === 'Social' ||
+         false;
 };
 
 export const isGeneralCarouselContent = (item: GeneralContentItem): boolean => {

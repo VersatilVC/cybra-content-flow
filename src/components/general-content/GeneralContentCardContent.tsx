@@ -29,8 +29,16 @@ const GeneralContentCardContent: React.FC<GeneralContentCardContentProps> = ({ i
 
     // Handle social content with platform parsing
     if (isGeneralSocialContent(item)) {
-      const adaptedItem = adaptGeneralContentToDerivative(item);
-      return <SocialContentPreview derivative={adaptedItem} />;
+      try {
+        const adaptedItem = adaptGeneralContentToDerivative(item);
+        return <SocialContentPreview derivative={adaptedItem} />;
+      } catch (error) {
+        console.error('Error adapting social content:', error);
+        // Fallback to text preview for social content that can't be parsed
+        if (item.content) {
+          return <GeneralContentTextPreview item={item} />;
+        }
+      }
     }
 
     // Handle file content

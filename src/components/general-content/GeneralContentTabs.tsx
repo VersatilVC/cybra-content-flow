@@ -131,20 +131,21 @@ const GeneralContentTabs: React.FC = () => {
         </TabsList>
 
         {(['General', 'Social', 'Ads'] as const).map((category) => (
-          <GeneralContentTabContent
-            key={category}
-            category={category}
-            items={category === activeTab ? filteredAndSortedItems : categorizedContent[category]}
-            onDelete={deleteItem}
-            onDeleteMultiple={deleteMultiple}
-            isDeleting={isDeleting}
-            onCreateContent={() => setShowCreateModal(true)}
-            selectedItems={selectedItems}
-            onSelectionChange={setSelectedItems}
-            viewMode={filters.viewMode}
-            viewDensity={filters.viewDensity}
-            onViewModeChange={(mode) => updateFilter('viewMode', mode)}
-          />
+          <div key={category} className={category !== activeTab ? 'hidden' : ''}>
+            <GeneralContentTabContent
+              category={category}
+              items={category === activeTab ? filteredAndSortedItems : []}
+              onDelete={deleteItem}
+              onDeleteMultiple={deleteMultiple}
+              isDeleting={isDeleting}
+              onCreateContent={() => setShowCreateModal(true)}
+              selectedItems={selectedItems}
+              onSelectionChange={setSelectedItems}
+              viewMode={filters.viewMode}
+              viewDensity={filters.viewDensity}
+              onViewModeChange={(mode) => updateFilter('viewMode', mode)}
+            />
+          </div>
         ))}
       </Tabs>
 
