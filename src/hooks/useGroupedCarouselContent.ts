@@ -19,7 +19,12 @@ const hasCarouselStructure = (content: any): boolean => {
       const slideData = (firstItem && typeof firstItem === 'object' && firstItem.json) ? firstItem.json : firstItem;
       
       // Look for carousel indicators: slide_number and image_url
-      return slideData && (slideData.slide_number || slideData.image_url);
+      return slideData && (slideData.slide_number !== undefined && slideData.image_url);
+    }
+    
+    // Check if it's a single object with carousel structure
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed.slide_number !== undefined && parsed.image_url;
     }
     
     return false;
@@ -47,9 +52,8 @@ export const useGroupedCarouselContent = (items: GeneralContentItem[]): {
 
     // Separate carousel items from non-carousel items
     items.forEach(item => {
-      // Check for carousel content by content_type = 'composite' and presence of carousel data
-      const isCarouselItem = item.content_type === 'composite' || 
-                            item.derivative_type === 'image_carousel' ||
+      // Only treat as carousel if it's explicitly marked as image_carousel OR has carousel content structure
+      const isCarouselItem = item.derivative_type === 'image_carousel' ||
                             (item.content && hasCarouselStructure(item.content));
       
       if (isCarouselItem) {
