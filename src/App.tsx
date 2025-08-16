@@ -65,12 +65,12 @@ function AppContentWithProviders() {
   
   return (
     <QueryCacheOptimizer>
-      <PerformanceProvider>
-        <OptimizedAuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+      <OptimizedAuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <PerformanceProvider>
               <ErrorBoundary>
                 <RoutePreloader />
                 <PerformanceMonitor />
@@ -257,10 +257,10 @@ function AppContentWithProviders() {
                   </Routes>
                 </Suspense>
               </ErrorBoundary>
-            </BrowserRouter>
-          </TooltipProvider>
-        </OptimizedAuthProvider>
-      </PerformanceProvider>
+            </PerformanceProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </OptimizedAuthProvider>
     </QueryCacheOptimizer>
   );
 }
