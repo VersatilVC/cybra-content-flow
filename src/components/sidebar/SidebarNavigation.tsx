@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import {
   Calendar,
   Database,
@@ -14,6 +15,11 @@ import {
   Bug,
   PenTool,
   Activity,
+  ChevronDown,
+  ChevronRight,
+  Megaphone,
+  UsersRound,
+  Newspaper,
 } from "lucide-react";
 import {
   SidebarContent,
@@ -24,18 +30,22 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useLocation, Link } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useUnreadFeedbackCount } from "@/hooks/useFeedback";
 import { SubmitFeedbackModal } from "@/components/feedback/SubmitFeedbackModal";
 import { logger } from '@/utils/logger';
 
-const navigationItems = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: Home,
-  },
+interface CategoryState {
+  [key: string]: boolean;
+}
+
+const knowledgeBaseItems = [
   {
     title: "Knowledge Bases",
     url: "/knowledge-bases",
@@ -46,6 +56,9 @@ const navigationItems = [
     url: "/chat",
     icon: MessageSquare,
   },
+];
+
+const contentManagementItems = [
   {
     title: "Content Ideas",
     url: "/content-ideas",
@@ -66,15 +79,23 @@ const navigationItems = [
     url: "/general-content",
     icon: PenTool,
   },
+];
+
+const prManagementItems = [
   {
-    title: "Notifications",
-    url: "/notifications",
-    icon: Bell,
+    title: "PR Pitches",
+    url: "/pr-pitches",
+    icon: Megaphone,
   },
   {
-    title: "Feedback Management",
-    url: "/feedback-management",
-    icon: Bug,
+    title: "Journalists",
+    url: "/journalists",
+    icon: UsersRound,
+  },
+  {
+    title: "Press Releases",
+    url: "/press-releases",
+    icon: Newspaper,
   },
 ];
 
@@ -95,6 +116,16 @@ const adminItems = [
     icon: Activity,
   },
   {
+    title: "Notifications",
+    url: "/notifications",
+    icon: Bell,
+  },
+  {
+    title: "Feedback Management",
+    url: "/feedback-management",
+    icon: Bug,
+  },
+  {
     title: "Settings",
     url: "/settings",
     icon: Settings,
@@ -107,7 +138,96 @@ export function SidebarNavigation() {
   const { data: unreadCount = 0 } = useUnreadFeedbackCount();
   const isAdmin = profile?.role === 'super_admin' || profile?.role === 'admin';
 
-logger.info('SidebarNavigation render:', { 
+  // Category state management with localStorage persistence
+  const [categoryStates, setCategoryStates] = useState<CategoryState>(() => {
+    const saved = localStorage.getItem('sidebar-category-states');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // Fallback to defaults if parsing fails
+      }
+    }
+    return {
+      knowledgeBase: true,
+      contentManagement: true,
+      prManagement: false,
+      administration: false,
+    };
+  });
+
+  // Persist category states to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-category-states', JSON.stringify(categoryStates));
+  }, [categoryStates]);
+
+  // Auto-expand categories based on current route
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const newStates = { ...categoryStates };
+
+    // Knowledge Base routes
+    if (['/knowledge-bases', '/chat'].includes(currentPath)) {
+      newStates.knowledgeBase = true;
+    }
+    // Content Management routes
+    else if (['/content-ideas', '/content-briefs', '/content-items', '/general-content'].includes(currentPath)) {
+      newStates.contentManagement = true;
+    }
+    // PR Management routes
+    else if (['/pr-pitches', '/journalists', '/press-releases'].includes(currentPath)) {
+      newStates.prManagement = true;
+    }
+    // Admin routes
+    else if (['/user-management', '/webhooks', '/production-dashboard', '/notifications', '/feedback-management', '/settings'].includes(currentPath)) {
+      newStates.administration = true;
+    }
+
+    setCategoryStates(newStates);
+  }, [location.pathname]);
+
+  const toggleCategory = (category: string) => {
+    setCategoryStates(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+
+  const renderMenuItem = (item: any, showBadge = false) => (
+    <SidebarMenuItem key={item.title}>
+      <SidebarMenuButton 
+        asChild 
+        isActive={location.pathname === item.url}
+        className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg ml-4"
+      >
+        <Link to={item.url} className="flex items-center gap-3 px-3 py-2 relative">
+          <item.icon className="w-4 h-4" />
+          <span className="font-medium">{item.title}</span>
+          {showBadge && item.title === "Feedback Management" && unreadCount > 0 && (
+            <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+
+  const renderCategoryHeader = (title: string, category: string, isOpen: boolean) => (
+    <CollapsibleTrigger 
+      onClick={() => toggleCategory(category)}
+      className="flex items-center justify-between w-full p-2 text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-xs font-medium uppercase tracking-wider"
+    >
+      <span>{title}</span>
+      {isOpen ? (
+        <ChevronDown className="h-3 w-3" />
+      ) : (
+        <ChevronRight className="h-3 w-3" />
+      )}
+    </CollapsibleTrigger>
+  );
+
+  logger.info('SidebarNavigation render:', { 
     profile: profile ? { role: profile.role, email: profile.email } : null, 
     loading, 
     isAdmin,
@@ -115,38 +235,65 @@ logger.info('SidebarNavigation render:', {
   });
 
   return (
-    <SidebarContent className="px-3 py-4">
+    <SidebarContent className="px-3 py-4 space-y-4">
+      {/* Dashboard - Always visible at top */}
       <SidebarGroup>
-        <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2">
-          Content Management
-        </SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
-            {navigationItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={location.pathname === item.url}
-                  className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
-                >
-                  <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
-                    <item.icon className="w-4 h-4" />
-                     <span className="font-medium">{item.title}</span>
-                     {item.title === "Feedback Management" && unreadCount > 0 && (
-                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                         {unreadCount > 99 ? '99+' : unreadCount}
-                       </span>
-                     )}
-                   </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                asChild 
+                isActive={location.pathname === "/dashboard"}
+                className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
+              >
+                <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2">
+                  <Home className="w-4 h-4" />
+                  <span className="font-medium">Dashboard</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
 
+      {/* Knowledge Base Category */}
+      <Collapsible open={categoryStates.knowledgeBase} onOpenChange={(open) => setCategoryStates(prev => ({ ...prev, knowledgeBase: open }))}>
+        <div className="space-y-2">
+          {renderCategoryHeader("Knowledge Base", "knowledgeBase", categoryStates.knowledgeBase)}
+          <CollapsibleContent className="space-y-1">
+            <SidebarMenu>
+              {knowledgeBaseItems.map(item => renderMenuItem(item))}
+            </SidebarMenu>
+          </CollapsibleContent>
+        </div>
+      </Collapsible>
+
+      {/* Content Management Category */}
+      <Collapsible open={categoryStates.contentManagement} onOpenChange={(open) => setCategoryStates(prev => ({ ...prev, contentManagement: open }))}>
+        <div className="space-y-2">
+          {renderCategoryHeader("Content Management", "contentManagement", categoryStates.contentManagement)}
+          <CollapsibleContent className="space-y-1">
+            <SidebarMenu>
+              {contentManagementItems.map(item => renderMenuItem(item))}
+            </SidebarMenu>
+          </CollapsibleContent>
+        </div>
+      </Collapsible>
+
+      {/* PR Management Category */}
+      <Collapsible open={categoryStates.prManagement} onOpenChange={(open) => setCategoryStates(prev => ({ ...prev, prManagement: open }))}>
+        <div className="space-y-2">
+          {renderCategoryHeader("PR Management", "prManagement", categoryStates.prManagement)}
+          <CollapsibleContent className="space-y-1">
+            <SidebarMenu>
+              {prManagementItems.map(item => renderMenuItem(item))}
+            </SidebarMenu>
+          </CollapsibleContent>
+        </div>
+      </Collapsible>
+
       {/* Feedback Section - Available to All Users */}
-      <SidebarGroup className="mt-6">
+      <SidebarGroup>
         <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2">
           Feedback
         </SidebarGroupLabel>
@@ -166,34 +313,22 @@ logger.info('SidebarNavigation render:', {
         </SidebarGroupContent>
       </SidebarGroup>
 
+      {/* Administration Category - Admin Only */}
       {!loading && isAdmin && (
-        <SidebarGroup className="mt-6">
-          <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2">
-            Administration
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {adminItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={location.pathname === item.url}
-                    className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
-                  >
-                    <Link to={item.url} className="flex items-center gap-3 px-3 py-2 relative">
-                      <item.icon className="w-4 h-4" />
-                       <span className="font-medium">{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <Collapsible open={categoryStates.administration} onOpenChange={(open) => setCategoryStates(prev => ({ ...prev, administration: open }))}>
+          <div className="space-y-2">
+            {renderCategoryHeader("Administration", "administration", categoryStates.administration)}
+            <CollapsibleContent className="space-y-1">
+              <SidebarMenu>
+                {adminItems.map(item => renderMenuItem(item, true))}
+              </SidebarMenu>
+            </CollapsibleContent>
+          </div>
+        </Collapsible>
       )}
 
       {loading && (
-        <SidebarGroup className="mt-6">
+        <SidebarGroup>
           <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2">
             Loading permissions...
           </SidebarGroupLabel>

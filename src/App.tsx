@@ -31,6 +31,9 @@ const UserManagement = lazy(() => import("./pages/UserManagement"));
 const Webhooks = lazy(() => import("./pages/Webhooks"));
 const Settings = lazy(() => import("./pages/Settings"));
 const FeedbackManagement = lazy(() => import("./pages/FeedbackManagement"));
+const PRPitches = lazy(() => import("./pages/PRPitches"));
+const Journalists = lazy(() => import("./pages/Journalists"));
+const PressReleases = lazy(() => import("./pages/PressReleases"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 import { ProductionDashboard } from "@/components/ProductionDashboard";
 
@@ -163,6 +166,38 @@ const App = () => (
                     <ProtectedRoute>
                       <AppLayout>
                         <NotificationCenter />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* PR Management Routes */}
+                <Route 
+                  path="/pr-pitches" 
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <PRPitches />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/journalists" 
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <Journalists />
+                      </AppLayout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/press-releases" 
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <PressReleases />
                       </AppLayout>
                     </ProtectedRoute>
                   } 
