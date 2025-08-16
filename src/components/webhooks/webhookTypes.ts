@@ -1,5 +1,5 @@
 
-import { Database, Wand2, Lightbulb, FileText, RefreshCw, Wrench, Globe } from 'lucide-react';
+import { Database, Wand2, Lightbulb, FileText, RefreshCw, Wrench, Globe, Users } from 'lucide-react';
 
 export const webhookTypes = [
   {
@@ -55,6 +55,12 @@ export const webhookTypes = [
     label: 'WordPress Publishing',
     icon: Globe,
     description: 'Publish content items to WordPress sites'
+  },
+  {
+    value: 'pr_pitch_generation',
+    label: 'PR Pitch Generation',
+    icon: Users,
+    description: 'Generate PR pitches and journalist outreach campaigns'
   }
 ];
 
@@ -95,6 +101,10 @@ export const getWebhookDefaults = (type: string) => {
     wordpress_publishing: {
       name: 'WordPress Publisher',
       description: 'Publishes content items to WordPress sites with media attachments'
+    },
+    pr_pitch_generation: {
+      name: 'PR Pitch Generator',
+      description: 'Generates PR pitches and manages journalist outreach campaigns'
     }
   } as const;
 

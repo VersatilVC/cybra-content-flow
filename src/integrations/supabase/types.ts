@@ -156,6 +156,50 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_history: {
+        Row: {
+          contact_date: string
+          contact_type: string
+          created_at: string
+          id: string
+          journalist_id: string
+          message: string | null
+          response_received: boolean | null
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          contact_date?: string
+          contact_type?: string
+          created_at?: string
+          id?: string
+          journalist_id: string
+          message?: string | null
+          response_received?: boolean | null
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          contact_date?: string
+          contact_type?: string
+          created_at?: string
+          id?: string
+          journalist_id?: string
+          message?: string | null
+          response_received?: boolean | null
+          subject?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_history_journalist_id_fkey"
+            columns: ["journalist_id"]
+            isOneToOne: false
+            referencedRelation: "journalists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_briefs: {
         Row: {
           brief_type: string
@@ -777,6 +821,178 @@ export type Database = {
           },
         ]
       }
+      journalist_articles: {
+        Row: {
+          coverage_type: string | null
+          created_at: string
+          date: string | null
+          id: string
+          journalist_id: string
+          publication: string
+          relevance: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          coverage_type?: string | null
+          created_at?: string
+          date?: string | null
+          id?: string
+          journalist_id: string
+          publication: string
+          relevance?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          coverage_type?: string | null
+          created_at?: string
+          date?: string | null
+          id?: string
+          journalist_id?: string
+          publication?: string
+          relevance?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journalist_articles_journalist_id_fkey"
+            columns: ["journalist_id"]
+            isOneToOne: false
+            referencedRelation: "journalists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journalist_expertise: {
+        Row: {
+          beat_area: string
+          coverage_category: string
+          created_at: string
+          id: string
+          journalist_id: string
+        }
+        Insert: {
+          beat_area: string
+          coverage_category: string
+          created_at?: string
+          id?: string
+          journalist_id: string
+        }
+        Update: {
+          beat_area?: string
+          coverage_category?: string
+          created_at?: string
+          id?: string
+          journalist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journalist_expertise_journalist_id_fkey"
+            columns: ["journalist_id"]
+            isOneToOne: false
+            referencedRelation: "journalists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journalists: {
+        Row: {
+          audience_match: string | null
+          best_contact_method: string | null
+          competitive_coverage: string | null
+          coverage_frequency: string | null
+          coverage_type: string | null
+          created_at: string
+          database_source: string | null
+          email: string | null
+          expertise_level: string | null
+          historical_coverage: string | null
+          id: string
+          journalist_influence: string | null
+          last_industry_coverage: string | null
+          linkedin_url: string | null
+          name: string
+          pitch_angle: string | null
+          previous_cyabra_coverage: boolean | null
+          publication: string
+          publication_circulation: string | null
+          publication_tier: string | null
+          recent_activity: string | null
+          relationship_status: string | null
+          relevance_score: number | null
+          timing_considerations: string | null
+          title: string
+          twitter_handle: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audience_match?: string | null
+          best_contact_method?: string | null
+          competitive_coverage?: string | null
+          coverage_frequency?: string | null
+          coverage_type?: string | null
+          created_at?: string
+          database_source?: string | null
+          email?: string | null
+          expertise_level?: string | null
+          historical_coverage?: string | null
+          id?: string
+          journalist_influence?: string | null
+          last_industry_coverage?: string | null
+          linkedin_url?: string | null
+          name: string
+          pitch_angle?: string | null
+          previous_cyabra_coverage?: boolean | null
+          publication: string
+          publication_circulation?: string | null
+          publication_tier?: string | null
+          recent_activity?: string | null
+          relationship_status?: string | null
+          relevance_score?: number | null
+          timing_considerations?: string | null
+          title: string
+          twitter_handle?: string | null
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audience_match?: string | null
+          best_contact_method?: string | null
+          competitive_coverage?: string | null
+          coverage_frequency?: string | null
+          coverage_type?: string | null
+          created_at?: string
+          database_source?: string | null
+          email?: string | null
+          expertise_level?: string | null
+          historical_coverage?: string | null
+          id?: string
+          journalist_influence?: string | null
+          last_industry_coverage?: string | null
+          linkedin_url?: string | null
+          name?: string
+          pitch_angle?: string | null
+          previous_cyabra_coverage?: boolean | null
+          publication?: string
+          publication_circulation?: string | null
+          publication_tier?: string | null
+          recent_activity?: string | null
+          relationship_status?: string | null
+          relevance_score?: number | null
+          timing_considerations?: string | null
+          title?: string
+          twitter_handle?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -818,6 +1034,120 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      pr_campaigns: {
+        Row: {
+          content_item_id: string
+          created_at: string
+          id: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_item_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_item_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pr_campaigns_content_item_id_fkey"
+            columns: ["content_item_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pr_pitches: {
+        Row: {
+          content_item_id: string
+          coverage_confirmed: boolean | null
+          coverage_url: string | null
+          created_at: string
+          id: string
+          journalist_id: string
+          notes: string | null
+          pitch_content: string | null
+          pr_campaign_id: string
+          responded_at: string | null
+          sent_at: string | null
+          status: string
+          subject_line: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_item_id: string
+          coverage_confirmed?: boolean | null
+          coverage_url?: string | null
+          created_at?: string
+          id?: string
+          journalist_id: string
+          notes?: string | null
+          pitch_content?: string | null
+          pr_campaign_id: string
+          responded_at?: string | null
+          sent_at?: string | null
+          status?: string
+          subject_line?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_item_id?: string
+          coverage_confirmed?: boolean | null
+          coverage_url?: string | null
+          created_at?: string
+          id?: string
+          journalist_id?: string
+          notes?: string | null
+          pitch_content?: string | null
+          pr_campaign_id?: string
+          responded_at?: string | null
+          sent_at?: string | null
+          status?: string
+          subject_line?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pr_pitches_content_item_id_fkey"
+            columns: ["content_item_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pr_pitches_journalist_id_fkey"
+            columns: ["journalist_id"]
+            isOneToOne: false
+            referencedRelation: "journalists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pr_pitches_pr_campaign_id_fkey"
+            columns: ["pr_campaign_id"]
+            isOneToOne: false
+            referencedRelation: "pr_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

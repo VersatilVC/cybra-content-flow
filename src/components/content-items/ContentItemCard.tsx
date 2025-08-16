@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Eye } from 'lucide-react';
+import { FileText, Eye, Megaphone } from 'lucide-react';
+import { GeneratePRPitchesModal } from './GeneratePRPitchesModal';
 import { ContentItem } from '@/services/contentItemsApi';
 import { getStatusInfo, formatDate } from '@/utils/contentItemStatusHelpers';
 import InlineDerivativeIndicator from '@/components/content-item/InlineDerivativeIndicator';
@@ -24,8 +25,12 @@ const ContentItemCard: React.FC<ContentItemCardProps> = ({
   categoryCounts,
   isLoadingExternal,
 }) => {
+  const [showPRModal, setShowPRModal] = useState(false);
   const statusInfo = getStatusInfo(item.status);
   const StatusIcon = statusInfo.icon;
+  
+  const isTopicalBlogPost = item.content_type === 'Blog Post' && 
+    (item.status === 'completed' || item.status === 'published');
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -78,8 +83,28 @@ const ContentItemCard: React.FC<ContentItemCardProps> = ({
               <Eye className="w-4 h-4 mr-1" />
               View
             </Button>
+            {isTopicalBlogPost && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPRModal(true);
+                }}
+                size="sm"
+                variant="outline"
+                className="flex items-center gap-1"
+              >
+                <Megaphone className="w-4 h-4" />
+                PR Pitches
+              </Button>
+            )}
           </div>
         </div>
+        
+        <GeneratePRPitchesModal
+          open={showPRModal}
+          onOpenChange={setShowPRModal}
+          contentItem={item}
+        />
       </CardContent>
     </Card>
   );
