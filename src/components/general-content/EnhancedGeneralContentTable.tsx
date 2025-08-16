@@ -220,22 +220,6 @@ const EnhancedGeneralContentTable: React.FC<EnhancedTableProps> = ({
           </div>
         </TableCell>
         <TableCell>
-          <Badge 
-            variant="outline" 
-            className={getCategoryBadgeColor(group.category)}
-          >
-            {group.category}
-          </Badge>
-        </TableCell>
-        <TableCell>
-          <Badge 
-            variant="outline" 
-            className="bg-orange-100 text-orange-800 border-orange-200"
-          >
-            Carousel
-          </Badge>
-        </TableCell>
-        <TableCell>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <Target className="w-3 h-3" />
             <span className="capitalize line-clamp-1 max-w-24">
@@ -319,22 +303,6 @@ const EnhancedGeneralContentTable: React.FC<EnhancedTableProps> = ({
           </div>
         </TableCell>
         <TableCell>
-          <Badge 
-            variant="outline" 
-            className={getCategoryBadgeColor(item.category)}
-          >
-            {item.category}
-          </Badge>
-        </TableCell>
-        <TableCell>
-          <Badge 
-            variant="outline" 
-            className={getStatusColor(item.status)}
-          >
-            {item.status.replace('_', ' ')}
-          </Badge>
-        </TableCell>
-        <TableCell>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <Target className="w-3 h-3" />
             <span className="capitalize line-clamp-1 max-w-24">
@@ -399,8 +367,6 @@ const EnhancedGeneralContentTable: React.FC<EnhancedTableProps> = ({
               </TableHead>
               <TableHead>Title & Content</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Audience</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="text-right">Actions</TableHead>

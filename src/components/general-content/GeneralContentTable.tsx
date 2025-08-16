@@ -143,8 +143,6 @@ const GeneralContentTable: React.FC<GeneralContentTableProps> = ({
               </TableHead>
               <TableHead>Title & Content</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Audience</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -191,22 +189,6 @@ const GeneralContentTable: React.FC<GeneralContentTableProps> = ({
                       {formatDerivativeType(item.derivative_type || item.content_type)}
                     </span>
                   </div>
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant="outline" 
-                    className={getCategoryBadgeColor(item.category)}
-                  >
-                    {item.category}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant="outline" 
-                    className={getStatusColor(item.status)}
-                  >
-                    {item.status.replace('_', ' ')}
-                  </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
