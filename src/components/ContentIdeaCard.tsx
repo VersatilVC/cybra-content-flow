@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ContentIdea } from '@/types/contentIdeas';
 import IdeaCardHeader from '@/components/IdeaCardHeader';
@@ -16,19 +16,19 @@ interface ContentIdeaCardProps {
   autoExpand?: boolean;
 }
 
-export default function ContentIdeaCard({ 
+const ContentIdeaCard = memo<ContentIdeaCardProps>(({ 
   idea, 
   onEdit, 
   onDiscard, 
   onCreateBrief, 
   isCreatingBrief,
   autoExpand = false
-}: ContentIdeaCardProps) {
+}) => {
   const [showSuggestions, setShowSuggestions] = useState(autoExpand);
 
-  const handleToggleSuggestions = () => {
+  const handleToggleSuggestions = useCallback(() => {
     setShowSuggestions(!showSuggestions);
-  };
+  }, [showSuggestions]);
 
   return (
     <div className="space-y-2">
@@ -56,4 +56,8 @@ export default function ContentIdeaCard({
       />
     </div>
   );
-}
+});
+
+ContentIdeaCard.displayName = 'ContentIdeaCard';
+
+export default ContentIdeaCard;

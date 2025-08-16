@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,27 +17,29 @@ interface GeneralContentCardProps {
   onRetry?: (id: string) => void;
 }
 
-const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
+const GeneralContentCard: React.FC<GeneralContentCardProps> = memo(({
   item,
   onDelete,
   isDeleting,
   onRetry
 }) => {
-  const statusInfo = getStatusInfo(item.status);
+  const statusInfo = useMemo(() => getStatusInfo(item.status), [item.status]);
   const StatusIcon = statusInfo.icon;
   
   // Show processing status
   const isProcessing = item.status === 'processing';
 
   // Find the derivative type info
-  const allDerivativeTypes = [
-    ...derivativeTypes.General,
-    ...derivativeTypes.Social,
-    ...derivativeTypes.Ads
-  ];
-  const typeInfo = allDerivativeTypes.find(t => t.type === item.derivative_type);
+  const typeInfo = useMemo(() => {
+    const allDerivativeTypes = [
+      ...derivativeTypes.General,
+      ...derivativeTypes.Social,
+      ...derivativeTypes.Ads
+    ];
+    return allDerivativeTypes.find(t => t.type === item.derivative_type);
+  }, [item.derivative_type]);
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = useCallback((category: string) => {
     switch (category) {
       case 'General':
         return 'bg-blue-100 text-blue-800';
@@ -48,7 +50,11 @@ const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
       default:
         return 'bg-gray-100 text-gray-800';
     }
-  };
+  }, []);
+
+  const handleDelete = useCallback(() => onDelete(item.id), [onDelete, item.id]);
+  const handleRetry = useCallback(() => onRetry?.(item.id), [onRetry, item.id]);
+  const formattedDate = useMemo(() => formatDate(item.created_at), [item.created_at]);
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -82,7 +88,7 @@ const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
               </DropdownMenuItem>
               {item.status === 'failed' && onRetry && (
                 <DropdownMenuItem 
-                  onClick={() => onRetry(item.id)}
+                  onClick={handleRetry}
                   className="text-blue-600"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
@@ -90,7 +96,7 @@ const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem 
-                onClick={() => onDelete(item.id)}
+                onClick={handleDelete}
                 disabled={isDeleting}
                 className="text-red-600"
               >
@@ -117,12 +123,14 @@ const GeneralContentCard: React.FC<GeneralContentCardProps> = ({
           
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{item.target_audience}</span>
-            <span>{formatDate(item.created_at)}</span>
+            <span>{formattedDate}</span>
           </div>
         </div>
       </CardContent>
     </Card>
   );
-};
+});
+
+GeneralContentCard.displayName = 'GeneralContentCard';
 
 export default GeneralContentCard;

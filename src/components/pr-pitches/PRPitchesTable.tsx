@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -30,14 +30,14 @@ interface PRPitchesTableProps {
   onJournalistClick?: (journalist: any) => void;
 }
 
-const PRPitchesTable: React.FC<PRPitchesTableProps> = ({
+const PRPitchesTable: React.FC<PRPitchesTableProps> = memo(({
   pitches,
   onPreview,
   onEmail,
   onStatusChange,
   onJournalistClick
 }) => {
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'draft': return 'bg-secondary text-secondary-foreground';
       case 'sent': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
@@ -45,9 +45,9 @@ const PRPitchesTable: React.FC<PRPitchesTableProps> = ({
       case 'covered': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
       default: return 'bg-muted text-muted-foreground';
     }
-  };
+  }, []);
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = useCallback((status: string) => {
     switch (status) {
       case 'draft': return <Edit className="w-3 h-3" />;
       case 'sent': return <Send className="w-3 h-3" />;
@@ -55,7 +55,7 @@ const PRPitchesTable: React.FC<PRPitchesTableProps> = ({
       case 'covered': return <ExternalLink className="w-3 h-3" />;
       default: return <Clock className="w-3 h-3" />;
     }
-  };
+  }, []);
 
   return (
     <div className="rounded-md border">
@@ -169,6 +169,8 @@ const PRPitchesTable: React.FC<PRPitchesTableProps> = ({
       </Table>
     </div>
   );
-};
+});
+
+PRPitchesTable.displayName = 'PRPitchesTable';
 
 export default PRPitchesTable;

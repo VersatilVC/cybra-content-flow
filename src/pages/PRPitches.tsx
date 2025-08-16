@@ -9,6 +9,7 @@ import PRPitchGenerationSection from "@/components/pr-pitches/PRPitchGenerationS
 import PRPitchesTable from "@/components/pr-pitches/PRPitchesTable";
 import PRPitchPreviewModal from "@/components/pr-pitches/PRPitchPreviewModal";
 import { JournalistPreviewModal } from "@/components/pr-pitches/JournalistPreviewModal";
+import OptimizedSkeletonLoader from "@/components/performance/OptimizedSkeletonLoader";
 
 const PRPitches = () => {
   const { pitches, pitchesLoading, campaigns, updatePitchStatus, fetchJournalistArticles } = usePRManagement();
