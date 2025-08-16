@@ -18,7 +18,7 @@ export const useTopicalBlogPosts = () => {
         .from('content_items')
         .select('id, title, content_type, status, created_at, summary')
         .in('content_type', ['Blog Post', 'Blog Post (Topical)'])
-        .in('status', ['completed', 'published'])
+        .in('status', ['completed', 'published', 'ready_for_review'])
         .order('created_at', { ascending: false });
       
       if (error) throw error;
