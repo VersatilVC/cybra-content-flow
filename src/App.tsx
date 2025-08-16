@@ -60,21 +60,20 @@ const queryClient = new QueryClient({
   },
 });
 
-function AppWithHooks() {
+function AppContentWithProviders() {
   useMemoryOptimizer();
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <QueryCacheOptimizer>
-        <PerformanceProvider>
-          <OptimizedAuthProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <ErrorBoundary>
-                  <RoutePreloader />
-                  <PerformanceMonitor />
+    <QueryCacheOptimizer>
+      <PerformanceProvider>
+        <OptimizedAuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ErrorBoundary>
+                <RoutePreloader />
+                <PerformanceMonitor />
                 <Suspense fallback={
                   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50/50 to-white">
                     <div className="text-center space-y-4">
@@ -84,186 +83,193 @@ function AppWithHooks() {
                   </div>
                 }>
                   <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                
-                {/* Optimized Protected Routes */}
-                <Route 
-                  path="/dashboard" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="dashboard">
-                      <AppLayout>
-                        <OptimizedDashboard />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/knowledge-bases" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <KnowledgeBases />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/chat" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <Chat />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/content-briefs" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <ContentBriefs />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/content-items" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <ContentItems />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/content-items/:id" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-item">
-                      <AppLayout>
-                        <ContentItemView />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/general-content" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <GeneralContent />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/notifications" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <NotificationCenter />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                
-                {/* PR Management Routes */}
-                <Route 
-                  path="/pr-pitches" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <PRPitches />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/journalists" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <Journalists />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/press-releases" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <PressReleases />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                
-                {/* Admin Routes */}
-                <Route 
-                  path="/user-management" 
-                  element={
-                    <OptimizedProtectedRoute adminOnly fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <UserManagement />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/feedback-management" 
-                  element={
-                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <FeedbackManagement />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/webhooks" 
-                  element={
-                    <OptimizedProtectedRoute adminOnly fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <Webhooks />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/settings" 
-                  element={
-                    <OptimizedProtectedRoute adminOnly fallbackSkeleton="content-list">
-                      <AppLayout>
-                        <Settings />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/production-dashboard" 
-                  element={
-                    <OptimizedProtectedRoute adminOnly fallbackSkeleton="dashboard">
-                      <AppLayout>
-                        <ProductionDashboard />
-                      </AppLayout>
-                    </OptimizedProtectedRoute>
-                  } 
-                />
-                
-                {/* Catch all route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </ErrorBoundary>
-        </BrowserRouter>
-      </TooltipProvider>
-    </OptimizedAuthProvider>
-  </PerformanceProvider>
-</QueryCacheOptimizer>
-</QueryClientProvider>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/auth" element={<Auth />} />
+                    
+                    {/* Optimized Protected Routes */}
+                    <Route 
+                      path="/dashboard" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="dashboard">
+                          <AppLayout>
+                            <OptimizedDashboard />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/knowledge-bases" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <KnowledgeBases />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/chat" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <Chat />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/content-briefs" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <ContentBriefs />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/content-items" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <ContentItems />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/content-items/:id" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-item">
+                          <AppLayout>
+                            <ContentItemView />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/general-content" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <GeneralContent />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/notifications" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <NotificationCenter />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    
+                    {/* PR Management Routes */}
+                    <Route 
+                      path="/pr-pitches" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <PRPitches />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/journalists" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <Journalists />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/press-releases" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <PressReleases />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    
+                    {/* Admin Routes */}
+                    <Route 
+                      path="/user-management" 
+                      element={
+                        <OptimizedProtectedRoute adminOnly fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <UserManagement />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/feedback-management" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <FeedbackManagement />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/webhooks" 
+                      element={
+                        <OptimizedProtectedRoute adminOnly fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <Webhooks />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/settings" 
+                      element={
+                        <OptimizedProtectedRoute adminOnly fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <Settings />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
+                      path="/production-dashboard" 
+                      element={
+                        <OptimizedProtectedRoute adminOnly fallbackSkeleton="dashboard">
+                          <AppLayout>
+                            <ProductionDashboard />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    
+                    {/* Catch all route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+            </BrowserRouter>
+          </TooltipProvider>
+        </OptimizedAuthProvider>
+      </PerformanceProvider>
+    </QueryCacheOptimizer>
+  );
+}
+
+function AppWithHooks() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContentWithProviders />
+    </QueryClientProvider>
   );
 }
 
