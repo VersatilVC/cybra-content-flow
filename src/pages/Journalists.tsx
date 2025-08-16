@@ -8,12 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Users, Search, Filter, Plus, Eye, Mail, Linkedin, Twitter, Building2, Phone, Calendar, Star } from "lucide-react";
 import { usePRManagement } from "@/hooks/usePRManagement";
 import { formatDistanceToNow } from "date-fns";
+import { JournalistPreviewModal } from "@/components/pr-pitches/JournalistPreviewModal";
+import { AddJournalistModal } from "@/components/pr-pitches/AddJournalistModal";
+import type { Journalist } from "@/hooks/usePRManagement";
 
 const Journalists = () => {
   const { journalists, journalistsLoading } = usePRManagement();
   const [searchTerm, setSearchTerm] = useState('');
   const [publicationFilter, setPublicationFilter] = useState('all');
   const [influenceFilter, setInfluenceFilter] = useState('all');
+  const [selectedJournalist, setSelectedJournalist] = useState<Journalist | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const filteredJournalists = journalists.filter(journalist => {
     const matchesSearch = journalist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -46,6 +52,32 @@ const Journalists = () => {
     }
   };
 
+  const handlePreview = (journalist: Journalist) => {
+    setSelectedJournalist(journalist);
+    setIsPreviewModalOpen(true);
+  };
+
+  const handleEmail = (journalist: Journalist) => {
+    if (journalist.email) {
+      window.open(`mailto:${journalist.email}`, '_blank');
+    }
+  };
+
+  const handleLinkedIn = (journalist: Journalist) => {
+    if (journalist.linkedin_url) {
+      window.open(journalist.linkedin_url, '_blank');
+    }
+  };
+
+  const handleTwitter = (journalist: Journalist) => {
+    if (journalist.twitter_handle) {
+      const twitterUrl = journalist.twitter_handle.startsWith('@') 
+        ? `https://twitter.com/${journalist.twitter_handle.slice(1)}`
+        : `https://twitter.com/${journalist.twitter_handle}`;
+      window.open(twitterUrl, '_blank');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50/50 to-white">
       <DashboardHeader 
@@ -63,7 +95,7 @@ const Journalists = () => {
             </span>
           </div>
           
-          <Button className="flex items-center gap-2">
+          <Button className="flex items-center gap-2" onClick={() => setIsAddModalOpen(true)}>
             <Plus className="w-4 h-4" />
             Add Journalist
           </Button>
@@ -146,7 +178,7 @@ const Journalists = () => {
                 <p className="text-muted-foreground text-center max-w-md mb-4">
                   Your journalist database is empty. Add journalists manually or they will be populated automatically when generating PR pitches.
                 </p>
-                <Button className="flex items-center gap-2">
+                <Button className="flex items-center gap-2" onClick={() => setIsAddModalOpen(true)}>
                   <Plus className="w-4 h-4" />
                   Add Your First Journalist
                 </Button>
@@ -214,17 +246,17 @@ const Journalists = () => {
                     <div className="lg:col-span-2">
                       <div className="flex items-center gap-1">
                         {journalist.email && (
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => handleEmail(journalist)}>
                             <Mail className="w-3 h-3" />
                           </Button>
                         )}
                         {journalist.linkedin_url && (
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => handleLinkedIn(journalist)}>
                             <Linkedin className="w-3 h-3" />
                           </Button>
                         )}
                         {journalist.twitter_handle && (
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => handleTwitter(journalist)}>
                             <Twitter className="w-3 h-3" />
                           </Button>
                         )}
@@ -233,7 +265,7 @@ const Journalists = () => {
 
                     {/* Actions */}
                     <div className="lg:col-span-1">
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" onClick={() => handlePreview(journalist)}>
                         <Eye className="w-4 h-4" />
                       </Button>
                     </div>
@@ -244,6 +276,18 @@ const Journalists = () => {
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      <JournalistPreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        journalist={selectedJournalist}
+      />
+      
+      <AddJournalistModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
     </div>
   );
 };
