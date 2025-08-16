@@ -1323,6 +1323,10 @@ export type Database = {
         Args: { email_address: string }
         Returns: boolean
       }
+      is_service_operation_allowed: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       match_documents: {
         Args: { filter?: Json; match_count?: number; query_embedding: string }
         Returns: {
