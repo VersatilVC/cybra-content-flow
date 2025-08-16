@@ -42,27 +42,40 @@ const EnhancedGeneralContentTable: React.FC<EnhancedTableProps> = ({
 }) => {
   const [previewItem, setPreviewItem] = useState<GeneralContentItem | null>(null);
 
-  const getContentTypeIcon = (contentType: string, isCarousel = false) => {
+  const getDerivativeTypeIcon = (derivativeType: string, isCarousel = false) => {
     if (isCarousel) {
       return <Images className="w-4 h-4 text-orange-600" />;
     }
     
-    switch (contentType) {
+    switch (derivativeType) {
+      case 'blog_banner_image':
       case 'blog_post':
+        return <FileText className="w-4 h-4 text-blue-600" />;
+      case 'social_company':
+      case 'social_post':
+      case 'social_media_post':
+        return <Share2 className="w-4 h-4 text-green-600" />;
+      case 'linkedin_ads':
+      case 'linkedin_ad':
+        return <Target className="w-4 h-4 text-purple-600" />;
+      case 'image_carousel':
+        return <Images className="w-4 h-4 text-orange-600" />;
+      case 'video_script':
+        return <Video className="w-4 h-4 text-red-600" />;
       case 'article':
       case 'summary':
-        return <FileText className="w-4 h-4 text-blue-600" />;
-      case 'social_post':
-      case 'image_carousel':
-        return <Image className="w-4 h-4 text-green-600" />;
-      case 'video_script':
-      case 'linkedin_ads':
-        return <Video className="w-4 h-4 text-purple-600" />;
-      case 'social_media':
-        return <Share2 className="w-4 h-4 text-pink-600" />;
+        return <FileText className="w-4 h-4 text-indigo-600" />;
       default:
         return <FileText className="w-4 h-4 text-gray-600" />;
     }
+  };
+
+  const formatDerivativeType = (derivativeType: string) => {
+    return derivativeType
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   };
 
   const getStatusColor = (status: string) => {
@@ -202,7 +215,7 @@ const EnhancedGeneralContentTable: React.FC<EnhancedTableProps> = ({
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
-            {getContentTypeIcon('image_carousel', true)}
+            {getDerivativeTypeIcon('image_carousel', true)}
             <span className="text-sm">Image Carousel</span>
           </div>
         </TableCell>
@@ -299,9 +312,9 @@ const EnhancedGeneralContentTable: React.FC<EnhancedTableProps> = ({
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
-            {getContentTypeIcon(item.content_type)}
-            <span className="text-sm capitalize">
-              {item.content_type.replace('_', ' ')}
+            {getDerivativeTypeIcon(item.derivative_type || item.content_type)}
+            <span className="text-sm">
+              {formatDerivativeType(item.derivative_type || item.content_type)}
             </span>
           </div>
         </TableCell>
