@@ -3,6 +3,7 @@ import { GeneralContentItem } from '@/types/generalContent';
 import GeneralContentTextPreview from './GeneralContentTextPreview';
 import GeneralContentFilePreview from './GeneralContentFilePreview';
 import GeneralContentUrlPreview from './GeneralContentUrlPreview';
+import GeneralContentImagePreview from './GeneralContentImagePreview';
 import { isGeneralSocialContent, isGeneralCarouselContent, isGeneralLinkedInAdContent } from './utils/generalContentHelpers';
 import { adaptGeneralContentToDerivative } from './adapters/contentDerivativeAdapter';
 import SocialContentPreview from '../content-item/components/SocialContentPreview';
@@ -15,6 +16,11 @@ interface GeneralContentCardContentProps {
 
 const GeneralContentCardContent: React.FC<GeneralContentCardContentProps> = ({ item }) => {
   const renderContent = () => {
+    // Handle image content specifically (blog images, etc.)
+    if (item.content_type === 'image' && item.file_url) {
+      return <GeneralContentImagePreview item={item} />;
+    }
+
     // Handle image carousel with intelligent detection
     if (isGeneralCarouselContent(item)) {
       const adaptedItem = adaptGeneralContentToDerivative(item);
