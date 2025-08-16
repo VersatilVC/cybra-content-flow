@@ -1381,6 +1381,10 @@ export type Database = {
           total_ideas: number
         }[]
       }
+      validate_email_domain: {
+        Args: { email_address: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "creator"
