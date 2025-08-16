@@ -17,20 +17,26 @@ import {
   Target,
   Clock,
   TrendingUp,
-  BookOpen
+  BookOpen,
+  ExternalLink,
+  FileText
 } from "lucide-react";
-import type { Journalist } from "@/hooks/usePRManagement";
+import type { Journalist, JournalistArticle } from "@/hooks/usePRManagement";
 
 interface JournalistPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   journalist: Journalist | null;
+  articles?: JournalistArticle[];
+  isLoadingArticles?: boolean;
 }
 
 export const JournalistPreviewModal: React.FC<JournalistPreviewModalProps> = ({
   isOpen,
   onClose,
-  journalist
+  journalist,
+  articles = [],
+  isLoadingArticles = false
 }) => {
   if (!journalist) return null;
 
@@ -48,6 +54,15 @@ export const JournalistPreviewModal: React.FC<JournalistPreviewModalProps> = ({
       case 'warm_lead': return 'bg-green-100 text-green-800';
       case 'cold_contact': return 'bg-blue-100 text-blue-800';
       case 'established': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const getRelevanceColor = (relevance?: string) => {
+    switch (relevance) {
+      case 'high': return 'bg-green-100 text-green-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'low': return 'bg-gray-100 text-gray-800';
       default: return 'bg-muted text-muted-foreground';
     }
   };
@@ -227,6 +242,77 @@ export const JournalistPreviewModal: React.FC<JournalistPreviewModalProps> = ({
                   </Button>
                 )}
               </div>
+            </div>
+
+            <Separator />
+
+            {/* Latest Publications */}
+            <div>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Latest Publications
+              </h3>
+              
+              {isLoadingArticles ? (
+                <div className="flex items-center gap-2 text-muted-foreground py-4">
+                  <FileText className="w-4 h-4 animate-spin" />
+                  Loading articles...
+                </div>
+              ) : articles.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No articles found for this journalist</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {articles.map((article) => (
+                    <div key={article.id} className="p-3 border rounded-lg bg-card">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            {article.url ? (
+                              <Button
+                                variant="link"
+                                className="p-0 h-auto text-left font-medium text-foreground hover:text-primary"
+                                onClick={() => window.open(article.url, '_blank')}
+                              >
+                                {article.title}
+                                <ExternalLink className="w-3 h-3 ml-1 inline" />
+                              </Button>
+                            ) : (
+                              <h4 className="font-medium text-foreground text-sm">{article.title}</h4>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
+                            <span className="flex items-center gap-1">
+                              <Building2 className="w-3 h-3" />
+                              {article.publication}
+                            </span>
+                            {article.date && (
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {new Date(article.date).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {article.coverage_type}
+                            </Badge>
+                            {article.relevance && (
+                              <Badge className={`text-xs ${getRelevanceColor(article.relevance)}`}>
+                                {article.relevance} relevance
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Additional Information */}

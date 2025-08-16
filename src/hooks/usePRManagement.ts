@@ -3,6 +3,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+export interface JournalistArticle {
+  id: string;
+  journalist_id: string;
+  title: string;
+  url?: string;
+  publication: string;
+  date?: string;
+  coverage_type: string;
+  relevance?: string;
+  created_at: string;
+}
+
 export interface Journalist {
   id: string;
   name: string;
@@ -132,6 +144,19 @@ export const usePRManagement = () => {
     }
   });
 
+  // Fetch journalist articles
+  const fetchJournalistArticles = async (journalistId: string) => {
+    const { data, error } = await supabase
+      .from('journalist_articles')
+      .select('*')
+      .eq('journalist_id', journalistId)
+      .order('date', { ascending: false })
+      .limit(10);
+    
+    if (error) throw error;
+    return data as JournalistArticle[];
+  };
+
   // Create journalist
   const createJournalistMutation = useMutation({
     mutationFn: async (journalistData: any) => {
@@ -240,6 +265,7 @@ export const usePRManagement = () => {
     createJournalist: createJournalistMutation.mutate,
     generatePRPitches: generatePRPitchesMutation.mutate,
     updatePitchStatus: updatePitchStatusMutation.mutate,
-    isGeneratingPitches: generatePRPitchesMutation.isPending
+    isGeneratingPitches: generatePRPitchesMutation.isPending,
+    fetchJournalistArticles
   };
 };

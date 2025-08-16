@@ -10,14 +10,16 @@ import { usePRManagement } from "@/hooks/usePRManagement";
 import { formatDistanceToNow } from "date-fns";
 import { JournalistPreviewModal } from "@/components/pr-pitches/JournalistPreviewModal";
 import { AddJournalistModal } from "@/components/pr-pitches/AddJournalistModal";
-import type { Journalist } from "@/hooks/usePRManagement";
+import type { Journalist, JournalistArticle } from "@/hooks/usePRManagement";
 
 const Journalists = () => {
-  const { journalists, journalistsLoading } = usePRManagement();
+  const { journalists, journalistsLoading, fetchJournalistArticles } = usePRManagement();
   const [searchTerm, setSearchTerm] = useState('');
   const [publicationFilter, setPublicationFilter] = useState('all');
   const [influenceFilter, setInfluenceFilter] = useState('all');
   const [selectedJournalist, setSelectedJournalist] = useState<Journalist | null>(null);
+  const [journalistArticles, setJournalistArticles] = useState<JournalistArticle[]>([]);
+  const [isLoadingArticles, setIsLoadingArticles] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -52,9 +54,20 @@ const Journalists = () => {
     }
   };
 
-  const handlePreview = (journalist: Journalist) => {
+  const handlePreview = async (journalist: Journalist) => {
     setSelectedJournalist(journalist);
     setIsPreviewModalOpen(true);
+    setIsLoadingArticles(true);
+    
+    try {
+      const articles = await fetchJournalistArticles(journalist.id);
+      setJournalistArticles(articles);
+    } catch (error) {
+      console.error('Failed to fetch journalist articles:', error);
+      setJournalistArticles([]);
+    } finally {
+      setIsLoadingArticles(false);
+    }
   };
 
   const handleEmail = (journalist: Journalist) => {
@@ -282,6 +295,8 @@ const Journalists = () => {
         isOpen={isPreviewModalOpen}
         onClose={() => setIsPreviewModalOpen(false)}
         journalist={selectedJournalist}
+        articles={journalistArticles}
+        isLoadingArticles={isLoadingArticles}
       />
       
       <AddJournalistModal
