@@ -175,12 +175,16 @@ export const usePRManagement = () => {
       if (campaignError) throw campaignError;
 
       // Trigger webhook for PR pitch generation
-      const webhookResponse = await supabase.functions.invoke('process-content', {
+      const webhookResponse = await supabase.functions.invoke('dispatch-webhook', {
         body: {
-          submissionId: campaign.id,
-          type: 'pr_pitch_generation',
-          content_item_id: contentItemId,
-          title: title
+          webhook_type: 'pr_pitch_generation',
+          payload: {
+            campaign_id: campaign.id,
+            content_item_id: contentItemId,
+            title: title,
+            user_id: user.id,
+            timestamp: new Date().toISOString()
+          }
         }
       });
 

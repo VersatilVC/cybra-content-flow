@@ -63,6 +63,7 @@ serve(async (req) => {
       "content_processing",
       "content_item_fix",
       "wordpress_publishing",
+      "pr_pitch_generation",
     ]);
 
     if (!allowedTypes.has(webhook_type)) {
