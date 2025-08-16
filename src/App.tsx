@@ -12,6 +12,8 @@ import AppLayout from "@/components/layout/AppLayout";
 import RoutePreloader from "@/components/performance/RoutePreloader";
 import PerformanceMonitor from "@/components/performance/PerformanceMonitor";
 import { QueryCacheOptimizer } from "@/components/performance/QueryCacheOptimizer";
+import { PerformanceProvider } from "@/contexts/PerformanceContext";
+import { useMemoryOptimizer } from "@/components/performance/MemoryOptimizer";
 
 import { lazy, Suspense } from "react";
 
@@ -58,26 +60,30 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <QueryCacheOptimizer>
-      <OptimizedAuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ErrorBoundary>
-              <RoutePreloader />
-              <PerformanceMonitor />
-            <Suspense fallback={
-              <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50/50 to-white">
-                <div className="text-center space-y-4">
-                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="text-muted-foreground">Loading application...</p>
-                </div>
-              </div>
-            }>
-              <Routes>
+function AppWithHooks() {
+  useMemoryOptimizer();
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <QueryCacheOptimizer>
+        <PerformanceProvider>
+          <OptimizedAuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <ErrorBoundary>
+                  <RoutePreloader />
+                  <PerformanceMonitor />
+                <Suspense fallback={
+                  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50/50 to-white">
+                    <div className="text-center space-y-4">
+                      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+                      <p className="text-muted-foreground">Loading application...</p>
+                    </div>
+                  </div>
+                }>
+                  <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 
@@ -255,8 +261,12 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </OptimizedAuthProvider>
-  </QueryCacheOptimizer>
-  </QueryClientProvider>
-);
+  </PerformanceProvider>
+</QueryCacheOptimizer>
+</QueryClientProvider>
+  );
+}
+
+const App = () => <AppWithHooks />;
 
 export default App;

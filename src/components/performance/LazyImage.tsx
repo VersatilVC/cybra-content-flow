@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useProgressiveImageLoading } from '@/hooks/useProgressiveImageLoading';
 import { cn } from '@/lib/utils';
 
 interface LazyImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -20,48 +21,45 @@ const LazyImage: React.FC<LazyImageProps> = ({
   ...props
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(priority);
-  const [imageSrc, setImageSrc] = useState(blurDataURL || fallback);
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  
+  const { observeImage, generatePlaceholder, isImageLoaded } = useProgressiveImageLoading({
+    threshold: 0.1,
+    rootMargin: '50px',
+    enableWebP: true
+  });
 
   useEffect(() => {
-    if (priority) return;
+    if (!imgRef.current || priority) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      { 
-        threshold: 0.1,
-        rootMargin: '50px' 
+    // Use progressive loading hook
+    observeImage(imgRef.current, src);
+    
+    // Listen for load events
+    const handleLoad = () => setIsLoaded(true);
+    const handleError = () => setHasError(true);
+    
+    imgRef.current.addEventListener('load', handleLoad);
+    imgRef.current.addEventListener('error', handleError);
+    
+    return () => {
+      if (imgRef.current) {
+        imgRef.current.removeEventListener('load', handleLoad);
+        imgRef.current.removeEventListener('error', handleError);
       }
-    );
-
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [priority]);
+    };
+  }, [src, priority, observeImage]);
 
   useEffect(() => {
-    if (!isInView) return;
+    // For priority images, load immediately
+    if (priority && imgRef.current) {
+      imgRef.current.src = src;
+      setIsLoaded(isImageLoaded(src));
+    }
+  }, [priority, src, isImageLoaded]);
 
-    const img = new Image();
-    img.onload = () => {
-      setImageSrc(src);
-      setIsLoaded(true);
-    };
-    img.onerror = () => {
-      setHasError(true);
-      setImageSrc(fallback);
-    };
-    img.src = src;
-  }, [isInView, src, fallback]);
+  const imageSrc = priority ? src : (isLoaded ? src : (blurDataURL || fallback));
 
   return (
     <div className={cn("relative overflow-hidden", className)}>
@@ -76,6 +74,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
           className
         )}
         onLoad={() => setIsLoaded(true)}
+        onError={() => setHasError(true)}
         {...props}
       />
       {!isLoaded && !hasError && blurDataURL && (
