@@ -1,5 +1,5 @@
 
-import JSZip from 'jszip';
+import { loadJSZip } from '@/lib/lazyImports';
 
 interface CarouselSlide {
   slide_number: string;
@@ -9,6 +9,7 @@ interface CarouselSlide {
 }
 
 export const downloadImageCarouselZip = async (slides: CarouselSlide[], carouselName: string) => {
+  const JSZip = await loadJSZip();
   const zip = new JSZip();
   
   try {

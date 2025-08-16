@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Download, FileText, Table, Code, Package } from 'lucide-react';
 import { GeneralContentItem } from '@/types/generalContent';
-import JSZip from 'jszip';
+import { loadJSZip } from '@/lib/lazyImports';
 
 interface GeneralContentExportOptionsProps {
   open: boolean;
@@ -108,6 +108,7 @@ const GeneralContentExportOptions: React.FC<GeneralContentExportOptionsProps> = 
       downloadFile(content, `${item.title.replace(/[^a-zA-Z0-9]/g, '-')}.txt`, 'text/plain');
     } else {
       // Multiple files in ZIP
+      const JSZip = await loadJSZip();
       const zip = new JSZip();
       
       exportItems.forEach((item, index) => {
@@ -173,6 +174,7 @@ const GeneralContentExportOptions: React.FC<GeneralContentExportOptionsProps> = 
   };
 
   const exportAsZIP = async () => {
+    const JSZip = await loadJSZip();
     const zip = new JSZip();
     
     // Create folders by category

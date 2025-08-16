@@ -11,6 +11,7 @@ import OptimizedProtectedRoute from "@/components/performance/OptimizedProtected
 import AppLayout from "@/components/layout/AppLayout";
 import RoutePreloader from "@/components/performance/RoutePreloader";
 import PerformanceMonitor from "@/components/performance/PerformanceMonitor";
+import { QueryCacheOptimizer } from "@/components/performance/QueryCacheOptimizer";
 
 import { lazy, Suspense } from "react";
 
@@ -59,14 +60,15 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <OptimizedAuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ErrorBoundary>
-            <RoutePreloader />
-            <PerformanceMonitor />
+    <QueryCacheOptimizer>
+      <OptimizedAuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ErrorBoundary>
+              <RoutePreloader />
+              <PerformanceMonitor />
             <Suspense fallback={
               <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50/50 to-white">
                 <div className="text-center space-y-4">
@@ -93,29 +95,19 @@ const App = () => (
                 <Route 
                   path="/knowledge-bases" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
                         <KnowledgeBases />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/chat" 
                   element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <Chat />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/content-ideas" 
-                  element={
                     <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
-                        <ContentIdeas />
+                        <Chat />
                       </AppLayout>
                     </OptimizedProtectedRoute>
                   } 
@@ -123,51 +115,51 @@ const App = () => (
                 <Route 
                   path="/content-briefs" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
                         <ContentBriefs />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/content-items" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
                         <ContentItems />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/content-items/:id" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-item">
                       <AppLayout>
                         <ContentItemView />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/general-content" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
                         <GeneralContent />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/notifications" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
                         <NotificationCenter />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 
@@ -175,31 +167,31 @@ const App = () => (
                 <Route 
                   path="/pr-pitches" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
                         <PRPitches />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/journalists" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
                         <Journalists />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/press-releases" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
                         <PressReleases />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 
@@ -207,51 +199,51 @@ const App = () => (
                 <Route 
                   path="/user-management" 
                   element={
-                    <ProtectedRoute adminOnly>
+                    <OptimizedProtectedRoute adminOnly fallbackSkeleton="content-list">
                       <AppLayout>
                         <UserManagement />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/feedback-management" 
                   element={
-                    <ProtectedRoute>
+                    <OptimizedProtectedRoute fallbackSkeleton="content-list">
                       <AppLayout>
                         <FeedbackManagement />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/webhooks" 
                   element={
-                    <ProtectedRoute adminOnly>
+                    <OptimizedProtectedRoute adminOnly fallbackSkeleton="content-list">
                       <AppLayout>
                         <Webhooks />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/settings" 
                   element={
-                    <ProtectedRoute adminOnly>
+                    <OptimizedProtectedRoute adminOnly fallbackSkeleton="content-list">
                       <AppLayout>
                         <Settings />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 <Route 
                   path="/production-dashboard" 
                   element={
-                    <ProtectedRoute adminOnly>
+                    <OptimizedProtectedRoute adminOnly fallbackSkeleton="dashboard">
                       <AppLayout>
                         <ProductionDashboard />
                       </AppLayout>
-                    </ProtectedRoute>
+                    </OptimizedProtectedRoute>
                   } 
                 />
                 
@@ -263,6 +255,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </OptimizedAuthProvider>
+  </QueryCacheOptimizer>
   </QueryClientProvider>
 );
 

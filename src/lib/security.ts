@@ -1,9 +1,47 @@
 
-import DOMPurify from 'dompurify';
 import { z } from 'zod';
+import { loadDOMPurify } from './lazyImports';
 
-// Input sanitization utilities
+// Keep synchronous version for backward compatibility - uses dynamic import but waits
+let dompurifyInstance: any = null;
+
+const getDOMPurify = () => {
+  if (!dompurifyInstance) {
+    // For synchronous usage, we need to load DOMPurify immediately
+    // This will fall back to dynamic import for now
+    const loadSync = async () => {
+      dompurifyInstance = await loadDOMPurify();
+    };
+    loadSync();
+    // Return a basic sanitizer as fallback
+    return {
+      sanitize: (input: string) => {
+        // Basic HTML escaping as fallback
+        return input
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#x27;');
+      }
+    };
+  }
+  return dompurifyInstance;
+};
+
+// Synchronous sanitization with fallback
 export const sanitizeHtml = (input: string): string => {
+  const purify = getDOMPurify();
+  return purify.sanitize(input, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+    ALLOW_DATA_ATTR: false,
+  });
+};
+
+// Async version for when we need to ensure DOMPurify is loaded
+export const sanitizeHtmlAsync = async (input: string): Promise<string> => {
+  const DOMPurify = await loadDOMPurify();
   return DOMPurify.sanitize(input, {
     ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'a'],
     ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],

@@ -1,14 +1,15 @@
 
 import { ContentItem } from '@/services/contentItemsApi';
 import React from 'react';
+import { loadReactPDF, loadPDFTemplate } from '@/lib/lazyImports';
 
 export async function generateGuidePDF(contentItem: ContentItem): Promise<Blob> {
   try {
     console.log('pdfGenerationService: Generating professional PDF for content item:', contentItem.id);
 
     // Lazy-load react-pdf and the template to reduce bundle size and avoid DOM Document collisions
-    const { pdf, Document: PDFDocument } = await import('@react-pdf/renderer');
-    const { default: ProfessionalPDFTemplate } = await import('@/components/content-item/ProfessionalPDFTemplate');
+    const { pdf, Document: PDFDocument } = await loadReactPDF();
+    const ProfessionalPDFTemplate = await loadPDFTemplate();
 
     // Create the PDF document with Document wrapper from react-pdf
     const pdfDocument = React.createElement(
