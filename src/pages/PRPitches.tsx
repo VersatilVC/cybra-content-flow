@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Megaphone, Search, Filter, Eye, Edit, Send, Check, Clock, User, Building2, Mail, ExternalLink } from "lucide-react";
 import { usePRManagement } from "@/hooks/usePRManagement";
 import { formatDistanceToNow } from "date-fns";
+import PRPitchGenerationSection from "@/components/pr-pitches/PRPitchGenerationSection";
 
 const PRPitches = () => {
   const { pitches, pitchesLoading, campaigns, updatePitchStatus } = usePRManagement();
@@ -54,6 +55,9 @@ const PRPitches = () => {
       />
       
       <div className="px-6 pb-8 space-y-6">
+        {/* PR Pitch Generation */}
+        <PRPitchGenerationSection />
+
         {/* Filters */}
         <Card>
           <CardHeader>
@@ -130,7 +134,7 @@ const PRPitches = () => {
                 <Megaphone className="w-12 h-12 text-muted-foreground mb-4" />
                 <h3 className="font-semibold text-foreground mb-2">No PR Pitches Found</h3>
                 <p className="text-muted-foreground text-center max-w-md">
-                  Start by generating PR pitches from your content items. Visit the Content Items page and click "Generate PR Pitches" on any topical blog post.
+                  Use the generation section above to create PR pitches for your topical blog posts.
                 </p>
               </CardContent>
             </Card>
