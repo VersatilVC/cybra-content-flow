@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ContentDerivative } from '@/services/contentDerivativesApi';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ExternalLink, Eye, RotateCcw } from 'lucide-react';
 
 interface LinkedInAdPreviewProps {
   derivative: ContentDerivative;
@@ -15,6 +16,8 @@ interface LinkedInAdContent {
 }
 
 const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({ derivative }) => {
+  const [imageError, setImageError] = useState(false);
+  
   // Parse the LinkedIn ad content with fallback handling
   let adContent: LinkedInAdContent = {};
   
@@ -35,6 +38,16 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({ derivative }) => 
   // Ensure we have at least a headline
   const headline = adContent.headline || 'LinkedIn Ad';
   const introText = adContent.intro_text;
+
+  const handleViewFullSize = () => {
+    if (imageUrl) {
+      window.open(imageUrl, '_blank');
+    }
+  };
+
+  const handleRetryImage = () => {
+    setImageError(false);
+  };
 
   return (
     <div className="border rounded-lg p-4 bg-white shadow-sm">
@@ -65,18 +78,42 @@ const LinkedInAdPreview: React.FC<LinkedInAdPreviewProps> = ({ derivative }) => 
 
         {/* Image */}
         {imageUrl && (
-          <div className="mt-3">
-            <img
-              src={imageUrl}
-              alt="LinkedIn Ad Creative"
-              className="w-full h-48 object-cover rounded-lg border"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-              loading="lazy"
-              decoding="async"
-            />
+          <div className="relative mt-3 group">
+            {!imageError ? (
+              <>
+                <img
+                  src={imageUrl}
+                  alt="LinkedIn Ad Creative"
+                  className="w-full max-h-96 object-contain rounded-lg border bg-gray-50"
+                  onError={() => setImageError(true)}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleViewFullSize}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="w-full h-48 bg-gray-100 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center space-y-2">
+                <p className="text-sm text-gray-500">Failed to load image</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRetryImage}
+                  className="text-xs"
+                >
+                  <RotateCcw className="h-3 w-3 mr-1" />
+                  Retry
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
