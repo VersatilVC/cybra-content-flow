@@ -12,8 +12,11 @@ import ReviewModeView from '@/components/content-ideas/ReviewModeView';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const ContentIdeas = () => {
-  console.log("🎯 ContentIdeas component rendering");
-  const navigate = useNavigate();
+  console.log("🎯 ContentIdeas component rendering - start");
+  
+  try {
+    const navigate = useNavigate();
+    console.log("🎯 useNavigate hook loaded successfully");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
@@ -26,14 +29,23 @@ const ContentIdeas = () => {
     search: '',
   });
 
-  const { 
-    ideas, 
-    isLoading, 
-    deleteIdea, 
-    createBrief, 
-    isDeleting, 
-    isCreatingBrief 
-  } = useContentIdeas(filters);
+    console.log("🎯 About to call useContentIdeas hook with filters:", filters);
+    
+    const { 
+      ideas, 
+      isLoading, 
+      deleteIdea, 
+      createBrief, 
+      isDeleting, 
+      isCreatingBrief 
+    } = useContentIdeas(filters);
+    
+    console.log("🎯 useContentIdeas hook completed:", { 
+      ideasCount: ideas?.length, 
+      isLoading, 
+      hasDeleteFunction: !!deleteIdea,
+      hasCreateBriefFunction: !!createBrief 
+    });
 
   const expandIdeaId = searchParams.get('expand');
   const suggestionsIdeaId = searchParams.get('suggestions');
@@ -113,47 +125,60 @@ const ContentIdeas = () => {
     );
   }
 
-  return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <ContentIdeasHeader onNewIdea={() => setShowAddModal(true)} />
+    console.log("🎯 About to render ContentIdeas main content");
+    
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <ContentIdeasHeader onNewIdea={() => setShowAddModal(true)} />
 
-      <ContentIdeasFilters 
-        filters={filters}
-        onFilterChange={handleFilterChange}
-      />
-
-      <ContentIdeasGrid
-        ideas={ideas}
-        onEdit={handleEdit}
-        onDiscard={deleteIdea}
-        onCreateBrief={createBrief}
-        isCreatingBrief={isCreatingBrief}
-        expandIdeaId={expandIdeaId}
-        onNewIdea={() => setShowAddModal(true)}
-      />
-
-      <AddIdeaModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-      />
-
-      <EditIdeaModal
-        isOpen={showEditModal}
-        onClose={handleCloseEditModal}
-        idea={selectedIdea}
-      />
-
-      {suggestionsIdea && (
-        <ViewSuggestionsModal
-          isOpen={showSuggestionsModal}
-          onClose={handleCloseSuggestionsModal}
-          ideaId={suggestionsIdea.id}
-          ideaTitle={suggestionsIdea.title}
-          parentIdea={suggestionsIdea}
+        <ContentIdeasFilters 
+          filters={filters}
+          onFilterChange={handleFilterChange}
         />
-      )}
-    </div>
-  );
+
+        <ContentIdeasGrid
+          ideas={ideas}
+          onEdit={handleEdit}
+          onDiscard={deleteIdea}
+          onCreateBrief={createBrief}
+          isCreatingBrief={isCreatingBrief}
+          expandIdeaId={expandIdeaId}
+          onNewIdea={() => setShowAddModal(true)}
+        />
+
+        <AddIdeaModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+        />
+
+        <EditIdeaModal
+          isOpen={showEditModal}
+          onClose={handleCloseEditModal}
+          idea={selectedIdea}
+        />
+
+        {suggestionsIdea && (
+          <ViewSuggestionsModal
+            isOpen={showSuggestionsModal}
+            onClose={handleCloseSuggestionsModal}
+            ideaId={suggestionsIdea.id}
+            ideaTitle={suggestionsIdea.title}
+            parentIdea={suggestionsIdea}
+          />
+        )}
+      </div>
+    );
+  } catch (error) {
+    console.error("🚨 ContentIdeas component error:", error);
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <div className="text-red-600">
+          <h1 className="text-xl font-bold mb-2">ContentIdeas Error</h1>
+          <p>Component failed to render: {error instanceof Error ? error.message : 'Unknown error'}</p>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default ContentIdeas;

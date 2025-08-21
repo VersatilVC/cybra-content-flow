@@ -25,6 +25,7 @@ const KnowledgeBases = lazy(() => import("./pages/KnowledgeBases"));
 const Chat = lazy(() => import("./pages/Chat"));
 
 const ContentIdeas = lazy(() => import("./pages/ContentIdeas"));
+const ContentIdeasDebug = lazy(() => import("./pages/ContentIdeasDebug"));
 
 const ContentBriefs = lazy(() => import("./pages/ContentBriefs"));
 const ContentItems = lazy(() => import("./pages/ContentItems"));
@@ -129,15 +130,23 @@ function AppContentWithProviders() {
                       } 
                     />
                     <Route 
-                      path="/content-ideas" 
-                      element={
-                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                          <AppLayout>
-                            <ContentIdeas />
-                          </AppLayout>
-                        </OptimizedProtectedRoute>
-                      } 
-                    />
+                       path="/content-ideas" 
+                       element={
+                         <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                           <AppLayout>
+                             <ContentIdeas />
+                           </AppLayout>
+                         </OptimizedProtectedRoute>
+                       } 
+                     />
+                     <Route 
+                       path="/content-ideas-debug" 
+                       element={
+                         <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                           <ContentIdeasDebug />
+                         </OptimizedProtectedRoute>
+                       } 
+                     />
                     <Route 
                       path="/content-items" 
                       element={
