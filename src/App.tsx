@@ -24,7 +24,7 @@ const OptimizedDashboard = lazy(() => import("./pages/OptimizedDashboard"));
 const KnowledgeBases = lazy(() => import("./pages/KnowledgeBases"));
 const Chat = lazy(() => import("./pages/Chat"));
 
-const ContentIdeas = lazy(() => import("./pages/ContentIdeas"));
+import ContentIdeas from "./pages/ContentIdeas";
 
 const ContentBriefs = lazy(() => import("./pages/ContentBriefs"));
 const ContentItems = lazy(() => import("./pages/ContentItems"));
