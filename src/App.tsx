@@ -127,6 +127,7 @@ function AppContentWithProviders() {
                         </OptimizedProtectedRoute>
                       } 
                     />
+                    {/* Content Ideas Route */}
                     <Route 
                       path="/content-ideas" 
                       element={
