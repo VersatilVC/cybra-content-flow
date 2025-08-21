@@ -26,14 +26,31 @@ const Chat = lazy(() => import("./pages/Chat"));
 
 const ContentIdeas = lazy(() => {
   console.log('🔄 Starting ContentIdeas import...');
-  try {
-    const result = import("./pages/ContentIdeas");
-    console.log('✅ ContentIdeas import promise created');
-    return result;
-  } catch (error) {
+  return import("./pages/ContentIdeas").then((module) => {
+    console.log('✅ ContentIdeas module loaded successfully:', module);
+    if (!module.default) {
+      console.error('❌ ContentIdeas has no default export');
+      throw new Error('ContentIdeas component has no default export');
+    }
+    return module;
+  }).catch((error) => {
     console.error('❌ ContentIdeas import failed:', error);
-    throw error;
-  }
+    // Return a fallback component
+    return {
+      default: () => (
+        <div className="p-8 text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Failed to load Content Ideas</h1>
+          <p className="text-gray-600">Error: {error.message}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
+        </div>
+      )
+    };
+  });
 });
 
 const ContentBriefs = lazy(() => import("./pages/ContentBriefs"));
