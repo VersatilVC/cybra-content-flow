@@ -76,5 +76,3 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
   };
 }
 
-// Re-export types for backward compatibility
-export type { ContentIdea, ContentIdeaFilters } from '@/types/contentIdeas';

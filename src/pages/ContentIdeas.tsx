@@ -12,6 +12,7 @@ import ReviewModeView from '@/components/content-ideas/ReviewModeView';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const ContentIdeas = () => {
+  console.log('🔄 ContentIdeas component is loading...');
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
