@@ -25,11 +25,15 @@ const KnowledgeBases = lazy(() => import("./pages/KnowledgeBases"));
 const Chat = lazy(() => import("./pages/Chat"));
 
 const ContentIdeas = lazy(() => {
-  console.log('🔄 Loading ContentIdeas component...');
-  return import("./pages/ContentIdeas").catch(error => {
-    console.error('❌ Failed to load ContentIdeas:', error);
+  console.log('🔄 Starting ContentIdeas import...');
+  try {
+    const result = import("./pages/ContentIdeas");
+    console.log('✅ ContentIdeas import promise created');
+    return result;
+  } catch (error) {
+    console.error('❌ ContentIdeas import failed:', error);
     throw error;
-  });
+  }
 });
 
 const ContentBriefs = lazy(() => import("./pages/ContentBriefs"));
