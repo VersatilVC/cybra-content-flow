@@ -128,6 +128,16 @@ function AppContentWithProviders() {
                       } 
                     />
                     <Route 
+                      path="/content-ideas" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <ContentIdeas />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    <Route 
                       path="/content-items" 
                       element={
                         <OptimizedProtectedRoute fallbackSkeleton="content-list">
