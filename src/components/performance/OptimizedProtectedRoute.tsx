@@ -17,6 +17,13 @@ const OptimizedProtectedRoute: React.FC<OptimizedProtectedRouteProps> = ({
 }) => {
   const { user, profile, loading, profileLoading, isReady, isAdmin } = useOptimizedAuth();
   const location = useLocation();
+  
+  console.log('🔐 OptimizedProtectedRoute - Auth State:', { 
+    user: !!user, 
+    isReady, 
+    loading, 
+    path: location.pathname 
+  });
 
   // Show skeleton loading while auth is initializing
   if (!isReady) {

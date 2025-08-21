@@ -8,6 +8,7 @@ interface AppLayoutProps {
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+  console.log('🏗️ AppLayout rendering with children:', children);
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
