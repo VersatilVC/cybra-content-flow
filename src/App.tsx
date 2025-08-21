@@ -24,19 +24,8 @@ const OptimizedDashboard = lazy(() => import("./pages/OptimizedDashboard"));
 const KnowledgeBases = lazy(() => import("./pages/KnowledgeBases"));
 const Chat = lazy(() => import("./pages/Chat"));
 
-// Debug ContentIdeas import with error handling
-const ContentIdeas = lazy(() => {
-  console.log("🔄 Loading ContentIdeas component...");
-  return import("./pages/ContentIdeas")
-    .then((module) => {
-      console.log("✅ ContentIdeas loaded successfully:", module);
-      return module;
-    })
-    .catch((error) => {
-      console.error("❌ Failed to load ContentIdeas:", error);
-      throw error;
-    });
-});
+// Direct import for debugging - replace lazy loading temporarily
+import ContentIdeas from "./pages/ContentIdeas";
 
 const ContentBriefs = lazy(() => import("./pages/ContentBriefs"));
 const ContentItems = lazy(() => import("./pages/ContentItems"));
@@ -140,26 +129,15 @@ function AppContentWithProviders() {
                         </OptimizedProtectedRoute>
                       } 
                     />
-                    {/* Content Ideas Route - DEBUG VERSION */}
+                    {/* Content Ideas Route - Simplified for debugging */}
                     <Route 
                       path="/content-ideas" 
                       element={
-                        <ErrorBoundary>
-                          <OptimizedProtectedRoute fallbackSkeleton="content-list">
-                            <AppLayout>
-                              <Suspense fallback={
-                                <div className="min-h-screen flex items-center justify-center">
-                                  <div className="text-center space-y-4">
-                                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-                                    <p className="text-muted-foreground">Loading Content Ideas...</p>
-                                  </div>
-                                </div>
-                              }>
-                                <ContentIdeas />
-                              </Suspense>
-                            </AppLayout>
-                          </OptimizedProtectedRoute>
-                        </ErrorBoundary>
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <ContentIdeas />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
                       } 
                     />
                     <Route 
