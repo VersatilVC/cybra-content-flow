@@ -24,7 +24,13 @@ const OptimizedDashboard = lazy(() => import("./pages/OptimizedDashboard"));
 const KnowledgeBases = lazy(() => import("./pages/KnowledgeBases"));
 const Chat = lazy(() => import("./pages/Chat"));
 
-import ContentIdeas from "./pages/ContentIdeas";
+const ContentIdeas = lazy(() => {
+  console.log('🔄 Loading ContentIdeas component...');
+  return import("./pages/ContentIdeas").catch(error => {
+    console.error('❌ Failed to load ContentIdeas:', error);
+    throw error;
+  });
+});
 
 const ContentBriefs = lazy(() => import("./pages/ContentBriefs"));
 const ContentItems = lazy(() => import("./pages/ContentItems"));

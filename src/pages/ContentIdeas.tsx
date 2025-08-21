@@ -156,4 +156,5 @@ const ContentIdeas = () => {
   );
 };
 
+console.log('📄 ContentIdeas component definition loaded');
 export default ContentIdeas;
