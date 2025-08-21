@@ -24,8 +24,22 @@ const OptimizedDashboard = lazy(() => import("./pages/OptimizedDashboard"));
 const KnowledgeBases = lazy(() => import("./pages/KnowledgeBases"));
 const Chat = lazy(() => import("./pages/Chat"));
 
-// Direct import for debugging - replace lazy loading temporarily
-import ContentIdeas from "./pages/ContentIdeas";
+// Try to import ContentIdeas with error handling
+let ContentIdeas;
+try {
+  ContentIdeas = require("./pages/ContentIdeas").default;
+  console.log('✅ ContentIdeas component imported successfully');
+} catch (error) {
+  console.error('🚨 Failed to import ContentIdeas:', error);
+  ContentIdeas = () => (
+    <div className="p-8">
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <strong>Import Error!</strong>
+        <p>Failed to import ContentIdeas component: {error?.message}</p>
+      </div>
+    </div>
+  );
+}
 
 const ContentBriefs = lazy(() => import("./pages/ContentBriefs"));
 const ContentItems = lazy(() => import("./pages/ContentItems"));
@@ -129,13 +143,28 @@ function AppContentWithProviders() {
                         </OptimizedProtectedRoute>
                       } 
                     />
-                    {/* Content Ideas Route - Simplified for debugging */}
+                    {/* Content Ideas Route - With Enhanced Debugging */}
                     <Route 
                       path="/content-ideas" 
                       element={
                         <OptimizedProtectedRoute fallbackSkeleton="content-list">
                           <AppLayout>
                             <ContentIdeas />
+                          </AppLayout>
+                        </OptimizedProtectedRoute>
+                      } 
+                    />
+                    
+                    {/* Simplified debug route */}
+                    <Route 
+                      path="/content-ideas-debug" 
+                      element={
+                        <OptimizedProtectedRoute fallbackSkeleton="content-list">
+                          <AppLayout>
+                            <div className="p-8">
+                              <h1 className="text-2xl font-bold">Debug Route Working!</h1>
+                              <p>If you can see this, authentication and routing are working.</p>
+                            </div>
                           </AppLayout>
                         </OptimizedProtectedRoute>
                       } 

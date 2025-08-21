@@ -7,17 +7,43 @@ import { useIdeaMutations } from '@/hooks/useIdeaMutations';
 import { useBriefCreation } from '@/hooks/useBriefCreation';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
+import { logger } from '@/utils/logger';
 
 export function useContentIdeas(filters?: ContentIdeaFilters) {
   const { user } = useOptimizedAuthContext();
   const queryClient = useQueryClient();
 
+  // DEBUGGING: Log hook initialization
+  logger.info('🔍 useContentIdeas hook initialized:', {
+    user: user ? { id: user.id, email: user.email } : null,
+    filters,
+    hasQueryClient: !!queryClient
+  });
+
   const { data: ideas = [], isLoading, error, refetch } = useQuery({
     queryKey: ['content-ideas', user?.id, filters],
-    queryFn: () => fetchContentIdeas(user?.id || '', filters),
+    queryFn: async () => {
+      logger.info('🔍 useContentIdeas: Fetching ideas for user:', user?.id);
+      try {
+        const result = await fetchContentIdeas(user?.id || '', filters);
+        logger.info('🔍 useContentIdeas: Fetch successful, got ideas:', result?.length || 0);
+        return result;
+      } catch (err) {
+        logger.error('🔍 useContentIdeas: Fetch failed:', err);
+        throw err;
+      }
+    },
     enabled: !!user?.id,
     refetchInterval: 30000, // Refetch every 30 seconds to catch status updates
     refetchIntervalInBackground: true,
+  });
+
+  // DEBUGGING: Log query state
+  logger.info('🔍 useContentIdeas query state:', {
+    ideasCount: ideas?.length || 0,
+    isLoading,
+    error: error?.message || null,
+    enabled: !!user?.id
   });
 
   // Set up real-time subscription for content ideas updates
