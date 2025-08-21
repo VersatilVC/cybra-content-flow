@@ -16,6 +16,7 @@ import { PerformanceProvider } from "@/contexts/PerformanceContext";
 import { useMemoryOptimizer } from "@/components/performance/MemoryOptimizer";
 
 import { lazy, Suspense } from "react";
+import ContentIdeas from "./pages/ContentIdeas";
 
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -23,18 +24,6 @@ const DashboardPage = lazy(() => import("./pages/Dashboard"));
 const OptimizedDashboard = lazy(() => import("./pages/OptimizedDashboard"));
 const KnowledgeBases = lazy(() => import("./pages/KnowledgeBases"));
 const Chat = lazy(() => import("./pages/Chat"));
-
-const ContentIdeas = lazy(() => {
-  console.log('🔄 Starting ContentIdeas import...');
-  try {
-    const result = import("./pages/ContentIdeas");
-    console.log('✅ ContentIdeas import promise created');
-    return result;
-  } catch (error) {
-    console.error('❌ ContentIdeas import failed:', error);
-    throw error;
-  }
-});
 
 const ContentBriefs = lazy(() => import("./pages/ContentBriefs"));
 const ContentItems = lazy(() => import("./pages/ContentItems"));
