@@ -148,19 +148,23 @@ export function useAdvancedPerformanceMonitor() {
     return suggestions;
   }, [generatePerformanceReport, thresholds]);
 
-  // Automated performance monitoring
+  // Automated performance monitoring - DISABLED TO FIX ROUTING ISSUES
   useEffect(() => {
-    const monitoringInterval = setInterval(() => {
-      const report = generatePerformanceReport();
-      
-      if (report.issues.length > 0) {
-        console.group('Performance Issues Detected');
-        report.issues.forEach(issue => console.warn(issue));
-        console.groupEnd();
-      }
-    }, 30 * 1000); // Check every 30 seconds
+    // Only enable in development and reduce frequency significantly
+    if (process.env.NODE_ENV === 'development') {
+      const monitoringInterval = setInterval(() => {
+        const report = generatePerformanceReport();
+        
+        // Only log critical issues to prevent console spam
+        if (report.issues.some(issue => issue.includes('High memory'))) {
+          console.group('Critical Performance Issues');
+          report.issues.filter(issue => issue.includes('High memory')).forEach(issue => console.warn(issue));
+          console.groupEnd();
+        }
+      }, 300 * 1000); // Check every 5 minutes instead of 30 seconds
 
-    return () => clearInterval(monitoringInterval);
+      return () => clearInterval(monitoringInterval);
+    }
   }, [generatePerformanceReport]);
 
   return {

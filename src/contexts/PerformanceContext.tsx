@@ -40,28 +40,36 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
     prefetchByRoute(location.pathname);
   }, [location.pathname, prefetchByRoute]);
 
-  // Enhanced Query Client monitoring
+  // Enhanced Query Client monitoring - THROTTLED TO REDUCE INTERFERENCE
   useEffect(() => {
-    const queryCache = queryClient.getQueryCache();
-    
-    const unsubscribe = queryCache.subscribe((event) => {
-      if (event.type === 'observerAdded') {
-        trackCacheHit();
-      } else if (event.type === 'added') {
-        trackCacheMiss();
-      }
-    });
+    // Only enable detailed cache monitoring in development
+    if (process.env.NODE_ENV === 'development') {
+      const queryCache = queryClient.getQueryCache();
+      
+      let cacheEventCount = 0;
+      const unsubscribe = queryCache.subscribe((event) => {
+        cacheEventCount++;
+        // Only track every 10th event to reduce overhead
+        if (cacheEventCount % 10 === 0) {
+          if (event.type === 'observerAdded') {
+            trackCacheHit();
+          } else if (event.type === 'added') {
+            trackCacheMiss();
+          }
+        }
+      });
 
-    return unsubscribe;
+      return unsubscribe;
+    }
   }, [queryClient, trackCacheHit, trackCacheMiss]);
 
-  // Global performance monitoring
+  // Global performance monitoring - DISABLED TO PREVENT CONSOLE SPAM
   useEffect(() => {
-    // Monitor long tasks
-    if ('PerformanceObserver' in window) {
+    // Only monitor long tasks in development and with higher threshold
+    if (process.env.NODE_ENV === 'development' && 'PerformanceObserver' in window) {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (entry.duration > 50) { // Tasks longer than 50ms
+          if (entry.duration > 200) { // Only warn for tasks longer than 200ms
             console.warn(`Long task detected: ${entry.duration.toFixed(2)}ms`);
           }
         }
