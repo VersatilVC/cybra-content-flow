@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function TodoSection() {
   const { data: todos, isLoading } = useDashboardTodos();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -66,7 +68,7 @@ export function TodoSection() {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => window.location.href = '/content-ideas?status=processed'}
+                onClick={() => navigate('/content-ideas?status=processed')}
               >
                 View All
                 <ChevronRight className="w-3 h-3 ml-1" />
@@ -85,7 +87,7 @@ export function TodoSection() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => window.location.href = `/content-ideas?expand=${idea.id}&action=review`}
+                      onClick={() => navigate(`/content-ideas?expand=${idea.id}&action=review`)}
                     >
                       Review
                     </Button>
@@ -108,7 +110,7 @@ export function TodoSection() {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => window.location.href = '/content-briefs?status=ready,draft'}
+                onClick={() => navigate('/content-briefs?status=ready,draft')}
               >
                 View All
                 <ChevronRight className="w-3 h-3 ml-1" />
@@ -132,7 +134,7 @@ export function TodoSection() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => window.location.href = `/content-briefs?brief=${brief.id}&action=review`}
+                      onClick={() => navigate(`/content-briefs?brief=${brief.id}&action=review`)}
                     >
                       Review
                     </Button>
@@ -155,7 +157,7 @@ export function TodoSection() {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => window.location.href = '/content-items?status=pending,needs_fix'}
+                onClick={() => navigate('/content-items?status=pending,needs_fix')}
               >
                 View All
                 <ChevronRight className="w-3 h-3 ml-1" />
@@ -179,7 +181,7 @@ export function TodoSection() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => window.location.href = `/content-items/${item.id}`}
+                      onClick={() => navigate(`/content-items/${item.id}`)}
                     >
                       Review
                     </Button>

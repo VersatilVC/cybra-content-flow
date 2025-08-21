@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ContentIdea } from '@/types/contentIdeas';
 import ContentIdeaReviewCard from '@/components/ContentIdeaReviewCard';
@@ -20,6 +21,8 @@ export default function ReviewModeView({
   onCreateBrief, 
   isCreatingBrief 
 }: ReviewModeViewProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="mb-6">
@@ -52,7 +55,7 @@ export default function ReviewModeView({
           </Button>
           <Button
             variant="outline"
-            onClick={() => window.location.href = '/content-ideas'}
+            onClick={() => navigate('/content-ideas')}
           >
             View All Ideas
           </Button>
