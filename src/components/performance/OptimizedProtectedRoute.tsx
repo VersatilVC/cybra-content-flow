@@ -17,20 +17,15 @@ const OptimizedProtectedRoute: React.FC<OptimizedProtectedRouteProps> = ({
 }) => {
   const { user, profile, loading, profileLoading, isReady, isAdmin } = useOptimizedAuth();
   const location = useLocation();
-  
-  console.log('🔐 OptimizedProtectedRoute - Auth State:', { 
-    user: !!user, 
-    isReady, 
-    loading, 
-    path: location.pathname 
-  });
 
-  // Show skeleton loading while auth is initializing
-  if (!isReady) {
+  
+
+  // Enhanced loading state handling - wait longer for auth to settle
+  if (!isReady || loading) {
     return <OptimizedLoadingSpinner showSkeleton skeletonType={fallbackSkeleton} />;
   }
 
-  // Redirect to auth if no user
+  // Redirect to auth if no user (only after auth is fully ready)
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }

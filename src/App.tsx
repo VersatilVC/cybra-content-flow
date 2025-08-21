@@ -132,7 +132,9 @@ function AppContentWithProviders() {
                       element={
                         <OptimizedProtectedRoute fallbackSkeleton="content-list">
                           <AppLayout>
-                            <ContentIdeas />
+                            <ErrorBoundary>
+                              <ContentIdeas />
+                            </ErrorBoundary>
                           </AppLayout>
                         </OptimizedProtectedRoute>
                       } 

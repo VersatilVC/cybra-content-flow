@@ -13,6 +13,7 @@ export function useContentIdeas(filters?: ContentIdeaFilters) {
   const { user } = useOptimizedAuthContext();
   const queryClient = useQueryClient();
 
+
   const { data: ideas = [], isLoading, error, refetch } = useQuery({
     queryKey: ['content-ideas', user?.id, filters],
     queryFn: async () => {
