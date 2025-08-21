@@ -6,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Edit } from 'lucide-react';
-import { useContentIdeas, ContentIdea } from '@/hooks/useContentIdeas';
+import { useContentIdeas } from '@/hooks/useContentIdeas';
+import { ContentIdea } from '@/types/contentIdeas';
 
 interface EditIdeaModalProps {
   isOpen: boolean;
