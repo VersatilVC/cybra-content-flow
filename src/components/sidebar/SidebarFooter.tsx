@@ -23,12 +23,12 @@ logger.info('SidebarFooter: Initiating sign out');
   if (loading) {
     return (
       <UISidebarFooter className="border-t border-sidebar-border/50 p-4">
-        <div className="flex items-center gap-3 px-2 py-2">
-          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+        <div className="flex items-center gap-3 px-2 py-2 min-w-0">
+          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center animate-pulse flex-shrink-0">
             <span className="text-white text-sm font-medium">...</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white font-medium text-sm">Loading...</p>
+            <p className="text-white font-medium text-sm truncate">Loading...</p>
           </div>
         </div>
       </UISidebarFooter>
@@ -55,8 +55,8 @@ logger.info('SidebarFooter render:', {
 
   return (
     <UISidebarFooter className="border-t border-sidebar-border/50 p-4">
-      <div className="flex items-center gap-3 px-2 py-2">
-        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+      <div className="flex items-center gap-3 px-2 py-2 min-w-0">
+        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
           <span className="text-white text-sm font-medium">
             {initials}
           </span>
@@ -76,7 +76,7 @@ logger.info('SidebarFooter render:', {
           variant="ghost"
           size="icon"
           onClick={handleSignOut}
-          className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10"
+          className="h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 flex-shrink-0"
         >
           <LogOut className="h-4 w-4" />
         </Button>

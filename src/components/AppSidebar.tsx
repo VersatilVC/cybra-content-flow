@@ -6,7 +6,7 @@ import { SidebarFooter } from "@/components/sidebar/SidebarFooter";
 
 export function AppSidebar() {
   return (
-    <Sidebar className="border-r-0">
+    <Sidebar className="border-r-0 overflow-x-hidden">
       <SidebarHeader />
       <SidebarNavigation />
       <SidebarFooter />

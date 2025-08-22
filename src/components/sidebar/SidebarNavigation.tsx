@@ -198,13 +198,13 @@ export function SidebarNavigation() {
       <SidebarMenuButton 
         asChild 
         isActive={location.pathname === item.url}
-        className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg ml-4"
+        className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg mx-2"
       >
-        <Link to={item.url} className="flex items-center gap-3 px-3 py-2 relative">
-          <item.icon className="w-4 h-4" />
-          <span className="font-medium">{item.title}</span>
+        <Link to={item.url} className="flex items-center gap-3 px-3 py-2 relative min-w-0 w-full">
+          <item.icon className="w-4 h-4 flex-shrink-0" />
+          <span className="font-medium truncate flex-1">{item.title}</span>
           {showBadge && item.title === "Feedback Management" && unreadCount > 0 && (
-            <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+            <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold flex-shrink-0">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
@@ -216,13 +216,13 @@ export function SidebarNavigation() {
   const renderCategoryHeader = (title: string, category: string, isOpen: boolean) => (
     <CollapsibleTrigger 
       onClick={() => toggleCategory(category)}
-      className="flex items-center justify-between w-full p-2 text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-xs font-medium uppercase tracking-wider"
+      className="flex items-center justify-between w-full p-2 mx-2 text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-xs font-medium uppercase tracking-wider min-w-0"
     >
-      <span>{title}</span>
+      <span className="truncate flex-1">{title}</span>
       {isOpen ? (
-        <ChevronDown className="h-3 w-3" />
+        <ChevronDown className="h-3 w-3 flex-shrink-0 ml-2" />
       ) : (
-        <ChevronRight className="h-3 w-3" />
+        <ChevronRight className="h-3 w-3 flex-shrink-0 ml-2" />
       )}
     </CollapsibleTrigger>
   );
