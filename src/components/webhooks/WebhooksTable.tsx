@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { CheckCircle, Clock, Database, Wand2, Zap, Edit } from 'lucide-react';
 
 interface WebhookConfig {
@@ -19,19 +19,19 @@ interface WebhooksTableProps {
   onToggleWebhookStatus: (webhookId: string, currentStatus: boolean) => void;
 }
 
-export function WebhooksTable({
+export const WebhooksTable = memo(function WebhooksTable({
   webhooks,
   isLoading,
   onEditWebhook,
   onToggleWebhookStatus
 }: WebhooksTableProps) {
-  const getWebhookIcon = (webhookType: string) => {
+  const getWebhookIcon = useCallback((webhookType: string) => {
     switch (webhookType) {
       case 'knowledge_base': return <Database className="w-5 h-5 text-purple-600" />;
       case 'derivative_generation': return <Wand2 className="w-5 h-5 text-purple-600" />;
       default: return <Zap className="w-5 h-5 text-purple-600" />;
     }
-  };
+  }, []);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -133,4 +133,4 @@ export function WebhooksTable({
       </div>
     </div>
   );
-}
+});

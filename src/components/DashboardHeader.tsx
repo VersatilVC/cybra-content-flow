@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, memo, useCallback } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -12,7 +12,7 @@ interface DashboardHeaderProps {
   subtitle?: string;
 }
 
-export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
+export const DashboardHeader = memo(function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -48,22 +48,22 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
     };
   }, []);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
     setShowResults(value.trim().length >= 2);
-  };
+  }, []);
 
-  const handleSearchFocus = () => {
+  const handleSearchFocus = useCallback(() => {
     if (hasQuery) {
       setShowResults(true);
     }
-  };
+  }, [hasQuery]);
 
-  const handleResultSelect = () => {
+  const handleResultSelect = useCallback(() => {
     setShowResults(false);
     setSearchQuery("");
-  };
+  }, []);
 
   return (
     <header className="border-b bg-white/50 backdrop-blur-sm">
@@ -102,4 +102,4 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
       </div>
     </header>
   );
-}
+});

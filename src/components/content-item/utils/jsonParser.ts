@@ -22,19 +22,25 @@ export function resilientJsonParse(jsonString: string): any {
       return result;
     },
     
-    // Strategy 3: Simple fallback for malformed strings with valid structure
+    // Strategy 3: Safe JSON repair for malformed strings
     () => {
-      console.log('🔧 [Resilient Parser] Strategy 3 - Using simple eval fallback');
-      // Clean the string more aggressively for eval
+      console.log('🔧 [Resilient Parser] Strategy 3 - Using safe JSON repair');
+      
+      // Clean and repair common JSON issues without using eval
       let cleaned = jsonString
         .replace(/\n/g, '\\n')
         .replace(/\r/g, '\\r')
         .replace(/\t/g, '\\t')
-        .replace(/\f/g, '\\f');
+        .replace(/\f/g, '\\f')
+        // Fix common JSON issues
+        .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+        .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Quote unquoted keys
+        .replace(/:\s*'([^']*)'/g, ':"$1"') // Convert single quotes to double quotes
+        .replace(/\\'/g, "'"); // Fix escaped single quotes
       
-      // Use eval as last resort (only for trusted content)
-      const result = eval('(' + cleaned + ')');
-      console.log('✅ [Resilient Parser] Strategy 3 - Eval result:', result);
+      // Try to parse the cleaned JSON
+      const result = JSON.parse(cleaned);
+      console.log('✅ [Resilient Parser] Strategy 3 - Safe JSON repair result:', result);
       return result;
     },
     

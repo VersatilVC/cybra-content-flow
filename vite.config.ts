@@ -19,4 +19,59 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Enable source maps for production debugging
+    sourcemap: mode === 'production' ? 'hidden' : true,
+    
+    // Optimize bundle splitting
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React libraries
+          'react-vendor': ['react', 'react-dom'],
+          
+          // Router and state management
+          'router': ['react-router-dom'],
+          'tanstack': ['@tanstack/react-query'],
+          
+          // UI libraries
+          'ui-vendor': ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          
+          // PDF and file processing (large libraries)
+          'pdf-vendor': ['react-pdf', 'pdfjs-dist'],
+          'file-vendor': ['jszip'],
+          
+          // Supabase
+          'supabase': ['@supabase/supabase-js'],
+          
+          // Charts and visualization
+          'charts': ['recharts'],
+        },
+        
+        // Optimize chunk naming for caching
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId ? path.basename(chunkInfo.facadeModuleId, '.tsx').replace('.', '-') : 'unknown';
+          return `assets/[name]-[hash].js`;
+        },
+      },
+    },
+    
+    // Set chunk size warning limit
+    chunkSizeWarningLimit: 1000,
+    
+    // Enable minification
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: true,
+      },
+    },
+  },
+  
+  // Enable build analysis
+  define: {
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    __BUNDLE_ANALYZER__: JSON.stringify(process.env.ANALYZE === 'true'),
+  },
 }));

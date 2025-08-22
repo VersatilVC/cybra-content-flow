@@ -16,7 +16,6 @@ import { PerformanceProvider } from "@/contexts/PerformanceContext";
 import { useMemoryOptimizer } from "@/components/performance/MemoryOptimizer";
 
 import { lazy, Suspense } from "react";
-import ContentIdeas from "./pages/ContentIdeas";
 
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -26,6 +25,7 @@ const KnowledgeBases = lazy(() => import("./pages/KnowledgeBases"));
 const Chat = lazy(() => import("./pages/Chat"));
 
 const ContentBriefs = lazy(() => import("./pages/ContentBriefs"));
+const ContentIdeas = lazy(() => import("./pages/ContentIdeas"));
 const ContentItems = lazy(() => import("./pages/ContentItems"));
 const ContentItemView = lazy(() => import("./pages/ContentItemView"));
 const GeneralContent = lazy(() => import("./pages/GeneralContent"));
