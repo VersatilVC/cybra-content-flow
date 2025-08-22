@@ -1,8 +1,32 @@
 
 import { sanitizeJsonString } from './jsonSanitizer';
 
-// Fallback JSON parsing with multiple strategies
-export function resilientJsonParse(jsonString: string): any {
+/**
+ * Represents the expected structure of parsed social media content
+ * Used for content derivatives across LinkedIn, X (Twitter), and other platforms
+ */
+interface ParsedSocialContent {
+  linkedin?: {
+    text: string;
+    image_url?: string;
+  };
+  x?: {
+    text: string;
+    image_url?: string;
+  };
+  twitter?: {
+    text: string;
+    image_url?: string;
+  };
+}
+
+/**
+ * Resilient JSON parsing with multiple fallback strategies
+ * Attempts to parse potentially malformed JSON strings from AI-generated content
+ * @param jsonString - The JSON string to parse
+ * @returns Parsed social content object or null if parsing fails
+ */
+export function resilientJsonParse(jsonString: string): ParsedSocialContent | null {
   console.log('🔄 [Resilient Parser] Attempting resilient JSON parse');
   console.log('🔍 [Resilient Parser] Input preview:', jsonString.substring(0, 300) + '...');
   
@@ -52,7 +76,7 @@ export function resilientJsonParse(jsonString: string): any {
       const linkedinMatch = jsonString.match(/"linkedin"\s*:\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}/s);
       const xMatch = jsonString.match(/"x"\s*:\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}/s);
       
-      const result: any = {};
+      const result: ParsedSocialContent = {};
       
       if (linkedinMatch) {
         const linkedinContent = linkedinMatch[1];

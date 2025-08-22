@@ -37,8 +37,7 @@ export default defineConfig(({ mode }) => ({
           // UI libraries
           'ui-vendor': ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
           
-          // PDF and file processing (large libraries)
-          'pdf-vendor': ['react-pdf', 'pdfjs-dist'],
+          // File processing libraries
           'file-vendor': ['jszip'],
           
           // Supabase
@@ -56,17 +55,11 @@ export default defineConfig(({ mode }) => ({
       },
     },
     
-    // Set chunk size warning limit
+    // Warn about chunks larger than 1MB (1000kb) to prevent bundle bloat and slow loading
     chunkSizeWarningLimit: 1000,
     
-    // Enable minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: true,
-      },
-    },
+    // Enable default Vite minification (esbuild) for fast builds
+    minify: true,
   },
   
   // Enable build analysis

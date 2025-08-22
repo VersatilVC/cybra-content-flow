@@ -5,6 +5,30 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, CheckCircle, Clock, XCircle, Loader2 } from 'lucide-react';
 
+/**
+ * Enum for content status types to ensure type safety
+ */
+export enum ContentStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing', 
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  DRAFT = 'draft',
+  PUBLISHED = 'published'
+}
+
+/**
+ * Enum for button variant types to prevent typos
+ */
+export enum ButtonVariant {
+  DEFAULT = 'default',
+  DESTRUCTIVE = 'destructive',
+  OUTLINE = 'outline',
+  SECONDARY = 'secondary',
+  GHOST = 'ghost',
+  LINK = 'link'
+}
+
 // Standard Loading States
 export const LoadingSpinner = memo(function LoadingSpinner({ 
   size = 'default',
@@ -99,32 +123,32 @@ export const StatusBadge = memo(function StatusBadge({
   status,
   variant = 'default'
 }: {
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'draft' | 'published';
+  status: ContentStatus;
   variant?: 'default' | 'outline';
 }) {
   const getStatusConfig = () => {
     switch (status) {
-      case 'completed':
-      case 'published':
+      case ContentStatus.COMPLETED:
+      case ContentStatus.PUBLISHED:
         return {
           icon: CheckCircle,
           className: 'bg-green-100 text-green-800 hover:bg-green-200',
           text: status
         };
-      case 'processing':
+      case ContentStatus.PROCESSING:
         return {
           icon: Clock,
           className: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
           text: 'Processing'
         };
-      case 'pending':
-      case 'draft':
+      case ContentStatus.PENDING:
+      case ContentStatus.DRAFT:
         return {
           icon: AlertCircle,
           className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
           text: status
         };
-      case 'failed':
+      case ContentStatus.FAILED:
         return {
           icon: XCircle,
           className: 'bg-red-100 text-red-800 hover:bg-red-200',
@@ -206,7 +230,7 @@ export const ActionButtonGroup = memo(function ActionButtonGroup({
   actions: Array<{
     label: string;
     onClick: () => void;
-    variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+    variant?: ButtonVariant;
     icon?: React.ComponentType<{ className?: string }>;
     disabled?: boolean;
   }>;
@@ -314,14 +338,5 @@ export const PageHeader = memo(function PageHeader({
   );
 });
 
-// Export all components for easy usage
-export const StandardComponents = {
-  LoadingSpinner,
-  LoadingSkeleton,
-  StatusBadge,
-  EmptyState,
-  DataTableRow,
-  ActionButtonGroup,
-  SearchFilterBar,
-  PageHeader
-};
+// Note: Individual component exports above are sufficient
+// No need for a wrapper object that adds no value

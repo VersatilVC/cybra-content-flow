@@ -12,178 +12,28 @@ import {
   CheckCircle,
   RefreshCw
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/common/StandardComponents';
+import { PerformanceService, type PerformanceMetrics } from '@/services/performanceService';
 
-interface PerformanceMetrics {
-  bundleSize: {
-    total: string;
-    chunks: Array<{ name: string; size: string; }>;
-  };
-  database: {
-    queryPerformance: any;
-    cacheHitRatio: number;
-    slowQueries: number;
-    connectionCount: number;
-  };
-  frontend: {
-    renderTime: number;
-    bundleLoadTime: number;
-    memoryUsage: number;
-    errorRate: number;
-  };
-  optimization: {
-    score: number;
-    recommendations: string[];
-  };
-}
-
-interface DatabasePerformance {
-  total_queries: number;
-  avg_query_time_ms: number;
-  max_query_time_ms: number;
-  slow_queries_count: number;
-  performance_score: string;
-  timestamp: string;
-}
-
-interface CachePerformance {
-  cache_hit_ratio: number;
-  shared_blks_hit: number;
-  shared_blks_read: number;
-  recommendation: string;
-  timestamp: string;
-}
+// All interfaces moved to performanceService.ts for better organization
 
 export const PerformanceDashboard = memo(function PerformanceDashboard() {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const fetchDatabaseMetrics = async () => {
-    try {
-      // Fetch query performance metrics
-      const { data: queryData, error: queryError } = await supabase
-        .rpc('monitor_query_performance');
-      
-      if (queryError) throw queryError;
-      
-      // Fetch cache optimization metrics
-      const { data: cacheData, error: cacheError } = await supabase
-        .rpc('optimize_query_cache');
-      
-      if (cacheError) throw cacheError;
-
-      return {
-        queryPerformance: queryData[0] as DatabasePerformance,
-        cachePerformance: cacheData as CachePerformance
-      };
-    } catch (error) {
-      console.error('Error fetching database metrics:', error);
-      return null;
-    }
-  };
-
-  const measureFrontendPerformance = (): PerformanceMetrics['frontend'] => {
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    const memory = (performance as any).memory;
-    
-    return {
-      renderTime: navigation ? navigation.loadEventEnd - navigation.loadEventStart : 0,
-      bundleLoadTime: navigation ? navigation.responseEnd - navigation.requestStart : 0,
-      memoryUsage: memory ? memory.usedJSHeapSize / 1024 / 1024 : 0, // MB
-      errorRate: 0 // This would be tracked by error monitoring service
-    };
-  };
-
-  const calculateOptimizationScore = (
-    dbPerformance: DatabasePerformance | null,
-    cachePerformance: CachePerformance | null,
-    frontendMetrics: PerformanceMetrics['frontend']
-  ): PerformanceMetrics['optimization'] => {
-    let score = 100;
-    const recommendations: string[] = [];
-
-    // Database performance scoring
-    if (dbPerformance) {
-      if (dbPerformance.avg_query_time_ms > 500) {
-        score -= 20;
-        recommendations.push('Optimize slow database queries');
-      }
-      if (dbPerformance.slow_queries_count > 10) {
-        score -= 15;
-        recommendations.push('Review and optimize slow query patterns');
-      }
-    }
-
-    // Cache performance scoring
-    if (cachePerformance) {
-      if (cachePerformance.cache_hit_ratio < 90) {
-        score -= 25;
-        recommendations.push('Improve database cache hit ratio');
-      }
-    }
-
-    // Frontend performance scoring
-    if (frontendMetrics.renderTime > 3000) {
-      score -= 20;
-      recommendations.push('Optimize frontend rendering performance');
-    }
-    if (frontendMetrics.memoryUsage > 100) {
-      score -= 10;
-      recommendations.push('Monitor and optimize memory usage');
-    }
-
-    if (recommendations.length === 0) {
-      recommendations.push('Performance is optimal');
-    }
-
-    return {
-      score: Math.max(0, score),
-      recommendations
-    };
-  };
-
-  const getBundleMetrics = (): PerformanceMetrics['bundleSize'] => {
-    // This would be populated from build-time analysis
-    // For now, showing placeholder data
-    return {
-      total: '2.1 MB',
-      chunks: [
-        { name: 'react-vendor', size: '456 KB' },
-        { name: 'ui-vendor', size: '234 KB' },
-        { name: 'pdf-vendor', size: '1.2 MB' },
-        { name: 'main', size: '210 KB' }
-      ]
-    };
-  };
+  // All business logic moved to PerformanceService for better separation of concerns
 
   const refreshMetrics = async () => {
     setLoading(true);
     try {
-      const dbMetrics = await fetchDatabaseMetrics();
-      const frontendMetrics = measureFrontendPerformance();
-      const bundleMetrics = getBundleMetrics();
+      // Use the service layer instead of direct database calls
+      const comprehensiveMetrics = await PerformanceService.getComprehensiveMetrics();
       
-      const optimization = calculateOptimizationScore(
-        dbMetrics?.queryPerformance || null,
-        dbMetrics?.cachePerformance || null,
-        frontendMetrics
-      );
-
-      setMetrics({
-        bundleSize: bundleMetrics,
-        database: {
-          queryPerformance: dbMetrics?.queryPerformance || null,
-          cacheHitRatio: dbMetrics?.cachePerformance?.cache_hit_ratio || 0,
-          slowQueries: dbMetrics?.queryPerformance?.slow_queries_count || 0,
-          connectionCount: 0 // Would be fetched from connection analysis
-        },
-        frontend: frontendMetrics,
-        optimization
-      });
-
-      setLastRefresh(new Date());
+      if (comprehensiveMetrics) {
+        setMetrics(comprehensiveMetrics);
+        setLastRefresh(new Date());
+      }
     } catch (error) {
       console.error('Error refreshing metrics:', error);
     } finally {
