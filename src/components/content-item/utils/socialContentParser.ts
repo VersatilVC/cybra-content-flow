@@ -54,7 +54,7 @@ export function parseSocialContent(content: string | object, contentType?: strin
         if (parsed.linkedin) {
           if (typeof parsed.linkedin === 'string') {
             result.linkedin = parsed.linkedin;
-            console.log('✅ [Social Parser] LinkedIn string content processed:', parsed.linkedin.length, 'chars');
+            console.log('✅ [Social Parser] LinkedIn string content processed:', (parsed.linkedin as string).length, 'chars');
           } else if (typeof parsed.linkedin === 'object' && parsed.linkedin.text) {
             result.linkedin = {
               text: parsed.linkedin.text,
@@ -75,7 +75,7 @@ export function parseSocialContent(content: string | object, contentType?: strin
         if (xContent) {
           if (typeof xContent === 'string') {
             result.x = xContent;
-            console.log('✅ [Social Parser] X string content processed:', xContent.length, 'chars');
+            console.log('✅ [Social Parser] X string content processed:', (xContent as string).length, 'chars');
           } else if (typeof xContent === 'object' && xContent.text) {
             result.x = {
               text: xContent.text,
