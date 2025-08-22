@@ -6,10 +6,12 @@ import { SidebarFooter } from "@/components/sidebar/SidebarFooter";
 
 export function AppSidebar() {
   return (
-    <Sidebar className="border-r-0 overflow-x-hidden">
-      <SidebarHeader />
-      <SidebarNavigation />
-      <SidebarFooter />
+    <Sidebar className="border-r-0">
+      <div className="flex h-full w-full flex-col overflow-x-hidden">
+        <SidebarHeader />
+        <SidebarNavigation />
+        <SidebarFooter />
+      </div>
     </Sidebar>
   );
 }

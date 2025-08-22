@@ -235,7 +235,7 @@ export function SidebarNavigation() {
   });
 
   return (
-    <SidebarContent className="px-3 py-4 space-y-4">
+    <SidebarContent className="px-3 py-4 space-y-4 overflow-x-hidden overflow-y-auto">
       {/* Dashboard - Always visible at top */}
       <SidebarGroup>
         <SidebarGroupContent>
@@ -244,11 +244,11 @@ export function SidebarNavigation() {
               <SidebarMenuButton 
                 asChild 
                 isActive={location.pathname === "/dashboard"}
-                className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
+                className="text-white/90 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg mx-2"
               >
-                <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2">
-                  <Home className="w-4 h-4" />
-                  <span className="font-medium">Dashboard</span>
+                <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2 min-w-0 w-full">
+                  <Home className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-medium truncate flex-1">Dashboard</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -258,9 +258,9 @@ export function SidebarNavigation() {
 
       {/* Knowledge Base Category */}
       <Collapsible open={categoryStates.knowledgeBase} onOpenChange={(open) => setCategoryStates(prev => ({ ...prev, knowledgeBase: open }))}>
-        <div className="space-y-2">
+        <div className="space-y-2 overflow-hidden">
           {renderCategoryHeader("Knowledge Base", "knowledgeBase", categoryStates.knowledgeBase)}
-          <CollapsibleContent className="space-y-1">
+          <CollapsibleContent className="space-y-1 overflow-hidden">
             <SidebarMenu>
               {knowledgeBaseItems.map(item => renderMenuItem(item))}
             </SidebarMenu>
@@ -270,9 +270,9 @@ export function SidebarNavigation() {
 
       {/* Content Management Category */}
       <Collapsible open={categoryStates.contentManagement} onOpenChange={(open) => setCategoryStates(prev => ({ ...prev, contentManagement: open }))}>
-        <div className="space-y-2">
+        <div className="space-y-2 overflow-hidden">
           {renderCategoryHeader("Content Management", "contentManagement", categoryStates.contentManagement)}
-          <CollapsibleContent className="space-y-1">
+          <CollapsibleContent className="space-y-1 overflow-hidden">
             <SidebarMenu>
               {contentManagementItems.map(item => renderMenuItem(item))}
             </SidebarMenu>
@@ -282,9 +282,9 @@ export function SidebarNavigation() {
 
       {/* PR Management Category */}
       <Collapsible open={categoryStates.prManagement} onOpenChange={(open) => setCategoryStates(prev => ({ ...prev, prManagement: open }))}>
-        <div className="space-y-2">
+        <div className="space-y-2 overflow-hidden">
           {renderCategoryHeader("PR Management", "prManagement", categoryStates.prManagement)}
-          <CollapsibleContent className="space-y-1">
+          <CollapsibleContent className="space-y-1 overflow-hidden">
             <SidebarMenu>
               {prManagementItems.map(item => renderMenuItem(item))}
             </SidebarMenu>
@@ -294,17 +294,17 @@ export function SidebarNavigation() {
 
       {/* Feedback Section - Available to All Users */}
       <SidebarGroup>
-        <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2">
+        <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2 mx-2 truncate">
           Feedback
         </SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem>
               <SubmitFeedbackModal>
-                <SidebarMenuButton className="text-white/90 hover:text-white hover:bg-white/10 rounded-lg w-full justify-start">
-                  <div className="flex items-center gap-3 px-3 py-2 w-full">
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="font-medium">Submit Feedback</span>
+                <SidebarMenuButton className="text-white/90 hover:text-white hover:bg-white/10 rounded-lg mx-2 justify-start min-w-0">
+                  <div className="flex items-center gap-3 px-3 py-2 w-full min-w-0">
+                    <MessageSquare className="w-4 h-4 flex-shrink-0" />
+                    <span className="font-medium truncate flex-1">Submit Feedback</span>
                   </div>
                 </SidebarMenuButton>
               </SubmitFeedbackModal>
@@ -316,9 +316,9 @@ export function SidebarNavigation() {
       {/* Administration Category - Admin Only */}
       {!loading && isAdmin && (
         <Collapsible open={categoryStates.administration} onOpenChange={(open) => setCategoryStates(prev => ({ ...prev, administration: open }))}>
-          <div className="space-y-2">
+          <div className="space-y-2 overflow-hidden">
             {renderCategoryHeader("Administration", "administration", categoryStates.administration)}
-            <CollapsibleContent className="space-y-1">
+            <CollapsibleContent className="space-y-1 overflow-hidden">
               <SidebarMenu>
                 {adminItems.map(item => renderMenuItem(item, true))}
               </SidebarMenu>
@@ -329,7 +329,7 @@ export function SidebarNavigation() {
 
       {loading && (
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2">
+          <SidebarGroupLabel className="text-white/70 uppercase tracking-wider text-xs font-medium mb-2 mx-2 truncate">
             Loading permissions...
           </SidebarGroupLabel>
         </SidebarGroup>
