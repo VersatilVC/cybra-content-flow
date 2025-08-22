@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => ({
           'ui-vendor': ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
           
           // PDF and file processing (large libraries)
-          'pdf-vendor': ['react-pdf', 'pdfjs-dist'],
+          'pdf-vendor': ['@react-pdf/renderer'],
           'file-vendor': ['jszip'],
           
           // Supabase
