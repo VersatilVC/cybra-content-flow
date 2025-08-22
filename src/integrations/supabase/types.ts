@@ -67,6 +67,33 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          accessed_at: string
+          context_info: Json | null
+          id: string
+          operation_type: string
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          accessed_at?: string
+          context_info?: Json | null
+          id?: string
+          operation_type: string
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          accessed_at?: string
+          context_info?: Json | null
+          id?: string
+          operation_type?: string
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       auto_generation_schedules: {
         Row: {
           created_at: string

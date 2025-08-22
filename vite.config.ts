@@ -37,7 +37,8 @@ export default defineConfig(({ mode }) => ({
           // UI libraries
           'ui-vendor': ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
           
-          // File processing libraries
+          // PDF and file processing (large libraries)
+          'pdf-vendor': ['@react-pdf/renderer'],
           'file-vendor': ['jszip'],
           
           // Supabase
@@ -58,8 +59,8 @@ export default defineConfig(({ mode }) => ({
     // Warn about chunks larger than 1MB (1000kb) to prevent bundle bloat and slow loading
     chunkSizeWarningLimit: 1000,
     
-    // Enable default Vite minification (esbuild) for fast builds
-    minify: true,
+    // Enable minification only for production
+    minify: mode === 'production' ? 'esbuild' : false,
   },
   
   // Enable build analysis

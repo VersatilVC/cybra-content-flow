@@ -23,6 +23,7 @@ export const PerformanceDashboard = memo(function PerformanceDashboard() {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   // All business logic moved to PerformanceService for better separation of concerns
+  // Note: Service layer uses mock data until database functions are available
 
   const refreshMetrics = async () => {
     setLoading(true);

@@ -40,8 +40,8 @@ class ComponentErrorBoundary extends Component<Props, State> {
     }
     
     // Report to error tracking service (if available)
-    if (window.gtag) {
-      window.gtag('event', 'exception', {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'exception', {
         description: `${componentName}: ${error.message}`,
         fatal: false,
       });
@@ -123,8 +123,8 @@ export function useErrorHandler() {
   return React.useCallback((error: Error, errorInfo?: ErrorInfo) => {
     logger.error('Manual error report:', error, errorInfo);
     
-    if (window.gtag) {
-      window.gtag('event', 'exception', {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'exception', {
         description: error.message,
         fatal: false,
       });
