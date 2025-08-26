@@ -1,42 +1,21 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Eye, Mail, User, Building2, Edit, Send, Check, Clock, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { PRPitch } from "@/hooks/usePRManagement";
 
-interface PRPitch {
-  id: string;
-  status: string;
-  created_at: string;
-  journalist?: {
-    name: string;
-    title: string;
-    publication: string;
-    email?: string;
-  };
-  content_item?: {
-    title: string;
-    content_type: string;
-  };
-}
-
-interface PRPitchesTableProps {
+interface PRPitchTableProps {
   pitches: PRPitch[];
   onPreview: (pitch: PRPitch) => void;
   onEmail: (pitch: PRPitch) => void;
   onStatusChange: (pitchId: string, status: string) => void;
-  onJournalistClick?: (journalist: any) => void;
+  onJournalistClick: (journalist: any) => void;
 }
 
-const PRPitchesTable: React.FC<PRPitchesTableProps> = memo(({
-  pitches,
-  onPreview,
-  onEmail,
-  onStatusChange,
-  onJournalistClick
-}) => {
+const PRPitchesTable = memo(({ pitches, onPreview, onEmail, onStatusChange, onJournalistClick }: PRPitchTableProps) => {
   const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'draft': return 'bg-secondary text-secondary-foreground';
@@ -57,13 +36,32 @@ const PRPitchesTable: React.FC<PRPitchesTableProps> = memo(({
     }
   }, []);
 
+  const getJournalistName = (journalist: any) => {
+    if (!journalist) return 'Unknown';
+    return typeof journalist === 'object' ? journalist.name : 'Unknown';
+  };
+
+  const getJournalistEmail = (journalist: any) => {
+    if (!journalist || typeof journalist !== 'object') return null;
+    return journalist.email || null;
+  };
+
+  const getJournalistPublication = (journalist: any) => {
+    if (!journalist || typeof journalist !== 'object') return 'Unknown';
+    return journalist.publication || 'Unknown';
+  };
+
+  const getJournalistTitle = (journalist: any) => {
+    if (!journalist || typeof journalist !== 'object') return '';
+    return journalist.title || '';
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Journalist</TableHead>
-            <TableHead>Publication</TableHead>
             <TableHead>Content Item</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created</TableHead>
@@ -73,7 +71,7 @@ const PRPitchesTable: React.FC<PRPitchesTableProps> = memo(({
         <TableBody>
           {pitches.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8">
+              <TableCell colSpan={5} className="text-center py-8">
                 <div className="flex flex-col items-center">
                   <User className="w-8 h-8 text-muted-foreground mb-2" />
                   <p className="text-muted-foreground">No PR pitches found</p>
@@ -84,34 +82,30 @@ const PRPitchesTable: React.FC<PRPitchesTableProps> = memo(({
             pitches.map((pitch) => (
               <TableRow key={pitch.id} className="hover:bg-muted/50">
                 <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      {onJournalistClick && pitch.journalist ? (
-                        <button
-                          onClick={() => onJournalistClick(pitch.journalist)}
-                          className="font-medium text-primary hover:underline text-left"
-                        >
-                          {pitch.journalist.name}
-                        </button>
-                      ) : (
-                        <p className="font-medium">{pitch.journalist?.name || 'Unknown'}</p>
-                      )}
-                      <p className="text-sm text-muted-foreground">{pitch.journalist?.title}</p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{pitch.journalist?.publication || 'Unknown'}</span>
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <button 
+                        onClick={() => onJournalistClick(pitch.journalist)}
+                        className="font-medium hover:text-primary transition-colors"
+                      >
+                        {getJournalistName(pitch.journalist)}
+                      </button>
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Building2 className="w-3 h-3" />
+                        {getJournalistPublication(pitch.journalist)}
+                      </div>
+                      {getJournalistTitle(pitch.journalist) && (
+                        <div className="text-xs text-muted-foreground">
+                          {getJournalistTitle(pitch.journalist)}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div>
-                    <p className="font-medium text-sm">{pitch.content_item?.title || 'Unknown'}</p>
+                    <p className="font-medium text-sm">{pitch.content_item?.title || 'Unknown Content'}</p>
                     <p className="text-xs text-muted-foreground">{pitch.content_item?.content_type}</p>
                   </div>
                 </TableCell>
@@ -129,28 +123,29 @@ const PRPitchesTable: React.FC<PRPitchesTableProps> = memo(({
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
                     <Button 
-                      size="sm" 
                       variant="ghost" 
+                      size="sm" 
                       onClick={() => onPreview(pitch)}
-                      className="h-8 w-8 p-0"
+                      className="flex items-center gap-2"
                     >
                       <Eye className="w-4 h-4" />
+                      Preview
                     </Button>
-                    {pitch.journalist?.email && (
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        onClick={() => onEmail(pitch)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Mail className="w-4 h-4" />
-                      </Button>
-                    )}
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onEmail(pitch)}
+                      disabled={!getJournalistEmail(pitch.journalist)}
+                      className="flex items-center gap-2"
+                    >
+                      <Mail className="w-4 h-4" />
+                      Email
+                    </Button>
                     <Select
                       value={pitch.status}
                       onValueChange={(newStatus) => onStatusChange(pitch.id, newStatus)}
                     >
-                      <SelectTrigger className="w-24 h-8">
+                      <SelectTrigger className="w-32">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

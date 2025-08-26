@@ -63,7 +63,13 @@ export interface PRPitch {
   notes?: string;
   created_at: string;
   updated_at: string;
-  journalist?: Journalist;
+  source_type?: string;
+  source_id?: string;
+  journalist?: Journalist | {
+    name: string;
+    publication: string;
+    email: string;
+  };
   content_item?: {
     id: string;
     title: string;
@@ -79,6 +85,8 @@ export interface PRCampaign {
   status: string;
   created_at: string;
   updated_at: string;
+  source_type?: string;
+  source_id?: string;
   content_item?: {
     id: string;
     title: string;
@@ -120,9 +128,9 @@ export const usePRManagement = () => {
           )
         `)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
-      return data as PRCampaign[];
+      return (data || []) as PRCampaign[];
     }
   });
 
@@ -203,22 +211,44 @@ export const usePRManagement = () => {
     }
   });
 
-  // Generate PR pitches for content item
+  // Generate PR pitches mutation
   const generatePRPitchesMutation = useMutation({
-    mutationFn: async ({ contentItemId, title }: { contentItemId: string; title: string }) => {
+    mutationFn: async ({ 
+      sourceType, 
+      sourceId, 
+      title 
+    }: { 
+      sourceType?: 'content_item' | 'general_content'; 
+      sourceId: string; 
+      title: string;
+      // Legacy support
+      contentItemId?: string;
+    }) => {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Handle legacy parameters
+      const finalSourceType = sourceType || 'content_item';
+      const finalSourceId = sourceId;
+
       // First create a PR campaign
+      const campaignData: any = {
+        title: `PR Campaign: ${title}`,
+        status: 'processing',
+        user_id: user.id,
+        source_type: finalSourceType,
+        source_id: finalSourceId
+      };
+
+      // For backward compatibility, also set content_item_id if it's a content item
+      if (finalSourceType === 'content_item') {
+        campaignData.content_item_id = finalSourceId;
+      }
+
       const { data: campaign, error: campaignError } = await supabase
         .from('pr_campaigns')
-        .insert({
-          content_item_id: contentItemId,
-          title: `PR Campaign: ${title}`,
-          status: 'processing',
-          user_id: user.id
-        })
+        .insert(campaignData)
         .select()
         .single();
       
@@ -230,10 +260,13 @@ export const usePRManagement = () => {
           webhook_type: 'pr_pitch_generation',
           payload: {
             campaign_id: campaign.id,
-            content_item_id: contentItemId,
+            source_type: finalSourceType,
+            source_id: finalSourceId,
             title: title,
             user_id: user.id,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            // Legacy support
+            ...(finalSourceType === 'content_item' && { content_item_id: finalSourceId })
           }
         }
       });

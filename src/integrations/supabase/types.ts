@@ -1067,6 +1067,8 @@ export type Database = {
           content_item_id: string
           created_at: string
           id: string
+          source_id: string | null
+          source_type: string | null
           status: string
           title: string
           updated_at: string
@@ -1076,6 +1078,8 @@ export type Database = {
           content_item_id: string
           created_at?: string
           id?: string
+          source_id?: string | null
+          source_type?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -1085,6 +1089,8 @@ export type Database = {
           content_item_id?: string
           created_at?: string
           id?: string
+          source_id?: string | null
+          source_type?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -1113,6 +1119,8 @@ export type Database = {
           pr_campaign_id: string
           responded_at: string | null
           sent_at: string | null
+          source_id: string | null
+          source_type: string | null
           status: string
           subject_line: string | null
           updated_at: string
@@ -1130,6 +1138,8 @@ export type Database = {
           pr_campaign_id: string
           responded_at?: string | null
           sent_at?: string | null
+          source_id?: string | null
+          source_type?: string | null
           status?: string
           subject_line?: string | null
           updated_at?: string
@@ -1147,6 +1157,8 @@ export type Database = {
           pr_campaign_id?: string
           responded_at?: string | null
           sent_at?: string | null
+          source_id?: string | null
+          source_type?: string | null
           status?: string
           subject_line?: string | null
           updated_at?: string

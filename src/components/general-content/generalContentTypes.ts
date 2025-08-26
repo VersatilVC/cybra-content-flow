@@ -43,6 +43,50 @@ export const generalContentTypes = {
       icon: 'FileText'
     }
   ],
+  Reports: [
+    {
+      type: 'industry_report',
+      title: 'Industry Report',
+      description: 'Comprehensive industry analysis',
+      content_type: 'text',
+      icon: 'FileText'
+    },
+    {
+      type: 'research_report',
+      title: 'Research Report',
+      description: 'Detailed research findings',
+      content_type: 'text',
+      icon: 'FileText'
+    },
+    {
+      type: 'quarterly_report',
+      title: 'Quarterly Report',
+      description: 'Business performance analysis',
+      content_type: 'text',
+      icon: 'FileText'
+    },
+    {
+      type: 'market_analysis',
+      title: 'Market Analysis',
+      description: 'Market trends and insights',
+      content_type: 'text',
+      icon: 'FileText'
+    },
+    {
+      type: 'technical_report',
+      title: 'Technical Report',
+      description: 'Technical specifications and findings',
+      content_type: 'text',
+      icon: 'FileText'
+    },
+    {
+      type: 'survey_report',
+      title: 'Survey Report',
+      description: 'Survey results and analysis',
+      content_type: 'text',
+      icon: 'FileText'
+    }
+  ],
   Social: [
     {
       type: 'linkedin_post',
