@@ -1,22 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Megaphone, FileText, Clock, AlertCircle, BarChart3 } from 'lucide-react';
+import { Megaphone, FileText, Clock, AlertCircle, BarChart3, Upload, CloudUpload } from 'lucide-react';
 import { useTopicalBlogPosts } from '@/hooks/useTopicalBlogPosts';
 import { useReports } from '@/hooks/useReports';
 import { usePRManagement } from '@/hooks/usePRManagement';
+import { useToast } from '@/hooks/use-toast';
+import { uploadReportToN8N } from '@/lib/n8nWebhookHandler';
 import { formatDistanceToNow } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 const PRPitchGenerationSection = () => {
   const [selectedBlogPost, setSelectedBlogPost] = useState<string>('');
   const [selectedReport, setSelectedReport] = useState<string>('');
   const [sourceType, setSourceType] = useState<'content_item' | 'general_content'>('content_item');
+  const [isUploadingReport, setIsUploadingReport] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { data: blogPosts = [], isLoading: blogPostsLoading } = useTopicalBlogPosts();
   const { data: reports = [], isLoading: reportsLoading } = useReports();
   const { generatePRPitches, isGeneratingPitches, campaigns } = usePRManagement();
+  const { toast } = useToast();
 
   const selectedPost = blogPosts.find(post => post.id === selectedBlogPost);
   const selectedReportItem = reports.find(report => report.id === selectedReport);
@@ -39,6 +45,51 @@ const PRPitchGenerationSection = () => {
     }
   };
 
+  const handleFileUpload = async (file: File) => {
+    setIsUploadingReport(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
+      await uploadReportToN8N(file, user.id);
+      
+      toast({
+        title: 'Report uploaded successfully',
+        description: 'Your report has been uploaded and sent for processing.',
+      });
+    } catch (error) {
+      console.error('Error uploading report:', error);
+      toast({
+        title: 'Upload failed',
+        description: error instanceof Error ? error.message : 'Failed to upload report',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploadingReport(false);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+
   const hasExistingCampaign = (sourceType === 'content_item' && selectedPost && 
     campaigns.some(campaign => 
       campaign.source_type === 'content_item' && campaign.source_id === selectedPost.id
@@ -56,6 +107,42 @@ const PRPitchGenerationSection = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Upload Report Section */}
+        <div className="mb-6 p-4 bg-accent/30 rounded-lg border border-accent/50">
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <Upload className="w-5 h-5" />
+            Upload New Report
+          </h3>
+          <div
+            className="border-2 border-dashed border-accent rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <CloudUpload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground mb-2">
+              {isUploadingReport ? 'Uploading...' : 'Click to upload or drag and drop a report file'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Supports PDF, DOC, DOCX files
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleFileSelect}
+              className="hidden"
+              disabled={isUploadingReport}
+            />
+          </div>
+          {isUploadingReport && (
+            <div className="mt-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4 animate-spin" />
+              Uploading and processing report...
+            </div>
+          )}
+        </div>
+
         <Tabs value={sourceType} onValueChange={(value) => {
           setSourceType(value as 'content_item' | 'general_content');
           setSelectedBlogPost('');
