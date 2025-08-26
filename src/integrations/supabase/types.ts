@@ -222,13 +222,6 @@ export type Database = {
             foreignKeyName: "contact_history_journalist_id_fkey"
             columns: ["journalist_id"]
             isOneToOne: false
-            referencedRelation: "journalist_contacts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contact_history_journalist_id_fkey"
-            columns: ["journalist_id"]
-            isOneToOne: false
             referencedRelation: "journalists"
             referencedColumns: ["id"]
           },
@@ -894,13 +887,6 @@ export type Database = {
             foreignKeyName: "journalist_articles_journalist_id_fkey"
             columns: ["journalist_id"]
             isOneToOne: false
-            referencedRelation: "journalist_contacts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "journalist_articles_journalist_id_fkey"
-            columns: ["journalist_id"]
-            isOneToOne: false
             referencedRelation: "journalists"
             referencedColumns: ["id"]
           },
@@ -929,13 +915,6 @@ export type Database = {
           journalist_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "journalist_expertise_journalist_id_fkey"
-            columns: ["journalist_id"]
-            isOneToOne: false
-            referencedRelation: "journalist_contacts"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "journalist_expertise_journalist_id_fkey"
             columns: ["journalist_id"]
@@ -1185,13 +1164,6 @@ export type Database = {
             foreignKeyName: "pr_pitches_journalist_id_fkey"
             columns: ["journalist_id"]
             isOneToOne: false
-            referencedRelation: "journalist_contacts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pr_pitches_journalist_id_fkey"
-            columns: ["journalist_id"]
-            isOneToOne: false
             referencedRelation: "journalists"
             referencedColumns: ["id"]
           },
@@ -1278,36 +1250,7 @@ export type Database = {
       }
     }
     Views: {
-      journalist_contacts: {
-        Row: {
-          email: string | null
-          id: string | null
-          linkedin_url: string | null
-          name: string | null
-          publication: string | null
-          twitter_handle: string | null
-          user_id: string | null
-        }
-        Insert: {
-          email?: string | null
-          id?: string | null
-          linkedin_url?: string | null
-          name?: string | null
-          publication?: string | null
-          twitter_handle?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          email?: string | null
-          id?: string | null
-          linkedin_url?: string | null
-          name?: string | null
-          publication?: string | null
-          twitter_handle?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       audit_content_idea_file_access: {
@@ -1393,6 +1336,18 @@ export type Database = {
           content_item_id: string
           published: number
           total: number
+        }[]
+      }
+      get_journalist_contacts: {
+        Args: { journalist_ids?: string[] }
+        Returns: {
+          email: string
+          id: string
+          linkedin_url: string
+          name: string
+          publication: string
+          twitter_handle: string
+          user_id: string
         }[]
       }
       is_admin_user: {
