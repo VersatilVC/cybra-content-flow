@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.monitor-idea-timeouts]
 verify_jwt = false
+
+[functions.upload-report-to-n8n]
+verify_jwt = false

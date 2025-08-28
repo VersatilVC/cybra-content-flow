@@ -46,9 +46,12 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
     };
     
     // Use Supabase edge function to bypass CORS
+    console.log('Calling upload-report-to-n8n edge function with payload:', payload);
     const { data, error: functionError } = await supabase.functions.invoke('upload-report-to-n8n', {
       body: payload
     });
+    
+    console.log('Edge function response:', { data, error: functionError });
     
     if (functionError) {
       throw new Error(`Failed to upload report to N8N: ${functionError.message}`);
