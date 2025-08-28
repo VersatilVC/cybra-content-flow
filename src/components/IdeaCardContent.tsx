@@ -45,6 +45,12 @@ export default function IdeaCardContent({ idea }: IdeaCardContentProps) {
         <span>Type: {idea.content_type}</span>
         <span>•</span>
         <span>Audience: {idea.target_audience}</span>
+        {idea.internal_name && (
+          <>
+            <span>•</span>
+            <span>ID: {idea.internal_name}</span>
+          </>
+        )}
         <span>•</span>
         <span>{formatDate(idea.created_at)}</span>
       </div>

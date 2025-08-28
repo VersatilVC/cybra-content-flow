@@ -163,6 +163,8 @@ export default function ContentSuggestionCard({
                   </>
                 )}
                 <span>•</span>
+                <span>ID: SUGG_{suggestion.id.slice(0, 8)}</span>
+                <span>•</span>
                 <span>{formatDate(suggestion.created_at)}</span>
               </div>
             </div>

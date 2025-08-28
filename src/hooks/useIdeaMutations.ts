@@ -52,12 +52,14 @@ export function useIdeaMutations() {
         status: rawData.status as 'processing' | 'ready' | 'brief_created' | 'discarded' | 'failed',
         source_type: rawData.source_type as 'manual' | 'file' | 'url' | 'auto_generated',
         source_data: rawData.source_data,
+        internal_name: rawData.internal_name,
         created_at: rawData.created_at,
         updated_at: rawData.updated_at,
         processing_started_at: rawData.processing_started_at,
         processing_timeout_at: rawData.processing_timeout_at,
         retry_count: rawData.retry_count,
         last_error_message: rawData.last_error_message,
+        idea_research_summary: rawData.idea_research_summary
       };
       
       // Only trigger webhooks for non-auto-generated ideas (auto-generated ones handle their own webhooks)

@@ -46,6 +46,7 @@ export default function ViewSuggestionsModal({
       status: 'ready' as const,
       source_type: suggestion.source_url ? 'url' : 'file',
       source_data: suggestion.source_url ? { url: suggestion.source_url } : {},
+      internal_name: `SUGG_${suggestion.id.slice(0, 8)}`,
       created_at: suggestion.created_at,
       updated_at: suggestion.updated_at,
     };
