@@ -8,6 +8,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import ContentIdeasHeader from '@/components/content-ideas/ContentIdeasHeader';
 import ContentIdeasFilters from '@/components/content-ideas/ContentIdeasFilters';
 import ContentIdeasGrid from '@/components/content-ideas/ContentIdeasGrid';
+import ContentIdeasTable from '@/components/content-ideas/ContentIdeasTable';
 import ReviewModeView from '@/components/content-ideas/ReviewModeView';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
@@ -17,6 +18,8 @@ const ContentIdeas = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null);
+  const [selectedItems, setSelectedItems] = useState<ContentIdea[]>([]);
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<ContentIdeaFilters>({
     contentType: 'All Content Types',
@@ -114,22 +117,40 @@ const ContentIdeas = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <ContentIdeasHeader onNewIdea={() => setShowAddModal(true)} />
+      <ContentIdeasHeader 
+        onNewIdea={() => setShowAddModal(true)}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
 
       <ContentIdeasFilters 
         filters={filters}
         onFilterChange={handleFilterChange}
       />
 
-      <ContentIdeasGrid
-        ideas={ideas}
-        onEdit={handleEdit}
-        onDiscard={deleteIdea}
-        onCreateBrief={createBrief}
-        isCreatingBrief={isCreatingBrief}
-        expandIdeaId={expandIdeaId}
-        onNewIdea={() => setShowAddModal(true)}
-      />
+      {viewMode === 'table' ? (
+        <ContentIdeasTable
+          ideas={ideas}
+          onEdit={handleEdit}
+          onDiscard={deleteIdea}
+          onCreateBrief={createBrief}
+          isCreatingBrief={isCreatingBrief}
+          expandIdeaId={expandIdeaId}
+          onNewIdea={() => setShowAddModal(true)}
+          selectedItems={selectedItems}
+          onSelectionChange={setSelectedItems}
+        />
+      ) : (
+        <ContentIdeasGrid
+          ideas={ideas}
+          onEdit={handleEdit}
+          onDiscard={deleteIdea}
+          onCreateBrief={createBrief}
+          isCreatingBrief={isCreatingBrief}
+          expandIdeaId={expandIdeaId}
+          onNewIdea={() => setShowAddModal(true)}
+        />
+      )}
 
       <AddIdeaModal
         isOpen={showAddModal}

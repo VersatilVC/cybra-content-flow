@@ -4,12 +4,19 @@ import { Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AutoGenerationControls from '@/components/AutoGenerationControls';
 import { useTimeoutCheck } from '@/hooks/useTimeoutCheck';
+import ContentIdeasViewToggle from './ContentIdeasViewToggle';
 
 interface ContentIdeasHeaderProps {
   onNewIdea: () => void;
+  viewMode: 'card' | 'table';
+  onViewModeChange: (mode: 'card' | 'table') => void;
 }
 
-export default function ContentIdeasHeader({ onNewIdea }: ContentIdeasHeaderProps) {
+export default function ContentIdeasHeader({ 
+  onNewIdea, 
+  viewMode, 
+  onViewModeChange 
+}: ContentIdeasHeaderProps) {
   const { forceTimeoutCheck, isCheckingTimeouts } = useTimeoutCheck();
 
   return (
@@ -20,6 +27,10 @@ export default function ContentIdeasHeader({ onNewIdea }: ContentIdeasHeaderProp
       </div>
       <div className="flex gap-3">
         <AutoGenerationControls />
+        <ContentIdeasViewToggle 
+          viewMode={viewMode}
+          onViewModeChange={onViewModeChange}
+        />
         <Button
           onClick={() => forceTimeoutCheck()}
           disabled={isCheckingTimeouts}
