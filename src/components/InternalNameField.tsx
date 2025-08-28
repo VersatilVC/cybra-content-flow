@@ -44,7 +44,7 @@ export const InternalNameField: React.FC<InternalNameFieldProps> = ({
           id="internal_name"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="e.g., BLOG_CYBERSEC_GUIDE_1224"
+          placeholder="e.g., My Blog Post About Cybersecurity"
           disabled={disabled}
           className="flex-1"
         />
