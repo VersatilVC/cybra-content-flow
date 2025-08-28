@@ -31,7 +31,7 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
     }
     
     // Prepare payload for N8N webhook
-    const payload: N8NReportUploadPayload = {
+    const payload = {
       request_type: 'report_upload',
       file_url: signedUrl.signedUrl,
       file_path: uploadResult.path,
