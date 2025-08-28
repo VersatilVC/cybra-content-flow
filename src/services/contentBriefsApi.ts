@@ -72,22 +72,22 @@ export async function createContentBrief(briefData: CreateContentBriefData): Pro
       .from('content_ideas')
       .select('internal_name')
       .eq('id', briefData.source_id)
-      .single();
-    sourceInternalName = idea?.internal_name || 'Unknown';
+      .maybeSingle();
+    sourceInternalName = idea?.internal_name || '';
   } else if (briefData.source_type === 'suggestion') {
     // For suggestions, get the parent idea's internal name
     const { data: suggestion } = await supabase
       .from('content_suggestions')
       .select('content_idea_id')
       .eq('id', briefData.source_id)
-      .single();
+      .maybeSingle();
     if (suggestion) {
       const { data: idea } = await supabase
         .from('content_ideas')
         .select('internal_name')
         .eq('id', suggestion.content_idea_id)
-        .single();
-      sourceInternalName = idea?.internal_name || 'Unknown';
+        .maybeSingle();
+      sourceInternalName = idea?.internal_name || '';
     }
   }
   

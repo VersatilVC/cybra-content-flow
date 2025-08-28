@@ -78,7 +78,7 @@ export default function ContentBriefsTableRow({
       </TableCell>
       <TableCell>
         <div className="font-mono text-xs text-muted-foreground">
-          {brief.internal_name || 'Generating...'}
+          {brief.internal_name || brief.title.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').slice(0, 50)}
         </div>
       </TableCell>
       <TableCell>
