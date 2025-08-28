@@ -282,10 +282,15 @@ export const usePRManagement = () => {
       
       if (campaignError) throw campaignError;
 
+      // Determine webhook type based on source type
+      const webhookType = finalSourceType === 'general_content' 
+        ? 'pr_pitch_generation_reports' 
+        : 'pr_pitch_generation';
+      
       // Trigger webhook for PR pitch generation with required IDs
       const webhookResponse = await supabase.functions.invoke('dispatch-webhook', {
         body: {
-          webhook_type: 'pr_pitch_generation',
+          webhook_type: webhookType,
           payload: {
             request_type: 'pr_pitch_generation',
             campaign_id: campaign.id,
