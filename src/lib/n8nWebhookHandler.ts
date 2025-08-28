@@ -45,17 +45,13 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
       status: 'ready'
     };
     
-    // Trigger N8N webhook for report uploads (using shared endpoint until dedicated one is created)
-    const response = await fetch('https://cyabramarketing.app.n8n.cloud/webhook/5b528460-0792-48ca-a773-d24a1260be40', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
+    // Use Supabase edge function to bypass CORS
+    const { data, error: functionError } = await supabase.functions.invoke('upload-report-to-n8n', {
+      body: payload
     });
     
-    if (!response.ok) {
-      throw new Error(`N8N webhook failed: ${response.status} ${response.statusText}`);
+    if (functionError) {
+      throw new Error(`Failed to upload report to N8N: ${functionError.message}`);
     }
     
     console.log('Report successfully uploaded and sent to N8N');
