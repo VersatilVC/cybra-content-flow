@@ -235,6 +235,7 @@ export type Database = {
           description: string | null
           file_summary: string | null
           id: string
+          internal_name: string
           last_error_message: string | null
           processing_started_at: string | null
           processing_timeout_at: string | null
@@ -255,6 +256,7 @@ export type Database = {
           description?: string | null
           file_summary?: string | null
           id?: string
+          internal_name: string
           last_error_message?: string | null
           processing_started_at?: string | null
           processing_timeout_at?: string | null
@@ -275,6 +277,7 @@ export type Database = {
           description?: string | null
           file_summary?: string | null
           id?: string
+          internal_name?: string
           last_error_message?: string | null
           processing_started_at?: string | null
           processing_timeout_at?: string | null
@@ -302,6 +305,7 @@ export type Database = {
           file_size: string | null
           file_url: string | null
           id: string
+          internal_name: string
           last_error_message: string | null
           metadata: Json | null
           mime_type: string | null
@@ -325,6 +329,7 @@ export type Database = {
           file_size?: string | null
           file_url?: string | null
           id?: string
+          internal_name: string
           last_error_message?: string | null
           metadata?: Json | null
           mime_type?: string | null
@@ -348,6 +353,7 @@ export type Database = {
           file_size?: string | null
           file_url?: string | null
           id?: string
+          internal_name?: string
           last_error_message?: string | null
           metadata?: Json | null
           mime_type?: string | null
@@ -378,6 +384,7 @@ export type Database = {
           file_summary: string | null
           id: string
           idea_research_summary: string | null
+          internal_name: string
           last_error_message: string | null
           processing_started_at: string | null
           processing_timeout_at: string | null
@@ -397,6 +404,7 @@ export type Database = {
           file_summary?: string | null
           id?: string
           idea_research_summary?: string | null
+          internal_name: string
           last_error_message?: string | null
           processing_started_at?: string | null
           processing_timeout_at?: string | null
@@ -416,6 +424,7 @@ export type Database = {
           file_summary?: string | null
           id?: string
           idea_research_summary?: string | null
+          internal_name?: string
           last_error_message?: string | null
           processing_started_at?: string | null
           processing_timeout_at?: string | null
@@ -438,6 +447,7 @@ export type Database = {
           created_at: string
           file_summary: string | null
           id: string
+          internal_name: string
           last_error_message: string | null
           multimedia_suggestions: string | null
           processing_started_at: string | null
@@ -461,6 +471,7 @@ export type Database = {
           created_at?: string
           file_summary?: string | null
           id?: string
+          internal_name: string
           last_error_message?: string | null
           multimedia_suggestions?: string | null
           processing_started_at?: string | null
@@ -484,6 +495,7 @@ export type Database = {
           created_at?: string
           file_summary?: string | null
           id?: string
+          internal_name?: string
           last_error_message?: string | null
           multimedia_suggestions?: string | null
           processing_started_at?: string | null
@@ -780,6 +792,7 @@ export type Database = {
           file_size: string | null
           file_url: string | null
           id: string
+          internal_name: string
           metadata: Json | null
           mime_type: string | null
           source_data: Json | null
@@ -803,6 +816,7 @@ export type Database = {
           file_size?: string | null
           file_url?: string | null
           id?: string
+          internal_name: string
           metadata?: Json | null
           mime_type?: string | null
           source_data?: Json | null
@@ -826,6 +840,7 @@ export type Database = {
           file_size?: string | null
           file_url?: string | null
           id?: string
+          internal_name?: string
           metadata?: Json | null
           mime_type?: string | null
           source_data?: Json | null
@@ -1321,6 +1336,19 @@ export type Database = {
           bucket_name: string
           expiry_seconds?: number
           file_path: string
+        }
+        Returns: string
+      }
+      generate_unique_internal_name: {
+        Args: {
+          category_text?: string
+          content_type_text?: string
+          created_at_date?: string
+          derivative_type_text?: string
+          table_name_param?: string
+          target_audience_text?: string
+          title_text: string
+          user_id_param?: string
         }
         Returns: string
       }

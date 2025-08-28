@@ -19,6 +19,7 @@ export interface ContentDerivative {
   file_path: string | null;
   mime_type: string | null;
   file_size: string | null;
+  internal_name: string;
   created_at: string;
   updated_at: string;
 }
@@ -45,7 +46,7 @@ export async function fetchContentDerivatives(contentItemId: string): Promise<Co
   
   const { data, error } = await supabase
     .from('content_derivatives')
-    .select('id,content_item_id,user_id,title,content,derivative_type,category,status,metadata,word_count,content_type,file_url,file_path,mime_type,file_size,created_at,updated_at')
+    .select('id,content_item_id,user_id,title,content,derivative_type,category,status,metadata,word_count,content_type,file_url,file_path,mime_type,file_size,internal_name,created_at,updated_at')
     .eq('content_item_id', contentItemId)
     .order('created_at', { ascending: false });
 
@@ -64,9 +65,10 @@ export async function createContentDerivative(derivativeData: CreateContentDeriv
     .from('content_derivatives')
     .insert([{
       ...derivativeData,
-      content_type: derivativeData.content_type || 'text'
+      content_type: derivativeData.content_type || 'text',
+      internal_name: `DERIV_${derivativeData.title.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()}_${Date.now()}`
     }])
-.select('id,content_item_id,user_id,title,content,derivative_type,category,status,metadata,word_count,content_type,file_url,file_path,mime_type,file_size,created_at,updated_at')
+.select('id,content_item_id,user_id,title,content,derivative_type,category,status,metadata,word_count,content_type,file_url,file_path,mime_type,file_size,internal_name,created_at,updated_at')
     .single();
 
   if (error) {
@@ -84,7 +86,7 @@ export async function updateContentDerivative(id: string, updates: Partial<Conte
     .from('content_derivatives')
     .update(updates)
     .eq('id', id)
-.select('id,content_item_id,user_id,title,content,derivative_type,category,status,metadata,word_count,content_type,file_url,file_path,mime_type,file_size,created_at,updated_at')
+.select('id,content_item_id,user_id,title,content,derivative_type,category,status,metadata,word_count,content_type,file_url,file_path,mime_type,file_size,internal_name,created_at,updated_at')
     .single();
 
   if (error) {

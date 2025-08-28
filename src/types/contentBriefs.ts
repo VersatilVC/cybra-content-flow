@@ -10,6 +10,7 @@ export interface ContentBrief {
   brief_type: 'Blog Post' | 'Guide' | 'Blog Post (Topical)';
   target_audience: 'Private Sector' | 'Government Sector';
   user_id: string;
+  internal_name: string;
   created_at: string;
   updated_at: string;
   processing_started_at?: string;
@@ -37,4 +38,5 @@ export interface CreateContentBriefData {
   brief_type: 'Blog Post' | 'Guide' | 'Blog Post (Topical)';
   target_audience: 'Private Sector' | 'Government Sector';
   user_id: string;
+  internal_name?: string;
 }

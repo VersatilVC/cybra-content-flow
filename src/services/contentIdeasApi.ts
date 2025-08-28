@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ContentIdea, ContentIdeaFilters, CreateContentIdeaData } from '@/types/contentIdeas';
+import { generateInternalName } from '@/utils/internalNameGenerator';
 
 export const fetchContentIdeas = async (
   userId: string,
@@ -10,7 +10,7 @@ export const fetchContentIdeas = async (
   // With company-wide access, we fetch all content ideas (RLS will filter appropriately)
   let query = supabase
     .from('content_ideas')
-    .select('id,title,description,content_type,target_audience,status,source_type,source_data,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
+    .select('id,title,description,content_type,target_audience,status,source_type,source_data,internal_name,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
     .order('created_at', { ascending: false });
 
   if (options?.page && options?.pageSize) {
@@ -51,25 +51,35 @@ export const fetchContentIdeas = async (
     status: item.status as 'processing' | 'ready' | 'brief_created' | 'discarded' | 'failed',
     source_type: item.source_type as 'manual' | 'file' | 'url' | 'auto_generated',
     source_data: item.source_data,
+    internal_name: item.internal_name,
     created_at: item.created_at,
     updated_at: item.updated_at,
     idea_research_summary: item.idea_research_summary,
     processing_started_at: item.processing_started_at,
     processing_timeout_at: item.processing_timeout_at,
     retry_count: item.retry_count,
-    last_error_message: item.last_error_message,
-  }));
+    last_error_message: item.last_error_message
+  })) as ContentIdea[];
 };
 
 export const createContentIdea = async (userId: string, ideaData: CreateContentIdeaData) => {
   console.log('API: Creating content idea with data:', ideaData);
+  
+  // Generate internal name if not provided
+  const internalName = ideaData.internal_name || generateInternalName(
+    ideaData.title,
+    ideaData.content_type,
+    ideaData.target_audience
+  );
+  
   const { data, error } = await supabase
     .from('content_ideas')
     .insert({
       ...ideaData,
       user_id: userId,
+      internal_name: internalName
     })
-.select('id,title,description,content_type,target_audience,status,source_type,source_data,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
+    .select('id,title,description,content_type,target_audience,status,source_type,source_data,internal_name,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
     .single();
 
   if (error) {
@@ -86,7 +96,7 @@ export const updateContentIdea = async (id: string, updates: Partial<ContentIdea
     .from('content_ideas')
     .update(updates)
     .eq('id', id)
-.select('id,title,description,content_type,target_audience,status,source_type,source_data,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
+    .select('id,title,description,content_type,target_audience,status,source_type,source_data,internal_name,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
     .single();
 
   if (error) {

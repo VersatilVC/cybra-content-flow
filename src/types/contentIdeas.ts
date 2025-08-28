@@ -8,6 +8,7 @@ export interface ContentIdea {
   status: 'processing' | 'ready' | 'brief_created' | 'discarded' | 'failed';
   source_type: 'manual' | 'file' | 'url' | 'auto_generated';
   source_data: any;
+  internal_name: string;
   created_at: string;
   updated_at: string;
   idea_research_summary?: string;
@@ -32,6 +33,7 @@ export interface CreateContentIdeaData {
   status: 'processing' | 'ready' | 'brief_created' | 'discarded' | 'failed';
   source_type: 'manual' | 'file' | 'url' | 'auto_generated';
   source_data: any;
+  internal_name?: string;
   processing_started_at?: string;
   processing_timeout_at?: string;
   retry_count?: number;
