@@ -384,7 +384,7 @@ export type Database = {
           file_summary: string | null
           id: string
           idea_research_summary: string | null
-          internal_name: string
+          internal_name: string | null
           last_error_message: string | null
           processing_started_at: string | null
           processing_timeout_at: string | null
@@ -404,7 +404,7 @@ export type Database = {
           file_summary?: string | null
           id?: string
           idea_research_summary?: string | null
-          internal_name: string
+          internal_name?: string | null
           last_error_message?: string | null
           processing_started_at?: string | null
           processing_timeout_at?: string | null
@@ -424,7 +424,7 @@ export type Database = {
           file_summary?: string | null
           id?: string
           idea_research_summary?: string | null
-          internal_name?: string
+          internal_name?: string | null
           last_error_message?: string | null
           processing_started_at?: string | null
           processing_timeout_at?: string | null
