@@ -19,7 +19,7 @@ export interface ContentDerivative {
   file_path: string | null;
   mime_type: string | null;
   file_size: string | null;
-  internal_name: string;
+  internal_name?: string;
   created_at: string;
   updated_at: string;
 }

@@ -117,8 +117,11 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
   // Create the general content item in the database
   const { data: result, error } = await supabase
     .from('general_content_items')
-    .insert([insertData])
-    .select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,submission_id,created_at,updated_at')
+    .insert({
+      ...insertData,
+      internal_name: insertData.internal_name || `GEN_${insertData.title.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()}_${Date.now()}`
+    })
+    .select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,submission_id,internal_name,created_at,updated_at')
     .single();
 
   if (error) {

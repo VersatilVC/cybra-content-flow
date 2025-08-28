@@ -126,8 +126,11 @@ export async function createContentItem(itemData: CreateContentItemData): Promis
   
   const { data, error } = await supabase
     .from('content_items')
-    .insert([itemData])
-.select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at')
+    .insert({
+      ...itemData,
+      internal_name: `ITEM_${itemData.title.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()}_${Date.now()}`
+    })
+.select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,internal_name,wordpress_url,created_at,updated_at')
     .single();
 
   if (error) {

@@ -24,7 +24,7 @@ export function useDashboardTodos() {
       // Fetch content ideas that need review (ready status)
       const { data: ideasData, error: ideasError } = await supabase
         .from('content_ideas')
-         .select('id,title,description,content_type,target_audience,status,source_type,source_data,created_at,updated_at,idea_research_summary')
+         .select('id,title,description,content_type,target_audience,status,source_type,source_data,internal_name,created_at,updated_at,idea_research_summary')
         .eq('user_id', user.id)
         .eq('status', 'ready')
         .order('created_at', { ascending: false })
@@ -35,7 +35,7 @@ export function useDashboardTodos() {
       // Fetch content briefs that need review (ready status)
       const { data: briefsData, error: briefsError } = await supabase
         .from('content_briefs')
-         .select('id,title,description,content, status, source_type, source_id, brief_type, target_audience, user_id, created_at, updated_at')
+         .select('id,title,description,content, status, source_type, source_id, brief_type, target_audience, user_id, internal_name, created_at, updated_at')
         .eq('user_id', user.id)
         .eq('status', 'ready')
         .order('created_at', { ascending: false })

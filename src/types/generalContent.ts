@@ -11,7 +11,7 @@ export interface GeneralContentItem {
   source_data: Record<string, any>;
   target_audience: string;
   status: 'draft' | 'ready_for_review' | 'approved' | 'published' | 'ready' | 'failed' | 'processing';
-  internal_name: string;
+  internal_name?: string;
   word_count?: number;
   metadata: Record<string, any>;
   file_path?: string;
