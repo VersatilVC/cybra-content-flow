@@ -17,6 +17,7 @@ export interface ContentItem {
   status: 'ready_for_review' | 'derivatives_created' | 'published' | 'discarded' | 'needs_revision' | 'needs_fix' | 'processing' | 'failed' | 'completed' | 'draft';
   word_count: number | null;
   wordpress_url: string | null;
+  internal_name: string;
   created_at: string;
   updated_at: string;
   processing_started_at?: string;
@@ -57,7 +58,7 @@ export async function fetchContentItems(
   let query = supabase
     .from('content_items')
     .select(
-      'id,user_id,content_brief_id,submission_id,title,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at',
+      'id,user_id,content_brief_id,submission_id,title,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,internal_name,wordpress_url,created_at,updated_at',
       { count: 'planned' }
     )
     .order('created_at', { ascending: false });
@@ -109,7 +110,7 @@ export async function fetchContentItemsByBrief(briefId: string): Promise<Content
   
   const { data, error } = await supabase
     .from('content_items')
-    .select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at')
+    .select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,internal_name,wordpress_url,created_at,updated_at')
     .eq('content_brief_id', briefId)
     .order('created_at', { ascending: false });
 
@@ -163,7 +164,7 @@ export async function updateContentItem(id: string, updates: Partial<ContentItem
     .from('content_items')
     .update(updates)
     .eq('id', id)
-.select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,wordpress_url,created_at,updated_at')
+.select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,internal_name,wordpress_url,created_at,updated_at')
     .single();
 
   if (error) {

@@ -46,7 +46,7 @@ export function useDashboardTodos() {
       // Fetch content items that need review (ready_for_review or needs_revision status)
       const { data: itemsData, error: itemsError } = await supabase
         .from('content_items')
-        .select('id,title,content,content_type,status,summary,word_count,tags,resources,multimedia_suggestions,content_brief_id,submission_id,user_id,wordpress_url,created_at,updated_at')
+        .select('id,title,content,content_type,status,summary,word_count,tags,resources,multimedia_suggestions,content_brief_id,submission_id,user_id,internal_name,wordpress_url,created_at,updated_at')
         .eq('user_id', user.id)
         .in('status', ['ready_for_review', 'needs_revision', 'needs_fix'])
         .order('created_at', { ascending: false })
@@ -98,6 +98,7 @@ export function useDashboardTodos() {
         content_brief_id: item.content_brief_id,
         submission_id: item.submission_id,
         user_id: item.user_id,
+        internal_name: item.internal_name || '',
         wordpress_url: item.wordpress_url,
         created_at: item.created_at,
         updated_at: item.updated_at,

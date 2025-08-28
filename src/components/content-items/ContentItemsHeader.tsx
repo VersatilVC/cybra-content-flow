@@ -3,12 +3,19 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Link as LinkIcon } from 'lucide-react';
+import ContentItemsViewToggle from './ContentItemsViewToggle';
 
 interface ContentItemsHeaderProps {
   itemCount: number;
+  viewMode: 'card' | 'table';
+  onViewModeChange: (mode: 'card' | 'table') => void;
 }
 
-const ContentItemsHeader: React.FC<ContentItemsHeaderProps> = ({ itemCount }) => {
+const ContentItemsHeader: React.FC<ContentItemsHeaderProps> = ({ 
+  itemCount,
+  viewMode,
+  onViewModeChange 
+}) => {
   const { toast } = useToast();
   const handleCopy = async () => {
     try {
@@ -27,6 +34,10 @@ const ContentItemsHeader: React.FC<ContentItemsHeaderProps> = ({ itemCount }) =>
       </div>
       <div className="flex items-center gap-3">
         <span className="text-sm text-gray-500">{itemCount} items</span>
+        <ContentItemsViewToggle 
+          viewMode={viewMode}
+          onViewModeChange={onViewModeChange}
+        />
         <Button variant="outline" onClick={handleCopy} aria-label="Copy shareable view link">
           <LinkIcon className="w-4 h-4 mr-2" /> Copy link
         </Button>

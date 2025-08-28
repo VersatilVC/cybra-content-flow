@@ -8,6 +8,7 @@ import { ContentItem } from '@/services/contentItemsApi';
 import ContentItemsHeader from '@/components/content-items/ContentItemsHeader';
 import ContentItemsFilters from '@/components/content-items/ContentItemsFilters';
 import ContentItemCard from '@/components/content-items/ContentItemCard';
+import ContentItemsTable from '@/components/content-items/ContentItemsTable';
 import EmptyContentItemsState from '@/components/content-items/EmptyContentItemsState';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,6 +24,8 @@ const ContentItems = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [selectedItems, setSelectedItems] = useState<ContentItem[]>([]);
   const debouncedSearch = useDebounce(searchTerm, 400);
   const { contentItems, totalCount, isLoading, error } = useContentItems(
     {
@@ -42,12 +45,22 @@ useEffect(() => {
   const key = `ui:content-items:pageSize:${user?.id || 'anon'}`;
   const stored = localStorage.getItem(key);
   if (!urlPageSize && stored) setPageSize(Number(stored));
+  
+  // Load view mode from localStorage
+  const viewKey = `ui:content-items:viewMode:${user?.id || 'anon'}`;
+  const storedViewMode = localStorage.getItem(viewKey) as 'card' | 'table';
+  if (storedViewMode) setViewMode(storedViewMode);
 }, [user?.id]);
 
 useEffect(() => {
   const key = `ui:content-items:pageSize:${user?.id || 'anon'}`;
   localStorage.setItem(key, String(pageSize));
 }, [pageSize, user?.id]);
+
+useEffect(() => {
+  const viewKey = `ui:content-items:viewMode:${user?.id || 'anon'}`;
+  localStorage.setItem(viewKey, viewMode);
+}, [viewMode, user?.id]);
 
 useEffect(() => {
   if (initializedRef.current) return;
@@ -118,7 +131,11 @@ useEffect(() => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <ContentItemsHeader itemCount={totalCount} />
+      <ContentItemsHeader 
+        itemCount={totalCount} 
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
       
       <ContentItemsFilters
         searchTerm={searchTerm}
@@ -155,18 +172,30 @@ useEffect(() => {
         />
       ) : (
         <> 
-          <div className="space-y-4">
-{contentItems.map((item: ContentItem) => (
-              <ContentItemCard
-                key={item.id}
-                item={item}
-                onViewItem={handleViewItem}
-                onNavigateToDerivatives={handleNavigateToDerivatives}
-                categoryCounts={derivativeCounts[item.id]}
-                isLoadingExternal={isLoadingCounts}
-              />
-            ))}
-          </div>
+          {viewMode === 'card' ? (
+            <div className="space-y-4">
+              {contentItems.map((item: ContentItem) => (
+                <ContentItemCard
+                  key={item.id}
+                  item={item}
+                  onViewItem={handleViewItem}
+                  onNavigateToDerivatives={handleNavigateToDerivatives}
+                  categoryCounts={derivativeCounts[item.id]}
+                  isLoadingExternal={isLoadingCounts}
+                />
+              ))}
+            </div>
+          ) : (
+            <ContentItemsTable
+              items={contentItems}
+              selectedItems={selectedItems}
+              onSelectionChange={setSelectedItems}
+              onViewItem={handleViewItem}
+              onNavigateToDerivatives={handleNavigateToDerivatives}
+              derivativeCounts={derivativeCounts}
+              isLoadingCounts={isLoadingCounts}
+            />
+          )}
 
           {(() => {
             const totalPages = Math.max(1, Math.ceil((totalCount || 0) / pageSize));
