@@ -45,8 +45,8 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
       status: 'ready'
     };
     
-    // Trigger N8N webhook
-    const response = await fetch('https://cyabramarketing.app.n8n.cloud/webhook/5b528460-0792-48ca-a773-d24a1260be40', {
+    // Trigger N8N webhook for report uploads (dedicated endpoint)
+    const response = await fetch('https://cyabramarketing.app.n8n.cloud/webhook/report-upload-dedicated', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
