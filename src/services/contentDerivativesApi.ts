@@ -60,7 +60,7 @@ export async function fetchContentDerivatives(contentItemId: string): Promise<Co
 
 export async function createContentDerivative(derivativeData: CreateContentDerivativeData): Promise<ContentDerivative> {
   logger.info('Creating content derivative:', derivativeData);
-  const { createDerivativeInternalName } = await import('@/utils/titleBasedNaming');
+  const { sanitizeTitle } = await import('@/utils/titleBasedNaming');
   
   // Get content item internal name to inherit from
   let itemInternalName = '';
@@ -70,10 +70,11 @@ export async function createContentDerivative(derivativeData: CreateContentDeriv
       .select('internal_name')
       .eq('id', derivativeData.content_item_id)
       .single();
-    itemInternalName = item?.internal_name || 'UNKNOWN_ITEM';
+    itemInternalName = item?.internal_name || 'Unknown';
   }
   
-  const internalName = createDerivativeInternalName(itemInternalName, derivativeData.derivative_type);
+  // Use the same internal name as the item, or sanitize the title if no item
+  const internalName = itemInternalName || sanitizeTitle(derivativeData.title);
   
   const { data, error } = await supabase
     .from('content_derivatives')

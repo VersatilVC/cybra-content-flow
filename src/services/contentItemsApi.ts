@@ -123,7 +123,7 @@ export async function fetchContentItemsByBrief(briefId: string): Promise<Content
 
 export async function createContentItem(itemData: CreateContentItemData): Promise<ContentItem> {
   logger.info('Creating content item:', itemData);
-  const { createItemInternalName } = await import('@/utils/titleBasedNaming');
+  const { sanitizeTitle } = await import('@/utils/titleBasedNaming');
   
   // Get brief internal name to inherit from
   let briefInternalName = '';
@@ -133,10 +133,11 @@ export async function createContentItem(itemData: CreateContentItemData): Promis
       .select('internal_name')
       .eq('id', itemData.content_brief_id)
       .single();
-    briefInternalName = brief?.internal_name || 'UNKNOWN_BRIEF';
+    briefInternalName = brief?.internal_name || 'Unknown';
   }
   
-  const internalName = createItemInternalName(briefInternalName);
+  // Use the same internal name as the brief, or sanitize the title if no brief
+  const internalName = briefInternalName || sanitizeTitle(itemData.title);
   
   const { data, error } = await supabase
     .from('content_items')

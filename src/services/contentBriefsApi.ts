@@ -63,7 +63,7 @@ export async function fetchContentBriefs(userId: string, filters?: ContentBriefF
 }
 
 export async function createContentBrief(briefData: CreateContentBriefData): Promise<ContentBrief> {
-  const { createBriefInternalName } = await import('@/utils/titleBasedNaming');
+  const { sanitizeTitle } = await import('@/utils/titleBasedNaming');
   
   // Get source internal name to inherit from
   let sourceInternalName = '';
@@ -73,7 +73,7 @@ export async function createContentBrief(briefData: CreateContentBriefData): Pro
       .select('internal_name')
       .eq('id', briefData.source_id)
       .single();
-    sourceInternalName = idea?.internal_name || 'UNKNOWN';
+    sourceInternalName = idea?.internal_name || 'Unknown';
   } else if (briefData.source_type === 'suggestion') {
     // For suggestions, get the parent idea's internal name
     const { data: suggestion } = await supabase
@@ -87,11 +87,12 @@ export async function createContentBrief(briefData: CreateContentBriefData): Pro
         .select('internal_name')
         .eq('id', suggestion.content_idea_id)
         .single();
-      sourceInternalName = idea?.internal_name || 'UNKNOWN';
+      sourceInternalName = idea?.internal_name || 'Unknown';
     }
   }
   
-  const internalName = briefData.internal_name || createBriefInternalName(sourceInternalName, briefData.source_type as 'idea' | 'suggestion');
+  // Use the same internal name as the source, or sanitize the title if no source
+  const internalName = briefData.internal_name || sourceInternalName || sanitizeTitle(briefData.title);
   
   const { data, error } = await supabase
     .from('content_briefs')

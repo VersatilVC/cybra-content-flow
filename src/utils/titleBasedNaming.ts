@@ -4,18 +4,17 @@
 
 /**
  * Sanitizes a title to create a clean internal name
+ * Preserves original casing and spaces, only removes dangerous characters
  */
 export function sanitizeTitle(title: string): string {
   if (!title || title.trim() === '') {
-    return 'UNTITLED';
+    return 'Untitled';
   }
   
   return title
     .trim()
-    .replace(/[^A-Za-z0-9\s]/g, '') // Remove special characters
-    .replace(/\s+/g, '_') // Replace spaces with underscores
-    .toUpperCase()
-    .substring(0, 30); // Limit length to 30 chars
+    .replace(/["'`\\;]/g, '') // Only remove potentially dangerous characters
+    .substring(0, 100); // Reasonable length limit
 }
 
 /**
@@ -27,31 +26,26 @@ export function createIdeaInternalName(title: string): string {
 
 /**
  * Creates internal name for content brief based on source
+ * Now inherits the exact same internal name as the source
  */
 export function createBriefInternalName(sourceInternalName: string, sourceType: 'idea' | 'suggestion'): string {
-  if (sourceType === 'suggestion') {
-    return `${sourceInternalName}_SUGG_BRIEF`;
-  }
-  return `${sourceInternalName}_BRIEF`;
+  return sourceInternalName;
 }
 
 /**
  * Creates internal name for content item based on brief
+ * Now inherits the exact same internal name as the brief
  */
 export function createItemInternalName(briefInternalName: string): string {
-  // Remove _BRIEF or _SUGG_BRIEF suffix and add _ITEM
-  const baseName = briefInternalName.replace(/_BRIEF$|_SUGG_BRIEF$/, '');
-  return `${baseName}_ITEM`;
+  return briefInternalName;
 }
 
 /**
  * Creates internal name for derivative based on item and derivative type
+ * Now inherits the exact same internal name as the item
  */
 export function createDerivativeInternalName(itemInternalName: string, derivativeType: string): string {
-  // Remove _ITEM suffix and add derivative type
-  const baseName = itemInternalName.replace(/_ITEM$/, '');
-  const derivativeTypeSanitized = derivativeType.replace(/[^A-Za-z0-9]/g, '_').toUpperCase();
-  return `${baseName}_${derivativeTypeSanitized}`;
+  return itemInternalName;
 }
 
 /**

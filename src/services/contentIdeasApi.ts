@@ -63,10 +63,10 @@ export const fetchContentIdeas = async (
 };
 
 export const createContentIdea = async (userId: string, ideaData: CreateContentIdeaData) => {
-  const { createIdeaInternalName } = await import('@/utils/titleBasedNaming');
+  const { sanitizeTitle } = await import('@/utils/titleBasedNaming');
   
-  // Use title as internal name (user can override if provided)
-  const internalName = ideaData.internal_name || createIdeaInternalName(ideaData.title);
+  // Use title directly as internal name (user can override if provided)
+  const internalName = ideaData.internal_name || sanitizeTitle(ideaData.title);
   
   // Prepare the data to insert
   const insertData = {
