@@ -63,11 +63,41 @@ export async function fetchContentBriefs(userId: string, filters?: ContentBriefF
 }
 
 export async function createContentBrief(briefData: CreateContentBriefData): Promise<ContentBrief> {
+  const { createBriefInternalName } = await import('@/utils/titleBasedNaming');
+  
+  // Get source internal name to inherit from
+  let sourceInternalName = '';
+  if (briefData.source_type === 'idea') {
+    const { data: idea } = await supabase
+      .from('content_ideas')
+      .select('internal_name')
+      .eq('id', briefData.source_id)
+      .single();
+    sourceInternalName = idea?.internal_name || 'UNKNOWN';
+  } else if (briefData.source_type === 'suggestion') {
+    // For suggestions, get the parent idea's internal name
+    const { data: suggestion } = await supabase
+      .from('content_suggestions')
+      .select('content_idea_id')
+      .eq('id', briefData.source_id)
+      .single();
+    if (suggestion) {
+      const { data: idea } = await supabase
+        .from('content_ideas')
+        .select('internal_name')
+        .eq('id', suggestion.content_idea_id)
+        .single();
+      sourceInternalName = idea?.internal_name || 'UNKNOWN';
+    }
+  }
+  
+  const internalName = briefData.internal_name || createBriefInternalName(sourceInternalName, briefData.source_type as 'idea' | 'suggestion');
+  
   const { data, error } = await supabase
     .from('content_briefs')
     .insert({
       ...briefData,
-      internal_name: briefData.internal_name || `BRIEF_${briefData.title.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()}_${Date.now()}`
+      internal_name: internalName
     })
 .select('id,user_id,source_id,source_type,title,description,brief_type,target_audience,status,content,internal_name,file_summary,created_at,updated_at')
     .single();

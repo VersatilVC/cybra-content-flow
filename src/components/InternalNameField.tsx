@@ -28,14 +28,9 @@ export const InternalNameField: React.FC<InternalNameFieldProps> = ({
   disabled = false,
   required = false
 }) => {
-  const handleGenerateInternal = () => {
-    const generated = generateInternalName(
-      title,
-      contentType,
-      targetAudience,
-      derivativeType,
-      category
-    );
+  const handleUseTitle = () => {
+    const { sanitizeTitle } = require('@/utils/titleBasedNaming');
+    const generated = sanitizeTitle(title);
     onChange(generated);
   };
 
@@ -57,16 +52,16 @@ export const InternalNameField: React.FC<InternalNameFieldProps> = ({
           type="button"
           variant="outline"
           size="sm"
-          onClick={handleGenerateInternal}
+          onClick={handleUseTitle}
           disabled={disabled || !title}
           className="flex items-center gap-1"
         >
           <RefreshCw className="w-3 h-3" />
-          Generate
+          Use Title
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
-        A unique identifier for easy tracking across all content stages. Auto-generated if left empty.
+        Based on your title, this name will be used throughout the entire content workflow for easy tracking.
       </p>
     </div>
   );

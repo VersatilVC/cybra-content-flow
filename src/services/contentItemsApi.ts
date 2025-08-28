@@ -123,12 +123,26 @@ export async function fetchContentItemsByBrief(briefId: string): Promise<Content
 
 export async function createContentItem(itemData: CreateContentItemData): Promise<ContentItem> {
   logger.info('Creating content item:', itemData);
+  const { createItemInternalName } = await import('@/utils/titleBasedNaming');
+  
+  // Get brief internal name to inherit from
+  let briefInternalName = '';
+  if (itemData.content_brief_id) {
+    const { data: brief } = await supabase
+      .from('content_briefs')
+      .select('internal_name')
+      .eq('id', itemData.content_brief_id)
+      .single();
+    briefInternalName = brief?.internal_name || 'UNKNOWN_BRIEF';
+  }
+  
+  const internalName = createItemInternalName(briefInternalName);
   
   const { data, error } = await supabase
     .from('content_items')
     .insert({
       ...itemData,
-      internal_name: `ITEM_${itemData.title.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()}_${Date.now()}`
+      internal_name: internalName
     })
 .select('id,user_id,content_brief_id,submission_id,title,content,summary,tags,resources,multimedia_suggestions,content_type,status,word_count,internal_name,wordpress_url,created_at,updated_at')
     .single();
