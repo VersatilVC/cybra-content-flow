@@ -50,7 +50,10 @@ serve(async (req) => {
 
     const { webhook_type, payload } = await req.json();
 
+    console.log("Received webhook dispatch request:", { webhook_type, payload });
+
     if (!webhook_type || !payload) {
+      console.log("Missing webhook_type or payload:", { webhook_type, payload });
       return json({ error: "Missing webhook_type or payload" }, { status: 400 });
     }
 
@@ -87,10 +90,22 @@ serve(async (req) => {
     }
 
     const signature = await signPayload(payload);
+    
+    console.log("About to dispatch to webhooks:", { 
+      count: webhooks.length, 
+      payload, 
+      webhook_type,
+      signature: signature ? "present" : "none"
+    });
 
     const results = await Promise.all(
       webhooks.map(async (wh) => {
         try {
+          console.log(`Dispatching to webhook ${wh.id} (${wh.name}):`, {
+            url: wh.webhook_url,
+            payload
+          });
+          
           const resp = await fetch(wh.webhook_url, {
             method: "POST",
             headers: {
@@ -101,8 +116,12 @@ serve(async (req) => {
           });
           const ok = resp.ok;
           const text = await resp.text();
+          
+          console.log(`Webhook ${wh.id} response:`, { ok, status: resp.status, body: text });
+          
           return { id: wh.id, ok, status: resp.status, body: text };
         } catch (e) {
+          console.error(`Webhook ${wh.id} failed:`, e);
           return { id: wh.id, ok: false, status: 0, body: String(e) };
         }
       }),
