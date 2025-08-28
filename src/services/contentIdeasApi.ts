@@ -64,27 +64,49 @@ export const fetchContentIdeas = async (
 
 export const createContentIdea = async (userId: string, ideaData: CreateContentIdeaData) => {
   console.log('API: Creating content idea with data:', ideaData);
+  console.log('Title for internal name generation:', ideaData.title);
+  console.log('Content type for internal name generation:', ideaData.content_type);
+  console.log('Target audience for internal name generation:', ideaData.target_audience);
   
-  // Generate internal name if not provided
-  const internalName = ideaData.internal_name || generateInternalName(
-    ideaData.title,
-    ideaData.content_type,
-    ideaData.target_audience
-  );
-  
-  console.log('Generated internal name:', internalName);
+  // Auto-generate internal_name if not provided - with multiple fallbacks
+  let internalName = ideaData.internal_name;
   
   if (!internalName) {
-    throw new Error('Failed to generate internal name');
+    console.log('No internal name provided, generating one...');
+    internalName = generateInternalName(
+      ideaData.title,
+      ideaData.content_type,
+      ideaData.target_audience
+    );
+    console.log('Generated internal name from function:', internalName);
   }
   
+  // Final fallback - ensure we ALWAYS have a valid internal_name
+  if (!internalName || internalName.trim() === '') {
+    const timestamp = Date.now();
+    internalName = `ITEM_${ideaData.title?.substring(0, 10).toUpperCase().replace(/[^A-Z0-9]/g, '') || 'CONTENT'}_${timestamp}`;
+    console.log('Using fallback internal name:', internalName);
+  }
+  
+  console.log('Final internal name to be used:', internalName);
+  
+  if (!internalName) {
+    throw new Error('Failed to generate internal name - this should never happen');
+  }
+  
+  // Prepare the data to insert
+  const insertData = {
+    ...ideaData,
+    user_id: userId,
+    internal_name: internalName
+  };
+  
+  console.log('Data being inserted to database:', insertData);
+  console.log('Internal name in insert data:', insertData.internal_name);
+
   const { data, error } = await supabase
     .from('content_ideas')
-    .insert({
-      ...ideaData,
-      user_id: userId,
-      internal_name: internalName
-    })
+    .insert(insertData)
     .select('id,title,description,content_type,target_audience,status,source_type,source_data,internal_name,created_at,updated_at,idea_research_summary,processing_started_at,processing_timeout_at,retry_count,last_error_message')
     .single();
 
