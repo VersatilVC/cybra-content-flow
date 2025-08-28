@@ -19,7 +19,7 @@ const ContentIdeas = () => {
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<ContentIdea | null>(null);
   const [selectedItems, setSelectedItems] = useState<ContentIdea[]>([]);
-  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('table');
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<ContentIdeaFilters>({
     contentType: 'All Content Types',

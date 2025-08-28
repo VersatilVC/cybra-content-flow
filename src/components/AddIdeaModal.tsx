@@ -19,6 +19,7 @@ interface AddIdeaModalProps {
 export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
   const [activeTab, setActiveTab] = useState('manual');
   const [formData, setFormData] = useState({
+    title: '',
     idea: '',
     content_type: '',
     target_audience: '',
@@ -26,6 +27,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
     file: null as File | null,
   });
   const [errors, setErrors] = useState({
+    title: false,
     idea: false,
     content_type: false,
     target_audience: false,
@@ -37,12 +39,20 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
 
   const validateForm = async () => {
     const newErrors = {
+      title: false,
       idea: false,
       content_type: false,
       target_audience: false,
       url: false,
       file: false,
     };
+
+    // Validate title using security schema
+    try {
+      secureStringSchema.parse(formData.title);
+    } catch {
+      newErrors.title = true;
+    }
 
     // Validate idea/description using security schema
     try {
@@ -52,6 +62,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
     }
 
     // Basic required field checks
+    if (!formData.title) newErrors.title = true;
     if (!formData.idea) newErrors.idea = true;
     if (!formData.content_type) newErrors.content_type = true;
     if (!formData.target_audience) newErrors.target_audience = true;
@@ -112,7 +123,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
     }
 
     const ideaPayload = {
-      title: formData.idea.slice(0, 100) + (formData.idea.length > 100 ? '...' : ''),
+      title: formData.title,
       description: formData.idea,
       content_type: formData.content_type as any,
       target_audience: formData.target_audience as any,
@@ -126,6 +137,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
 
     // Reset form
     setFormData({
+      title: '',
       idea: '',
       content_type: '',
       target_audience: '',
@@ -133,6 +145,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
       file: null,
     });
     setErrors({
+      title: false,
       idea: false,
       content_type: false,
       target_audience: false,
@@ -178,7 +191,21 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
 
             <TabsContent value="manual" className="space-y-4">
               <div>
-                <Label htmlFor="idea" className={errors.idea ? "text-destructive" : ""}>Content Idea *</Label>
+                <Label htmlFor="title" className={errors.title ? "text-destructive" : ""}>Title *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter a title for your content idea..."
+                  required
+                  className={errors.title ? "border-destructive" : ""}
+                />
+                {errors.title && (
+                  <p className="text-sm text-destructive mt-1">Title is required</p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="idea" className={errors.idea ? "text-destructive" : ""}>Description *</Label>
                 <Textarea
                   id="idea"
                   value={formData.idea}
@@ -189,7 +216,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                   className={errors.idea ? "border-destructive" : ""}
                 />
                 {errors.idea && (
-                  <p className="text-sm text-destructive mt-1">Content idea is required</p>
+                  <p className="text-sm text-descriptive mt-1">Description is required</p>
                 )}
               </div>
             </TabsContent>
@@ -211,7 +238,21 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                 )}
               </div>
               <div>
-                <Label htmlFor="url-idea" className={errors.idea ? "text-destructive" : ""}>Content Idea *</Label>
+                <Label htmlFor="title-url" className={errors.title ? "text-destructive" : ""}>Title *</Label>
+                <Input
+                  id="title-url"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter a title for your content idea..."
+                  required
+                  className={errors.title ? "border-destructive" : ""}
+                />
+                {errors.title && (
+                  <p className="text-sm text-destructive mt-1">Title is required</p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="url-idea" className={errors.idea ? "text-destructive" : ""}>Description *</Label>
                 <Textarea
                   id="url-idea"
                   value={formData.idea}
@@ -222,7 +263,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                   className={errors.idea ? "border-destructive" : ""}
                 />
                 {errors.idea && (
-                  <p className="text-sm text-destructive mt-1">Content idea is required</p>
+                  <p className="text-sm text-destructive mt-1">Description is required</p>
                 )}
               </div>
             </TabsContent>
@@ -253,7 +294,21 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                 )}
               </div>
               <div>
-                <Label htmlFor="file-idea" className={errors.idea ? "text-destructive" : ""}>Content Idea *</Label>
+                <Label htmlFor="title-file" className={errors.title ? "text-destructive" : ""}>Title *</Label>
+                <Input
+                  id="title-file"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Enter a title for your content idea..."
+                  required
+                  className={errors.title ? "border-destructive" : ""}
+                />
+                {errors.title && (
+                  <p className="text-sm text-destructive mt-1">Title is required</p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="file-idea" className={errors.idea ? "text-destructive" : ""}>Description *</Label>
                 <Textarea
                   id="file-idea"
                   value={formData.idea}
@@ -264,7 +319,7 @@ export default function AddIdeaModal({ isOpen, onClose }: AddIdeaModalProps) {
                   className={errors.idea ? "border-destructive" : ""}
                 />
                 {errors.idea && (
-                  <p className="text-sm text-destructive mt-1">Content idea is required</p>
+                  <p className="text-sm text-destructive mt-1">Description is required</p>
                 )}
               </div>
             </TabsContent>
