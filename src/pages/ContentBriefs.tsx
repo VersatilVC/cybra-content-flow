@@ -11,8 +11,10 @@ import EditBriefModal from '@/components/EditBriefModal';
 import ContentBriefsHeader from '@/components/content-briefs/ContentBriefsHeader';
 import ContentBriefsFilters from '@/components/content-briefs/ContentBriefsFilters';
 import BriefsGrid from '@/components/content-briefs/BriefsGrid';
+import ContentBriefsTable from '@/components/content-briefs/ContentBriefsTable';
 import { useContentBriefsState } from '@/hooks/useContentBriefsState';
 import { useContentBriefsActions } from '@/hooks/useContentBriefsActions';
+import { ContentBrief } from '@/types/contentBriefs';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSearchParams } from 'react-router-dom';
@@ -45,6 +47,8 @@ const ContentBriefs = () => {
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('table');
+  const [selectedBriefs, setSelectedBriefs] = useState<ContentBrief[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const initializedRef = useRef(false);
   // Persist page size per user in localStorage
@@ -191,7 +195,10 @@ const {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <ContentBriefsHeader />
+      <ContentBriefsHeader 
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
       
       <ContentBriefsFilters 
         filters={filters}
@@ -215,13 +222,25 @@ const {
       </div>
 
 
-      <BriefsGrid
-        briefs={briefs}
-        onEdit={handleEdit}
-        onDiscard={deleteBrief}
-        onCreateContentItem={handleCreateContentItem}
-        onView={handleView}
-      />
+      {viewMode === 'table' ? (
+        <ContentBriefsTable
+          briefs={briefs}
+          onEdit={handleEdit}
+          onDiscard={deleteBrief}
+          onCreateContentItem={handleCreateContentItem}
+          onView={handleView}
+          selectedItems={selectedBriefs}
+          onSelectionChange={setSelectedBriefs}
+        />
+      ) : (
+        <BriefsGrid
+          briefs={briefs}
+          onEdit={handleEdit}
+          onDiscard={deleteBrief}
+          onCreateContentItem={handleCreateContentItem}
+          onView={handleView}
+        />
+      )}
 
       {(() => {
         const totalPages = Math.max(1, Math.ceil((totalCount || 0) / pageSize));
