@@ -29,9 +29,8 @@ export const InternalNameField: React.FC<InternalNameFieldProps> = ({
   required = false
 }) => {
   const handleUseTitle = () => {
-    const { sanitizeTitle } = require('@/utils/titleBasedNaming');
-    const generated = sanitizeTitle(title);
-    onChange(generated);
+    const sanitized = title.replace(/[^A-Za-z0-9\s]/g, '').trim().substring(0, 100) || 'Untitled';
+    onChange(sanitized);
   };
 
   return (

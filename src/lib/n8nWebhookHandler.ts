@@ -58,7 +58,7 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
       file_size: uploadResult.size,
       mime_type: file.type,
       status: 'ready',
-      internal_name: `REPORT_${title.toUpperCase().replace(/[^A-Z0-9]/g, '_').substring(0, 15)}_${new Date().getMonth() + 1}${new Date().getFullYear().toString().slice(-2)}_${Date.now()}`
+      internal_name: title.replace(/[^A-Za-z0-9\s]/g, '').trim().substring(0, 100) || 'Untitled Report'
     };
     
     console.log('About to insert general content item:', contentItemData);

@@ -119,7 +119,7 @@ export const createGeneralContent = async (data: CreateGeneralContentRequest): P
     .from('general_content_items')
     .insert({
       ...insertData,
-      internal_name: insertData.internal_name || `GEN_${insertData.title.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()}_${Date.now()}`
+      internal_name: insertData.internal_name || insertData.title.replace(/[^A-Za-z0-9\s]/g, '').trim().substring(0, 100) || 'Untitled'
     })
     .select('id,user_id,title,content,derivative_type,derivative_types,category,content_type,source_type,source_data,target_audience,status,word_count,metadata,file_path,file_url,file_size,mime_type,submission_id,internal_name,created_at,updated_at')
     .single();
