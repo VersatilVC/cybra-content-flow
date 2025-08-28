@@ -13,6 +13,9 @@ export interface N8NReportUploadPayload {
   category?: string;
   derivative_type?: string;
   status?: string;
+  content_item_id?: string;
+  pr_campaign_id?: string;
+  general_content_id?: string;
 }
 
 export async function uploadReportToN8N(file: File, userId: string): Promise<void> {
@@ -29,8 +32,58 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
       console.error('Error generating signed URL:', urlError);
       throw new Error('Failed to generate file access URL');
     }
+
+    // Create general content item first
+    const title = uploadResult.originalName.replace(/\.[^/.]+$/, ""); // Remove file extension
+    const { data: contentItem, error: contentError } = await supabase
+      .from('general_content_items')
+      .insert({
+        user_id: userId,
+        title,
+        category: 'Reports',
+        derivative_type: 'Report',
+        content_type: 'file',
+        source_type: 'file',
+        source_data: {
+          original_filename: uploadResult.originalName,
+          file_path: uploadResult.path
+        },
+        target_audience: 'Business Professionals',
+        file_path: uploadResult.path,
+        file_url: signedUrl.signedUrl,
+        file_size: uploadResult.size,
+        mime_type: file.type,
+        status: 'ready',
+        internal_name: `REPORT_${title.toUpperCase().replace(/[^A-Z0-9]/g, '_').substring(0, 15)}_${new Date().getMonth() + 1}${new Date().getFullYear().toString().slice(-2)}`
+      })
+      .select()
+      .single();
+
+    if (contentError) {
+      console.error('Error creating general content item:', contentError);
+      throw new Error('Failed to create content item record');
+    }
+
+    // Create PR campaign linked to the content item
+    const { data: campaign, error: campaignError } = await supabase
+      .from('pr_campaigns')
+      .insert({
+        user_id: userId,
+        title: `PR Campaign: ${title}`,
+        content_item_id: contentItem.id,
+        source_type: 'general_content',
+        source_id: contentItem.id,
+        status: 'draft'
+      })
+      .select()
+      .single();
+
+    if (campaignError) {
+      console.error('Error creating PR campaign:', campaignError);
+      throw new Error('Failed to create PR campaign record');
+    }
     
-    // Prepare payload for N8N webhook
+    // Prepare payload for N8N webhook with database IDs
     const payload = {
       request_type: 'report_upload',
       file_url: signedUrl.signedUrl,
@@ -42,7 +95,10 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
       timestamp: new Date().toISOString(),
       category: 'Reports',
       derivative_type: 'Report',
-      status: 'ready'
+      status: 'ready',
+      content_item_id: contentItem.id,
+      pr_campaign_id: campaign.id,
+      general_content_id: contentItem.id
     };
     
     // Use Supabase edge function to bypass CORS

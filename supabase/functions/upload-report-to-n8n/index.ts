@@ -18,6 +18,9 @@ interface N8NReportUploadPayload {
   category?: string;
   derivative_type?: string;
   status?: string;
+  content_item_id?: string;
+  pr_campaign_id?: string;
+  general_content_id?: string;
 }
 
 serve(async (req) => {
