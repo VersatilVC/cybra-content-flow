@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,8 +47,34 @@ serve(async (req) => {
     const payload: N8NReportUploadPayload = await req.json();
     console.log('Received report upload payload:', JSON.stringify(payload, null, 2));
 
-    // Send to N8N webhook
-    const webhookUrl = 'https://cyabramarketing.app.n8n.cloud/webhook/report-upload-dedicated';
+    // Initialize Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Fetch active webhook configuration for PR pitch generation reports
+    console.log('Fetching webhook configuration...');
+    const { data: webhookConfig, error: webhookError } = await supabase
+      .from('webhook_configurations')
+      .select('webhook_url')
+      .eq('webhook_type', 'pr_pitch_generation_reports')
+      .eq('is_active', true)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (webhookError) {
+      console.error('Error fetching webhook configuration:', webhookError);
+      throw new Error(`Failed to fetch webhook configuration: ${webhookError.message}`);
+    }
+
+    if (!webhookConfig) {
+      console.error('No active webhook configuration found for pr_pitch_generation_reports');
+      throw new Error('No active webhook configuration found for report uploads');
+    }
+
+    const webhookUrl = webhookConfig.webhook_url;
     console.log('Sending to N8N webhook:', webhookUrl);
 
     const response = await fetch(webhookUrl, {
