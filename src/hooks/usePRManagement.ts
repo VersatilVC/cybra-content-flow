@@ -231,20 +231,48 @@ export const usePRManagement = () => {
       // Handle legacy parameters
       const finalSourceType = sourceType || 'content_item';
       const finalSourceId = sourceId;
+      let contentItemId = finalSourceId;
 
-      // First create a PR campaign
-      const campaignData: any = {
+      // If source is general_content, create a corresponding content_item
+      if (finalSourceType === 'general_content') {
+        // Get the general content item details
+        const { data: generalContent, error: generalError } = await supabase
+          .from('general_content_items')
+          .select('*')
+          .eq('id', finalSourceId)
+          .single();
+        
+        if (generalError) throw generalError;
+
+        // Create a content_item record linked to the general content
+        const { data: contentItem, error: contentItemError } = await supabase
+          .from('content_items')
+          .insert({
+            title: generalContent.title,
+            content: generalContent.content || '',
+            user_id: user.id,
+            content_type: 'Blog Post',
+            status: 'ready',
+            internal_name: generalContent.internal_name || `REPORT_${Date.now()}`,
+            file_summary: `Report: ${generalContent.title}`,
+            summary: `Generated from report: ${generalContent.title}`
+          })
+          .select()
+          .single();
+        
+        if (contentItemError) throw contentItemError;
+        contentItemId = contentItem.id;
+      }
+
+      // Create a PR campaign with proper content_item_id
+      const campaignData = {
         title: `PR Campaign: ${title}`,
         status: 'processing',
         user_id: user.id,
         source_type: finalSourceType,
-        source_id: finalSourceId
+        source_id: finalSourceId,
+        content_item_id: contentItemId
       };
-
-      // For backward compatibility, also set content_item_id if it's a content item
-      if (finalSourceType === 'content_item') {
-        campaignData.content_item_id = finalSourceId;
-      }
 
       const { data: campaign, error: campaignError } = await supabase
         .from('pr_campaigns')
@@ -254,19 +282,18 @@ export const usePRManagement = () => {
       
       if (campaignError) throw campaignError;
 
-      // Trigger webhook for PR pitch generation
+      // Trigger webhook for PR pitch generation with required IDs
       const webhookResponse = await supabase.functions.invoke('dispatch-webhook', {
         body: {
           webhook_type: 'pr_pitch_generation',
           payload: {
             campaign_id: campaign.id,
+            content_item_id: contentItemId,
             source_type: finalSourceType,
             source_id: finalSourceId,
             title: title,
             user_id: user.id,
-            timestamp: new Date().toISOString(),
-            // Legacy support
-            ...(finalSourceType === 'content_item' && { content_item_id: finalSourceId })
+            timestamp: new Date().toISOString()
           }
         }
       });
