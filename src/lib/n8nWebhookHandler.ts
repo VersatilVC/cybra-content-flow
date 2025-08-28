@@ -16,6 +16,7 @@ export interface N8NReportUploadPayload {
   content_item_id?: string;
   pr_campaign_id?: string;
   general_content_id?: string;
+  internal_name?: string;
 }
 
 export async function uploadReportToN8N(file: File, userId: string): Promise<void> {
@@ -118,7 +119,8 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
       status: 'ready',
       content_item_id: contentItem.id,
       pr_campaign_id: campaign.id,
-      general_content_id: contentItem.id
+      general_content_id: contentItem.id,
+      internal_name: contentItem.internal_name
     };
     
     console.log('Final payload being sent to N8N:', payload);

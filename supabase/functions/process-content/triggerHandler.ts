@@ -93,7 +93,7 @@ export async function handleTriggerAction(
     try {
       const { data, error } = await supabase
         .from('general_content_items')
-        .select('id, title, category, derivative_type, derivative_types, content_type, source_type, source_data, target_audience, content, file_url, file_path, file_size, mime_type')
+        .select('id, title, category, derivative_type, derivative_types, content_type, source_type, source_data, target_audience, content, file_url, file_path, file_size, mime_type, internal_name')
         .eq('id', body.general_content_id)
         .single();
       if (error) {
@@ -141,6 +141,7 @@ export async function handleTriggerAction(
     description: generalContent?.content || undefined,
     entry_type: entryType as any,
     entry_value: entryValue,
+    internal_name: body.internal_name || generalContent?.internal_name,
   };
 
   console.log('Final webhook payload (sanitized preview):', {
@@ -153,6 +154,7 @@ export async function handleTriggerAction(
     derivative_types: payload.derivative_types,
     content_type: payload.content_type,
     source_type: payload.source_type,
+    internal_name: payload.internal_name,
   });
 
   try {

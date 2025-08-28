@@ -19,6 +19,7 @@ export interface TriggerRequestBody {
   description?: string;
   entry_type?: 'manual' | 'url' | 'file';
   entry_value?: string;
+  internal_name?: string;
 }
 
 export interface CallbackRequestBody {
@@ -51,4 +52,5 @@ export interface WebhookPayload {
   description?: string;
   entry_type?: 'manual' | 'url' | 'file';
   entry_value?: string;
+  internal_name?: string;
 }

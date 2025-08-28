@@ -10,13 +10,15 @@ export async function triggerIdeaWebhooks(idea: ContentIdea, userId: string) {
     idea: idea,
     user_id: userId,
     timestamp: new Date().toISOString(),
+    internal_name: idea.internal_name,
     // Add callback URL for N8N to call when processing is complete
     callback_url: getCallbackUrl('process-idea-callback'),
     callback_data: {
       type: 'idea_processing_complete',
       content_idea_id: idea.id,
       user_id: userId,
-      title: idea.title
+      title: idea.title,
+      internal_name: idea.internal_name
     }
   };
 
@@ -168,13 +170,15 @@ export async function triggerBriefWebhooks(briefId: string, userId: string, idea
     idea_id: ideaId,
     brief: brief,
     timestamp: new Date().toISOString(),
+    internal_name: brief.internal_name,
     callback_url: getCallbackUrl('process-idea-callback'),
     callback_data: {
       type: 'brief_completion',
       brief_id: briefId,
       content_idea_id: ideaId,
       user_id: userId,
-      title: brief.title
+      title: brief.title,
+      internal_name: brief.internal_name
     }
   };
 
@@ -197,12 +201,14 @@ export async function triggerAutoGenerationWebhooks(userId: string, requestData:
     target_audience: requestData.target_audience,
     request_data: requestData,
     timestamp: new Date().toISOString(),
+    internal_name: requestData.internal_name,
     callback_url: getCallbackUrl('process-idea-callback'),
     callback_data: {
       type: 'auto_generation_complete',
       content_idea_id: requestData.content_idea_id,
       user_id: userId,
-      title: requestData.title
+      title: requestData.title,
+      internal_name: requestData.internal_name
     }
   };
 
