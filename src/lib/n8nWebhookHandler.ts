@@ -20,8 +20,11 @@ export interface N8NReportUploadPayload {
 
 export async function uploadReportToN8N(file: File, userId: string): Promise<void> {
   try {
+    console.log('Starting report upload process for user:', userId);
+    
     // First upload the file to Supabase storage
     const uploadResult = await handleFileUpload(file, userId, 'content-files');
+    console.log('File uploaded successfully:', uploadResult);
     
     // Generate a signed URL for the file (valid for 24 hours)
     const { data: signedUrl, error: urlError } = await supabase.storage
@@ -32,56 +35,73 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
       console.error('Error generating signed URL:', urlError);
       throw new Error('Failed to generate file access URL');
     }
+    console.log('Signed URL generated successfully');
 
     // Create general content item first
     const title = uploadResult.originalName.replace(/\.[^/.]+$/, ""); // Remove file extension
+    console.log('Creating general content item with title:', title);
+    
+    const contentItemData = {
+      user_id: userId,
+      title,
+      category: 'Reports',
+      derivative_type: 'Report',
+      content_type: 'file',
+      source_type: 'file',
+      source_data: {
+        original_filename: uploadResult.originalName,
+        file_path: uploadResult.path
+      },
+      target_audience: 'Business Professionals',
+      file_path: uploadResult.path,
+      file_url: signedUrl.signedUrl,
+      file_size: uploadResult.size,
+      mime_type: file.type,
+      status: 'ready',
+      internal_name: `REPORT_${title.toUpperCase().replace(/[^A-Z0-9]/g, '_').substring(0, 15)}_${new Date().getMonth() + 1}${new Date().getFullYear().toString().slice(-2)}`
+    };
+    
+    console.log('About to insert general content item:', contentItemData);
+    
     const { data: contentItem, error: contentError } = await supabase
       .from('general_content_items')
-      .insert({
-        user_id: userId,
-        title,
-        category: 'Reports',
-        derivative_type: 'Report',
-        content_type: 'file',
-        source_type: 'file',
-        source_data: {
-          original_filename: uploadResult.originalName,
-          file_path: uploadResult.path
-        },
-        target_audience: 'Business Professionals',
-        file_path: uploadResult.path,
-        file_url: signedUrl.signedUrl,
-        file_size: uploadResult.size,
-        mime_type: file.type,
-        status: 'ready',
-        internal_name: `REPORT_${title.toUpperCase().replace(/[^A-Z0-9]/g, '_').substring(0, 15)}_${new Date().getMonth() + 1}${new Date().getFullYear().toString().slice(-2)}`
-      })
+      .insert(contentItemData)
       .select()
       .single();
 
     if (contentError) {
       console.error('Error creating general content item:', contentError);
-      throw new Error('Failed to create content item record');
+      console.error('Content item data that failed:', contentItemData);
+      throw new Error(`Failed to create content item record: ${contentError.message}`);
     }
+    
+    console.log('General content item created successfully:', contentItem);
 
     // Create PR campaign linked to the content item
+    const campaignData = {
+      user_id: userId,
+      title: `PR Campaign: ${title}`,
+      content_item_id: contentItem.id,
+      source_type: 'general_content',
+      source_id: contentItem.id,
+      status: 'draft'
+    };
+    
+    console.log('About to insert PR campaign:', campaignData);
+    
     const { data: campaign, error: campaignError } = await supabase
       .from('pr_campaigns')
-      .insert({
-        user_id: userId,
-        title: `PR Campaign: ${title}`,
-        content_item_id: contentItem.id,
-        source_type: 'general_content',
-        source_id: contentItem.id,
-        status: 'draft'
-      })
+      .insert(campaignData)
       .select()
       .single();
 
     if (campaignError) {
       console.error('Error creating PR campaign:', campaignError);
-      throw new Error('Failed to create PR campaign record');
+      console.error('Campaign data that failed:', campaignData);
+      throw new Error(`Failed to create PR campaign record: ${campaignError.message}`);
     }
+    
+    console.log('PR campaign created successfully:', campaign);
     
     // Prepare payload for N8N webhook with database IDs
     const payload = {
@@ -100,6 +120,8 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
       pr_campaign_id: campaign.id,
       general_content_id: contentItem.id
     };
+    
+    console.log('Final payload being sent to N8N:', payload);
     
     // Use Supabase edge function to bypass CORS
     console.log('Calling upload-report-to-n8n edge function with payload:', payload);
