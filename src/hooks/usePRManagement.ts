@@ -121,7 +121,7 @@ export const usePRManagement = () => {
         .from('pr_campaigns')
         .select(`
           *,
-          content_item:content_items(id, title, content_type),
+          content_item:general_content_items(id, title, content_type),
           pitches:pr_pitches(
             *,
             journalist:journalists(name, publication, email)
@@ -143,12 +143,12 @@ export const usePRManagement = () => {
         .select(`
           *,
           journalist:journalists(*),
-          content_item:content_items(id, title, content_type)
+          content_item:general_content_items(id, title, content_type)
         `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as PRPitch[];
+      return (data || []) as PRPitch[];
     }
   });
 
@@ -229,40 +229,9 @@ export const usePRManagement = () => {
       if (!user) throw new Error('User not authenticated');
 
       // Handle legacy parameters
-      const finalSourceType = sourceType || 'content_item';
+      const finalSourceType = sourceType || 'general_content';
       const finalSourceId = sourceId;
-      let contentItemId = finalSourceId;
-
-      // If source is general_content, create a corresponding content_item
-      if (finalSourceType === 'general_content') {
-        // Get the general content item details
-        const { data: generalContent, error: generalError } = await supabase
-          .from('general_content_items')
-          .select('*')
-          .eq('id', finalSourceId)
-          .single();
-        
-        if (generalError) throw generalError;
-
-        // Create a content_item record linked to the general content
-        const { data: contentItem, error: contentItemError } = await supabase
-          .from('content_items')
-          .insert({
-            title: generalContent.title,
-            content: generalContent.content || '',
-            user_id: user.id,
-            content_type: 'Blog Post',
-            status: 'ready',
-            internal_name: generalContent.internal_name || `REPORT_${Date.now()}`,
-            file_summary: `Report: ${generalContent.title}`,
-            summary: `Generated from report: ${generalContent.title}`
-          })
-          .select()
-          .single();
-        
-        if (contentItemError) throw contentItemError;
-        contentItemId = contentItem.id;
-      }
+      let contentItemId = finalSourceId; // Now we use general_content_items directly
 
       // Create a PR campaign with proper content_item_id
       const campaignData = {
