@@ -20,7 +20,7 @@ export const useReports = () => {
       const { data, error } = await supabase
         .from('general_content_items')
         .select('id, title, derivative_type, category, status, created_at, content, word_count, metadata')
-        .or('category.eq.Reports,derivative_type.ilike.%Report%')
+        .eq('category', 'Reports')
         .in('status', ['ready', 'approved', 'published', 'processing', 'draft'])
         .order('created_at', { ascending: false });
       

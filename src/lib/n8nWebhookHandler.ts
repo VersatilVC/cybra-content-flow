@@ -9,6 +9,9 @@ export interface N8NReportUploadPayload {
   mime_type: string;
   user_id: string;
   timestamp: string;
+  category?: string;
+  derivative_type?: string;
+  status?: string;
 }
 
 export async function uploadReportToN8N(file: File, userId: string): Promise<void> {
@@ -34,7 +37,10 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
       file_size: parseInt(uploadResult.size),
       mime_type: file.type,
       user_id: userId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      category: 'Reports',
+      derivative_type: 'Report',
+      status: 'ready'
     };
     
     // Trigger N8N webhook
