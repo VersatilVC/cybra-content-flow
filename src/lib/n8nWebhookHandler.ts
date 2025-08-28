@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { handleFileUpload } from '@/lib/fileUploadHandler';
 
 export interface N8NReportUploadPayload {
+  request_type: 'report_upload';
   file_url: string;
   file_path: string;
   original_filename: string;
@@ -31,6 +32,7 @@ export async function uploadReportToN8N(file: File, userId: string): Promise<voi
     
     // Prepare payload for N8N webhook
     const payload: N8NReportUploadPayload = {
+      request_type: 'report_upload',
       file_url: signedUrl.signedUrl,
       file_path: uploadResult.path,
       original_filename: uploadResult.originalName,

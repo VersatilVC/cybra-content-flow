@@ -287,6 +287,7 @@ export const usePRManagement = () => {
         body: {
           webhook_type: 'pr_pitch_generation',
           payload: {
+            request_type: 'pr_pitch_generation',
             campaign_id: campaign.id,
             content_item_id: contentItemId,
             source_type: finalSourceType,
