@@ -1184,7 +1184,7 @@ export type Database = {
             foreignKeyName: "pr_pitches_content_item_id_fkey"
             columns: ["content_item_id"]
             isOneToOne: false
-            referencedRelation: "content_items"
+            referencedRelation: "general_content_items"
             referencedColumns: ["id"]
           },
           {
