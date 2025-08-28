@@ -72,6 +72,12 @@ export const createContentIdea = async (userId: string, ideaData: CreateContentI
     ideaData.target_audience
   );
   
+  console.log('Generated internal name:', internalName);
+  
+  if (!internalName) {
+    throw new Error('Failed to generate internal name');
+  }
+  
   const { data, error } = await supabase
     .from('content_ideas')
     .insert({

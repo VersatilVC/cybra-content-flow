@@ -10,12 +10,17 @@ export function generateInternalName(
   category?: string,
   createdAt?: string
 ): string {
+  // Ensure we have a valid title
+  if (!title || title.trim().length === 0) {
+    title = 'CONTENT';
+  }
+
   // Clean title: remove special chars, take first 15 chars, uppercase
   const cleanTitle = title
     .replace(/[^A-Za-z0-9\s]/g, '')
     .replace(/\s+/g, '_')
     .toUpperCase()
-    .substring(0, 15);
+    .substring(0, 15) || 'CONTENT';
 
   // Add prefix based on content type
   let prefix = '';
@@ -29,6 +34,8 @@ export function generateInternalName(
     prefix = derivativeType.substring(0, 4).toUpperCase() + '_';
   } else if (category) {
     prefix = category.substring(0, 4).toUpperCase() + '_';
+  } else {
+    prefix = 'ITEM_';
   }
 
   // Add date suffix
@@ -38,8 +45,9 @@ export function generateInternalName(
   // Combine all parts
   const baseName = prefix + cleanTitle + suffix;
 
-  // Ensure not too long
-  return baseName.substring(0, 50);
+  // Ensure not too long and never empty
+  const result = baseName.substring(0, 50);
+  return result || 'CONTENT_' + Date.now();
 }
 
 export function generateDerivativeInternalName(
